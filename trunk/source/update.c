@@ -10,7 +10,7 @@
 #include "gecko.h"
 #include "http.h"
 
-s32 downloadSyscheckFile(char* fileName)  {
+s32 downloadSyscheckFile(const char* fileName)  {
 	int ret = 0;
 	static char buf[128];
 	u32 http_status;
