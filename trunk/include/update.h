@@ -2,8 +2,8 @@
 #define _UPDATE_H_
 
 /* Constants */
-#define REVISION 19
-#define PATH "sd:/apps/syscheck/"
+#define REVISION 20
+#define PATH "sd:/apps/SysCheckHDE/"
 
 s32 updateApp();
 
