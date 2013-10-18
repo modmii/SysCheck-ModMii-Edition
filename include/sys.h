@@ -75,12 +75,17 @@ typedef struct _U8Entry
 	};
 } __attribute__( ( packed ) ) U8Entry;
 
+extern const char *Regions[];
+extern u8 sysMenuInfoContent;
+extern bool debug;
+
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
 // Prototypes
+char GetSysMenuRegion(u32 sysVersion);
 bool GetCertificates(void);
 u32 GetSysMenuVersion(void);
 float GetSysMenuNintendoVersion(u32 sysVersion);

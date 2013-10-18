@@ -7,6 +7,8 @@
 #include <unistd.h>
 #include <wiilight.h>
 #include <ogc/conf.h>
+#include <ogc/es.h>
+#include <ogc/ios.h>
 #include <wiiuse/wpad.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -35,10 +37,18 @@
 #define SECTOR_SIZE (0x4000)
 
 extern bool geckoinit;
-extern u8 sysMenueInfoContent;
-bool debug;
+
+
 char miosInfo[128] = {0};
 extern void __exception_setreload(int t);
+
+// Stripped down version of IOS_ReloadIOS, run inline
+inline void ReloadIOS(int version) {
+	__IOS_ShutdownSubsystems();
+	__ES_Init();
+	__IOS_LaunchNewIOS(version);
+	__IOS_InitializeSubsystems();
+}
 
 int get_title_ios(u64 title) {
 	s32 ret, fd;
@@ -152,20 +162,17 @@ bool getInfoFromContent(IOS *ios) {
 		gprintf("is %s\n", ios->info);
 		logfile("is %s\r\n", ios->info);
 		retValue = true;
-		if (buffer != 0)
-		{
-			free(buffer);
-		}
+		if (buffer) free(buffer);
 	}
 
 	return retValue;
 }
 
 void formatDate(u32 date, char ReportBuffer[200][100]) {
-	char temp[9] = {0};
-	char day[3] = {0};
-	char month[3] = {0};
-	char year[5] = {0};
+	char temp[8] = {0};
+	char day[2] = {0};
+	char month[2] = {0};
+	char year[4] = {0};
 
 	sprintf(temp, "%08x", date);
 	sprintf(year, "%c%c%c%c", temp[0], temp[1], temp[2], temp[3]);
@@ -204,6 +211,9 @@ void sort(u64 *titles, u32 cnt) {
 	for (i = 0; i < cnt -1; ++i) {
 		for (j = 0; j < cnt - i - 1; ++j) {
 			if (titles[j] > titles[j + 1]) {
+				//DrawBuf();
+				//DrawCog();
+				//GRRLIB_Render();
 				u64 tmp = titles[j];
 				titles[j] = titles[j + 1];
 				titles[j + 1] = tmp;
@@ -244,30 +254,29 @@ int main(int argc, char **argv)
 	initLanguages(today);
 
 	// Get the console region
-    printLoading(MSG_GetConsoleRegion);
-	usleep(250000);
-    int regionSelection = CONF_GetRegion();
+	printLoading(MSG_GetConsoleRegion);
+	//usleep(250000);
+	int regionSelection = CONF_GetRegion();
 	
 	u8 shopcode = 0;
 	char country[COUNTRY_SIZE] = "Unknown";
 	if (!CONF_GetShopCode(&shopcode)) strncpy(country, CONF_CountryCodes[shopcode], COUNTRY_SIZE);
 
-    // Get the system menu version
-    printLoading(MSG_GetSysMenuVer);
-	usleep(250000);
+	// Get the system menu version
+	printLoading(MSG_GetSysMenuVer);
+	//usleep(250000);
 	u32 sysVersion = GetSysMenuVersion();
 	sysMenu systemmenu;
 
 	printLoading(MSG_GetHBCVer);
-	usleep(250000);
+	//usleep(250000);
 	u32 hbcversion = 0;
 	u32 hbfversion = 0;
 	s32 hbc = 0;
 	s32 hbf = 0;
 	u32 hbcIOS = 0;
 	u32 dvdSupport = 0;
-	s32 ret;
-	ret = Title_GetVersionNObuf(0x000100014C554C5All);
+	s32 ret = Title_GetVersionNObuf(0x000100014C554C5All);
 	if (ret<0) {
 		ret = Title_GetVersionNObuf(0x00010001AF1BF516ll);
 		if (ret<0) {
@@ -293,11 +302,7 @@ int main(int argc, char **argv)
 		}
 	} else {
 		hbc = 4;
-		hbcversion = ret;
-		if (hbcversion == 257)
-			hbcversion = 1;
-		else
-			hbcversion = 2;
+		hbcversion = (ret != 257) +1;
 	}
 	if (hbc == 4) {
 		hbcIOS =  get_title_ios(TITLE_ID(0x10001, 0x4C554C5A));
@@ -334,33 +339,34 @@ int main(int argc, char **argv)
 	}
 
 	float sysNinVersion = GetSysMenuNintendoVersion(sysVersion);
+	char SysMenuRegion = GetSysMenuRegion(sysVersion);
 
-    // Get the running IOS version and revision
+	// Get the running IOS version and revision
 	u32 runningIOS = IOS_GetVersion();
 	u32 runningIOSRevision = IOS_GetRevision();
 	printLoading(MSG_GetRunningIOS);
-	usleep(250000);
+	//usleep(250000);
 
 	// Get the console ID
-    printLoading(MSG_GetConsoleID);
-	usleep(250000);
+	printLoading(MSG_GetConsoleID);
+	//usleep(250000);
 	u32 deviceID = GetDeviceID();
 
-    // Get the boot2 version
-    printLoading(MSG_GetBoot2);
-	usleep(250000);
+	// Get the boot2 version
+	printLoading(MSG_GetBoot2);
+	//usleep(250000);
 	u32 boot2version = GetBoot2Version();
 
 	// Get number of titles
-    printLoading(MSG_GetNrOfTitles);
-	usleep(250000);
+	printLoading(MSG_GetNrOfTitles);
+	//usleep(250000);
 
 	u32 tempTitles;
 	if (ES_GetNumTitles(&tempTitles) < 0) {
 		printError(ERR_GetNrOfTitles);
 		sleep(5);
 		return false;
-    }
+	}
 
 	s32 nbTitles = tempTitles;
 
@@ -371,16 +377,16 @@ int main(int argc, char **argv)
 		printError(MSG_Buffer);
 		sleep(5);
 		return false;
-    }
+	}
 
 	// Get list of titles
-    printLoading(MSG_GetTitleList);
-	usleep(250000);
+	printLoading(MSG_GetTitleList);
+	//usleep(250000);
 	if (ES_GetTitles(titles, nbTitles) < 0) {
-        printError(ERR_GetTitleList);
+		printError(ERR_GetTitleList);
 		sleep(5);
 		return false;
-    }
+	}
 
 	int i;
 	int j;
@@ -410,19 +416,8 @@ int main(int argc, char **argv)
 			}
 		}
 
-		if (titleID > 258 && titleID < 512) {
-			titles[i] = 0;
-			continue;
-		}
-
-		// Skip the running IOS
-		if (titleID == 0) {
-			titles[i] = 0;
-			continue;
-		}
-
-		// Skip the System Menu
-		if (titleID == 2) {
+		// Skip the running IOS, the System Menu, and out of range IOS
+		if ((titleID > 258 && titleID < 512) || (titleID == 0) || (titleID == 2)) {
 			titles[i] = 0;
 			continue;
 		}
@@ -431,7 +426,7 @@ int main(int argc, char **argv)
 
 	// Sort IOS titles
 	printLoading(MSG_SortTitles);
-	usleep(250000);
+	//usleep(250000);
 
 	u64 *newTitles = memalign(32, countIOS*sizeof(u64));
 	u32 cnt = 0;
@@ -601,9 +596,9 @@ int main(int argc, char **argv)
 	iosinfo_t *sysInfo;
 
 	// Try to identify the cIOS by the info put in by the installer/ModMii
-	sysMenueInfoContent = *(u8 *)((u32)iosTMDBuffer+0x1E7);
-	sprintf(filepath, "/title/%08x/%08x/content/%08x.app", 0x00000001, 2, sysMenueInfoContent);
-	gprintf("/title/%08x/%08x/content/%08x.app\n", 0x00000001, 2, sysMenueInfoContent);
+	sysMenuInfoContent = *(u8 *)((u32)iosTMDBuffer+0x1E7);
+	sprintf(filepath, "/title/%08x/%08x/content/%08x.app", 0x00000001, 2, sysMenuInfoContent);
+	gprintf("/title/%08x/%08x/content/%08x.app\n", 0x00000001, 2, sysMenuInfoContent);
 	ret = read_file_from_nand(filepath, &buffer, &filesize);
 
 	sysInfo = (iosinfo_t *)(buffer);
@@ -631,11 +626,11 @@ int main(int argc, char **argv)
 
 	// Get the certificates from the NAND
 	printLoading(MSG_GetCertificates);
-	usleep(250000);
+	//usleep(250000);
 	if (!GetCertificates()) {
 		printError(ERR_GetCertificates);
 		sleep(5);
-        return false;
+		return false;
 	}
 
 	//Select an IOS to test
@@ -679,7 +674,7 @@ int main(int argc, char **argv)
 		}
 
 		if (wpressed & WPAD_BUTTON_LEFT && selectedIOS > -1) {
-		    selectedIOS--;
+			selectedIOS--;
 			starttime = time(NULL);
 
 			if (selectedIOS > -1) {
@@ -716,6 +711,7 @@ int main(int argc, char **argv)
 			} else if (ret >= 0) {
 				printSuccess(MSG_UpdateSuccess);
 				sleep(10);
+				deinitGUI();
 				if (*(u32*)0x80001800) exit(0);
 				SYS_ResetSystem(SYS_RETURNTOMENU, 0, 0);
 			} else if (ret < 0) {
@@ -726,7 +722,7 @@ int main(int argc, char **argv)
 		}
 
 		if (wpressed & WPAD_BUTTON_A) {
-		    break;
+			break;
 		}
 	}
 	WPAD_Shutdown();
@@ -761,7 +757,8 @@ int main(int argc, char **argv)
 			// Reload IOS
 			gprintf("// IOS_ReloadIOS(%d)\n", ios[i].titleID);
 			logfile("// IOS_ReloadIOS(%d)\r\n", ios[i].titleID);
-			IOS_ReloadIOS(ios[i].titleID);
+			//IOS_ReloadIOS(ios[i].titleID);
+			ReloadIOS(ios[i].titleID);
 
 			// Test fake signature
 			gprintf("// Test fake signature\n");
@@ -827,16 +824,16 @@ int main(int argc, char **argv)
 
 
 	// Reload the running IOS
-	IOS_ReloadIOS(runningIOS);
+	ReloadIOS(runningIOS);
 	sprintf(MSG_Buffer, MSG_ReloadIOS, runningIOS, runningIOSRevision);
 	printLoading(MSG_Buffer);
-	usleep(250000);
+	//usleep(250000);
 
 	//--Generate Report--
 	printLoading(MSG_GenerateReport);
-	usleep(250000);
+	//usleep(250000);
 
-		char ReportBuffer[200][100] = {{0}} ;
+		char ReportBuffer[200][100] = {{0}};
 
 		if (dvdSupport > 0)
 			formatDate(dvdSupport, ReportBuffer);
@@ -846,64 +843,25 @@ int main(int argc, char **argv)
 		// Display Title
 		sprintf(ReportBuffer[APP_TITLE], TXT_AppTitle, TXT_AppVersion);
 		sprintf(ReportBuffer[APP_IOS], TXT_AppIOS, runningIOS, IOS_GetRevision());
+		bool validregion = regionSelection >= CONF_REGION_JP && regionSelection <= CONF_REGION_CN;
 
 		// Display the console region
-		if (!sysNinVersion == 0.0f) {
-			switch (regionSelection)
-			{
-				case CONF_REGION_US:
-					sprintf(ReportBuffer[TEXT_REGION], "%s: NTSC-U", TXT_Region);
-					sprintf(ReportBuffer[SYSMENU], TXT_SysMenu, sysNinVersion, "U", sysVersion);
-					break;
-
-				case CONF_REGION_EU:
-					sprintf(ReportBuffer[TEXT_REGION], "%s: PAL", TXT_Region);
-					sprintf(ReportBuffer[SYSMENU], TXT_SysMenu, sysNinVersion, "E", sysVersion);
-					break;
-
-				case CONF_REGION_JP:
-					sprintf(ReportBuffer[TEXT_REGION], "%s: NTSC-J", TXT_Region);
-					sprintf(ReportBuffer[SYSMENU], TXT_SysMenu, sysNinVersion, "J", sysVersion);
-					break;
-
-				case CONF_REGION_KR:
-					sprintf(ReportBuffer[TEXT_REGION], "%s: KOR", TXT_Region);
-					sprintf(ReportBuffer[SYSMENU], TXT_SysMenu, sysNinVersion, "K", sysVersion);
-					break;
-
-				default:
-					sprintf(ReportBuffer[TEXT_REGION], "%s: ", TXT_Region);
-					strcat(ReportBuffer[SYSMENU], TXT_Unknown);
-			}
+		if (sysNinVersion != 0.0f) {
+			sprintf(ReportBuffer[TEXT_REGION], "%s: %s", TXT_Region, validregion ? Regions[regionSelection] : "");
+			if (validregion)
+				sprintf(ReportBuffer[SYSMENU], TXT_SysMenu, sysNinVersion, SysMenuRegion, sysVersion);
+			else
+				strcat(ReportBuffer[SYSMENU], TXT_Unknown);
+			
 		} else if (systemmenu.hasInfo) {
 			u32 realSysVersion = systemmenu.realRevision;
 			sysNinVersion = GetSysMenuNintendoVersion(realSysVersion);
-			switch (regionSelection)
-			{
-				case CONF_REGION_US:
-					sprintf(ReportBuffer[TEXT_REGION], "%s: NTSC-U", TXT_Region);
-					sprintf(ReportBuffer[SYSMENU], TXT_SysMenu3, sysNinVersion, "U", sysVersion, realSysVersion, systemmenu.info);
-					break;
-
-				case CONF_REGION_EU:
-					sprintf(ReportBuffer[TEXT_REGION], "%s: PAL", TXT_Region);
-					sprintf(ReportBuffer[SYSMENU], TXT_SysMenu3, sysNinVersion, "E", sysVersion, realSysVersion, systemmenu.info);
-					break;
-
-				case CONF_REGION_JP:
-					sprintf(ReportBuffer[TEXT_REGION], "%s: NTSC-J", TXT_Region);
-					sprintf(ReportBuffer[SYSMENU], TXT_SysMenu3, sysNinVersion, "J", sysVersion, realSysVersion, systemmenu.info);
-					break;
-
-				case CONF_REGION_KR:
-					sprintf(ReportBuffer[TEXT_REGION], "%s: KOR", TXT_Region);
-					sprintf(ReportBuffer[SYSMENU], TXT_SysMenu3, sysNinVersion, "K", sysVersion, realSysVersion, systemmenu.info);
-					break;
-
-				default:
-					sprintf(ReportBuffer[TEXT_REGION], "%s: ", TXT_Region);
-					strcat(ReportBuffer[TEXT_REGION], TXT_Unknown);
-			}
+			SysMenuRegion = GetSysMenuRegion(sysVersion);
+			sprintf(ReportBuffer[TEXT_REGION], "%s: %s", TXT_Region, validregion ? Regions[regionSelection] : "");
+			if (validregion)
+				sprintf(ReportBuffer[SYSMENU], TXT_SysMenu3, sysNinVersion, SysMenuRegion, sysVersion, realSysVersion, systemmenu.info);
+			else
+				strcat(ReportBuffer[SYSMENU], TXT_Unknown);
 		} else {
 			signed_blob *TMD = NULL;
 			tmd *t = NULL;
@@ -936,28 +894,25 @@ int main(int argc, char **argv)
 				{
 					case CONF_REGION_US:
 						sprintf(ReportBuffer[TEXT_REGION], "%s: NTSC-U", TXT_Region);
-						sprintf(Region, "U");
 						break;
 
 					case CONF_REGION_EU:
 						sprintf(ReportBuffer[TEXT_REGION], "%s: PAL", TXT_Region);
-						sprintf(Region, "E");
 						break;
 
 					case CONF_REGION_JP:
 						sprintf(ReportBuffer[TEXT_REGION], "%s: NTSC-J", TXT_Region);
-						sprintf(Region, "J");
 						break;
 
 					case CONF_REGION_KR:
 						sprintf(ReportBuffer[TEXT_REGION], "%s: KOR", TXT_Region);
-						sprintf(Region, "K");
 						break;
 
 					default:
 						sprintf(ReportBuffer[TEXT_REGION], "%s: ", TXT_Region);
 						strcat(ReportBuffer[TEXT_REGION], TXT_Unknown);
 				}
+				sprintf(Region, "%c", SysMenuRegion);
 
 				switch (sysIOS)
 				{
@@ -1083,7 +1038,7 @@ int main(int argc, char **argv)
 		sprintf(ReportBuffer[HOLLYWOOD], TXT_Hollywood, *HOLLYWOOD_VERSION);
 		sprintf(ReportBuffer[CONSOLE_ID], TXT_ConsoleID, deviceID);
 		sprintf(ReportBuffer[BOOT2_VERSION], TXT_vBoot2, boot2version);
-		sprintf(ReportBuffer[COUNTRY], "Shop Channel Country: %s (%u)", (strlen(country)) ? country : "Unknown", shopcode);
+		sprintf(ReportBuffer[COUNTRY], "Shop Channel Country: %s (%u)", (strlen(country)) ? country : TXT_Unknown, shopcode);
 		sprintf(ReportBuffer[NR_OF_TITLES], TXT_NrOfTitles, countTitles);
 		sprintf(ReportBuffer[NR_OF_IOS], TXT_NrOfIOS, (countIOS - countBCMIOS), countStubs);
 
@@ -1158,12 +1113,12 @@ int main(int argc, char **argv)
 
 	// Mount the SD Card
 	printLoading(MSG_MountSD);
-	usleep(250000);
+	//usleep(250000);
 	MountSD();
 
 	// Initialise the FAT file system
 	printLoading(MSG_InitFAT);
-	usleep(250000);
+	//usleep(250000);
 	if (!fatInitDefault())
 	{
 		sprintf(MSG_Buffer, ERR_InitFAT);
