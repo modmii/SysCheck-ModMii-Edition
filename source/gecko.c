@@ -1,13 +1,13 @@
 #include <gccore.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdarg.h>
 
 /* init-globals */
 bool geckoinit = false;
 bool textVideoInit = false;
 
 #ifndef NO_DEBUG
-#include <stdarg.h>
 
 //using the gprintf from crediar because it is smaller than mine
 void gprintf( const char *str, ... )

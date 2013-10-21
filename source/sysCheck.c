@@ -37,18 +37,19 @@
 #define SECTOR_SIZE (0x4000)
 
 extern bool geckoinit;
-
+extern void ReloadIOS(int version);
 
 char miosInfo[128] = {0};
 extern void __exception_setreload(int t);
 
 // Stripped down version of IOS_ReloadIOS, run inline
-inline void ReloadIOS(int version) {
-	__IOS_ShutdownSubsystems();
-	__ES_Init();
-	__IOS_LaunchNewIOS(version);
-	__IOS_InitializeSubsystems();
-}
+//inline void ReloadIOS(int version) {
+//	//__IOS_ShutdownSubsystems();
+//	__ES_Init();
+//	__IOS_LaunchNewIOS(version);
+//	__IOS_InitializeSubsystems();
+//	//WII_LaunchTitle(TITLE_ID(0x00000001,version));
+//}
 
 int get_title_ios(u64 title) {
 	s32 ret, fd;
@@ -239,6 +240,7 @@ int main(int argc, char **argv)
 			}
 		}
 	}
+	
 
 	if (HAVE_AHBPROT && !forceNoAHBPROT)
 		IOSPATCH_Apply();
@@ -608,14 +610,11 @@ int main(int argc, char **argv)
 		systemmenu.hasInfo = true;
 		//strcpy(systemmenu.info, sysInfo->name);
 		sprintf(systemmenu.info, "%s%s", sysInfo->name, sysInfo->versionstring);
-		if (buffer != 0)
-		{
-			free(buffer);
-		}
+		if (buffer != NULL) free(buffer);
 	} else {
 		systemmenu.realRevision = 0;
 		systemmenu.hasInfo = false;
-		strcpy(systemmenu.info, "NICHTS");
+		strcpy(systemmenu.info, "NONE");
 	}
 
 	NandShutdown();
@@ -757,8 +756,8 @@ int main(int argc, char **argv)
 			// Reload IOS
 			gprintf("// IOS_ReloadIOS(%d)\n", ios[i].titleID);
 			logfile("// IOS_ReloadIOS(%d)\r\n", ios[i].titleID);
-			//IOS_ReloadIOS(ios[i].titleID);
-			ReloadIOS(ios[i].titleID);
+			IOS_ReloadIOS(ios[i].titleID);
+			//ReloadIOS(ios[i].titleID);
 
 			// Test fake signature
 			gprintf("// Test fake signature\n");
@@ -824,7 +823,7 @@ int main(int argc, char **argv)
 
 
 	// Reload the running IOS
-	ReloadIOS(runningIOS);
+	IOS_ReloadIOS(runningIOS);
 	sprintf(MSG_Buffer, MSG_ReloadIOS, runningIOS, runningIOSRevision);
 	printLoading(MSG_Buffer);
 	//usleep(250000);

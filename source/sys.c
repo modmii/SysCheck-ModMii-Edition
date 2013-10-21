@@ -15,6 +15,7 @@
 
 #include "sys.h"
 #include "video.h"
+#include "SysMenuInfo.h"
 
 #include "ticket_dat.h"
 #include "tmd_dat.h"
@@ -28,18 +29,6 @@
 #include "languages.h"
 #include "fatMounter.h"
 
-
-
-// Turn upper and lower into a full title ID
-#define TITLE_ID(x,y)           (((u64)(x) << 32) | (y))
-// Get upper or lower half of a title ID
-#define TITLE_UPPER(x)          ((u32)((x) >> 32))
-// Turn upper and lower into a full title ID
-#define TITLE_LOWER(x)          ((u32)(x))
-
-#define FULL_TITLE_ID(titleId) ((u32)(titleId))
-
-#define TITLE_ID2(titleId) ((u32)((titleId) >> 32))
 
 // Constants
 #define BASE_PATH "/tmp"
@@ -163,7 +152,7 @@ const u8 es_set_ahbprot_pattern[] = { 0x68, 0x5B, 0x22, 0xEC, 0x00, 0x52, 0x18, 
 const u8 es_set_ahbprot_patch[]   = { 0x01 };
 
 
-u32 IOSPATCH_Apply() {
+u32 IOSPATCH_Apply(void) {
     u32 count = 0;
 	s32 ret = 0;
 
@@ -191,12 +180,12 @@ u32 IOSPATCH_Apply() {
     return count;
 }
 
-u32 es_set_ahbprot() {
+u32 es_set_ahbprot(void) {
 	disable_memory_protection();
 	return apply_patch("es_set_ahbprot", es_set_ahbprot_pattern, sizeof(es_set_ahbprot_pattern), es_set_ahbprot_patch, sizeof(es_set_ahbprot_patch), 25);
 }
 
-bool checkISFSinRAM() {
+bool checkISFSinRAM(void) {
 	disable_memory_protection();
 	bool ret = true;
 	u8 *ptr_start = (u8*)*((u32*)0x80003134), *ptr_end = (u8*)0x94000000;
@@ -209,10 +198,10 @@ bool checkISFSinRAM() {
 	return ret;
 }
 
-int NandStartup()
+int NandStartup(void)
 {
 	if (NandInitialized)
-		return 0;
+		return 1;
 
     int ret = ISFS_Initialize();
 
@@ -223,7 +212,7 @@ int NandStartup()
 	return ret;
 }
 
-void NandShutdown()
+void NandShutdown(void)
 {
 	if (!NandInitialized)
 		return;
@@ -463,7 +452,7 @@ float GetSysMenuNintendoVersion(u32 sysVersion)
 		case 514:
 		case 518:
 		case 544:
-		//case 545:
+		case 545:
 		case 546:
 			ninVersion = 4.3f;
 			break;
@@ -489,7 +478,7 @@ char GetSysMenuRegion(u32 sysVersion) {
 		case 54449: // mauifrog 4.1U
 		case 481: //4.2U
 		case 513: //4.3U
-		case 545:
+		//case 545:
 			SysMenuRegion = 'U';
 			break;
 		case 130: //2.0E
@@ -532,10 +521,11 @@ char GetSysMenuRegion(u32 sysVersion) {
 			SysMenuRegion = 'K';
 			break;
 		default:
-			SysMenuRegion = 'X';
+			//SysMenuRegion = 'X';
+			SysMenuRegion = getSystemMenuRegionFromContent();
 			break;
 	}
-return SysMenuRegion;
+	return SysMenuRegion;
 }
 
 void zero_sig(signed_blob *sig)
@@ -619,9 +609,7 @@ bool CheckFakeSignature(void)
 	int ret = ES_AddTicket((signed_blob *)ticket_dat, ticket_dat_size, (signed_blob *)certs, sizeof(certs), 0, 0);
 
 	if (ret > -1) RemoveBogusTicket();
-	if (ret > -1 || ret == -1028) return true;
-
-	return false;
+	return (ret > -1 || ret == -1028);
 }
 
 // Check fake signatures (aka Trucha Bug)
@@ -659,12 +647,7 @@ bool CheckESIdentify(void)
 {
 	int ret = ES_Identify((signed_blob *)certs, sizeof(certs), (signed_blob *)tmd_dat, tmd_dat_size, (signed_blob *)ticket_dat, ticket_dat_size, NULL);
 
-	if (ret == -2011) ret = 0;
-
-	if (ret < 0)
-		return false;
-	else
-		return true;
+	return ((ret >= 0) || (ret == -2011));
 }
 
 
@@ -672,25 +655,15 @@ bool CheckESIdentify(void)
 bool CheckFlashAccess(void)
 {
 	int ret = IOS_Open("/dev/flash", 1);
-
 	if (ret >= 0) IOS_Close(ret);
-
-	if (ret < 0)
-		return false;
-	else
-		return true;
+	return (ret >= 0);
 }
 
 bool CheckMload(void)
 {
 	int ret = IOS_Open("/dev/mload", 0);
-
 	if (ret >= 0) IOS_Close(ret);
-
-	if (ret < 0)
-		return false;
-	else
-		return true;
+	return (ret >= 0);
 }
 
 
@@ -698,13 +671,8 @@ bool CheckMload(void)
 bool CheckNANDAccess(void)
 {
 	int ret = IOS_Open("/ticket/00000001/00000002.tik", 1);
-
 	if (ret >= 0) IOS_Close(ret);
-
-	if (ret < 0)
-		return false;
-	else
-		return true;
+	return (ret >= 0);
 }
 
 
@@ -712,13 +680,8 @@ bool CheckNANDAccess(void)
 bool CheckBoot2Access(void)
 {
 	int ret = IOS_Open("/dev/boot2", 1);
-
 	if (ret >= 0) IOS_Close(ret);
-
-	if (ret < 0)
-		return false;
-	else
-		return true;
+	return (ret >= 0);
 }
 
 
@@ -758,11 +721,7 @@ bool CheckUSB2(u32 titleID)
 	if (ret < 0) ret = IOS_Open("/dev/usb/ehc", 1);
 
 	if (ret >= 0) IOS_Close(ret);
-
-	if (ret < 0)
-		return false;
-	else
-		return true;
+	return (ret >= 0);
 }
 
 
@@ -804,7 +763,7 @@ bool IsKnownStub(u32 noIOS, s32 noRevision)
 	return false;
 }
 
-int checkSysLoader() {
+int checkSysLoader(void) {
 	char filepath[ISFS_MAXPATH] ATTRIBUTE_ALIGN(0x20);
 	static u64 titleId ATTRIBUTE_ALIGN(32) = 0x0000000100000002LL;
 	int ret = 0;

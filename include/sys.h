@@ -7,6 +7,16 @@
 #define HOLLYWOOD_VERSION (vu32*)0x80003138
 #define LOADER_STUB (vu32*)0x80001800
 
+// Turn upper and lower into a full title ID
+#define TITLE_ID(x,y)           (((u64)(x) << 32) | (y))
+// Get upper or lower half of a title ID
+#define TITLE_UPPER(x)          ((u32)((x) >> 32))
+// Turn upper and lower into a full title ID
+#define TITLE_LOWER(x)          ((u32)(x))
+
+#define FULL_TITLE_ID(titleId) ((u32)(titleId))
+#define TITLE_ID2(titleId) ((u32)((titleId) >> 32))
+
 enum {
 	APP_TITLE = 0,
 	APP_IOS,
@@ -102,15 +112,15 @@ bool IsKnownStub(u32, s32);
 s32 GetTMD(u64 TicketID, signed_blob **Output, u32 *Length);
 char GetBootFilename(u64 titleId);
 s32 read_file_from_nand(char *filepath, u8 **buffer, u32 *filesize);
-int NandStartup();
-void NandShutdown();
-int checkSysLoader();
+int NandStartup(void);
+void NandShutdown(void);
+int checkSysLoader(void);
 void transmitSyscheck(char ReportBuffer[200][100], int *lines);
-u32 IOSPATCH_Apply();
+u32 IOSPATCH_Apply(void);
 s32 brute_tmd(tmd *p_tmd);
 bool CheckVersionPatch(void);
-bool checkISFSinRAM();
-u32 es_set_ahbprot();
+bool checkISFSinRAM(void);
+u32 es_set_ahbprot(void);
 void *allocate_memory(u32 size);
 void logfile(const char *format, ...);
 s32 get_miosinfo(char *str);

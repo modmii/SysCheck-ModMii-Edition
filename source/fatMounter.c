@@ -4,6 +4,7 @@
 #include <sdcard/wiisd_io.h>
 #include <ogc/usbstorage.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <ogcsys.h>
@@ -171,7 +172,7 @@ int MountUSB(void)
 		return -1;
 
 	/* Mount device */
-	ret = fatMountSimple("usb", &__io_usbstorage);
+		ret = fatMountSimple("usb", &__io_usbstorage);
 	if (!ret)
 		return -2;
 
