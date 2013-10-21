@@ -56,7 +56,7 @@ s32 downloadSyscheckFile(const char* fileName)  {
 	return 0;
 }
 
-s32 updateApp() {
+s32 updateApp(void) {
 	int ret = 0;
 	
 	ret = net_init();

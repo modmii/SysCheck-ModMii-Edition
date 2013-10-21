@@ -7,9 +7,9 @@ extern "C"
 #endif
 
 // Prototypes
-void MountSD(void);
+int MountSD(void);
 void UnmountSD(void);
-void MountUSB(void);
+int MountUSB(void);
 void UnmountUSB(void);
 
 #ifdef __cplusplus

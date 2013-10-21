@@ -5,7 +5,7 @@
 #define REVISION 20
 #define PATH "sd:/apps/SysCheckHDE/"
 
-s32 updateApp();
+s32 updateApp(void);
 
 
 #endif
