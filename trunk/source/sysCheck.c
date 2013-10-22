@@ -28,6 +28,7 @@
 #include "tmdIdentification.h"
 #include "gecko.h"
 #include "update.h"
+#include "thread.h"
 
 // Filename
 #define REPORT "sd:/sysCheck.csv"
@@ -731,6 +732,7 @@ int main(int argc, char **argv)
 	}
 
 	// Test vulnerabilities in IOS
+	ResumeThread();
 	for (i = 0; i < nbTitles; i++)
 	{
 		if (selectedIOS > -1) i = selectedIOS; //If specific IOS is selected
@@ -1118,6 +1120,7 @@ int main(int argc, char **argv)
 	// Initialise the FAT file system
 	printLoading(MSG_InitFAT);
 	//usleep(250000);
+	PauseThread();
 	if (!fatInitDefault())
 	{
 		sprintf(MSG_Buffer, ERR_InitFAT);
