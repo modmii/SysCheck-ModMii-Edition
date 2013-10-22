@@ -27,6 +27,7 @@
 #include "gecko.h"
 #include "sys.h"
 #include "fatMounter.h"
+#include "thread.h"
 
 GRRLIB_ttfFont *myFont;
 GRRLIB_texImg *tex_background_png;
@@ -55,8 +56,8 @@ static const u8 WIIFONT_HASH[]		= {0x32, 0xb3, 0x39, 0xcb, 0xbb, 0x50, 0x7d, 0x5
 static const u8 WIIFONT_HASH_KOR[]	= {0xb7, 0x15, 0x6d, 0xf0, 0xf4, 0xae, 0x07, 0x8f, 0xd1, 0x53, 0x58, 0x3e, 0x93, 0x6e, 0x07, 0xc0, 0x98, 0x77, 0x49, 0x0e};
 u8 *systemFont;
 s32 systemFontSize = 0;
-static u8 Cog_Num = 0;
-static u64 Last_Cog_Turn = 0;
+u8 Cog_Num = 0;
+u64 Last_Cog_Turn = 0;
 
 bool loadSystemFont(bool korean)
 {
@@ -161,11 +162,14 @@ int initGUI(void) {
 	tex_Cogs_png[3] = GRRLIB_LoadTexturePNG(Cog4);
 	tex_Cogs_png[4] = GRRLIB_LoadTexturePNG(Cog5);
 	tex_ScreenBuf = GRRLIB_CreateEmptyTexture(rmode->fbWidth, rmode->efbHeight);
+	InitThread();
 	
 	return 0;
 }
 
 void deinitGUI(void) {
+	//StopThread();
+	done = 1;
 	GRRLIB_FreeTTF(myFont);
 	GRRLIB_FreeTexture(tex_background_png);
 	GRRLIB_FreeTexture(tex_Checkicon_png);
@@ -199,6 +203,7 @@ void DrawDuringSort(void) {
 
 int printError(const char* msg) {
 	int i;
+	//PauseThread();
 	GRRLIB_DrawImg(0, 0, tex_background_png, 0, 1, 1, HEX_WHITE);
 	GRRLIB_DrawImg(256, 112, tex_Deleteicon_png, 0, 1, 1, HEX_WHITE);
 	GRRLIB_PrintfTTF((640-strlen(msg)*9)/2, 256, myFont, msg, 20, HEX_WHITE);
@@ -213,6 +218,8 @@ int printError(const char* msg) {
 
 int printSuccess(const char* msg) {
 	int i;
+	//PauseThread();
+	//GRRLIB_ClearTex(tex_ScreenBuf);
 	GRRLIB_DrawImg(0, 0, tex_background_png, 0, 1, 1, HEX_WHITE);
 	GRRLIB_DrawImg(256, 112, tex_Checkicon_png, 0, 1, 1, HEX_WHITE);
 	GRRLIB_PrintfTTF((640-strlen(msg)*9)/2, 256, myFont, msg, 20, HEX_WHITE);
@@ -226,6 +233,7 @@ int printSuccess(const char* msg) {
 
 int printLoading(const char* msg) {
 	//int i;
+	//ResumeThread();
 	u64 current_ticks = gettick();
 	//GRRLIB_DrawImg(256, 112, tex_Refreshicon_png, 0, 1, 1, HEX_WHITE);
 	GRRLIB_DrawImg(0, 0, tex_background_png, 0, 1, 1, HEX_WHITE);
@@ -233,15 +241,16 @@ int printLoading(const char* msg) {
 	CopyBuf();
 	//for (i = 0; i < 3; i++) { //Workaround for GRRLIB_Render() bug
 	while(!CheckTime(current_ticks, 250)) {
-		DrawBuf();
-		DrawCog();
-		GRRLIB_Render();
+		//DrawBuf();
+		//DrawCog();
+		//GRRLIB_Render();
 	}
 	return 0;
 }
 
 int printSelectIOS(const char* msg, const char* ios) {
 	int i;
+	PauseThread();
 	GRRLIB_DrawImg(0, 0, tex_background_png, 0, 1, 1, HEX_WHITE);
 	GRRLIB_DrawImg(256, 112, tex_Refreshicon_png, 0, 1, 1, HEX_WHITE);
 	
@@ -278,15 +287,16 @@ int printLoadingBar(const char* msg, const f32 percent) {
 	CopyBuf();
 	//for (i = 0; i < 3; i++) { //Workaround for GRRLIB_Render() bug
 	while(!CheckTime(current_ticks, 250)) {
-		DrawBuf();
-		DrawCog();
-		GRRLIB_Render();
+		//DrawBuf();
+		//DrawCog();
+		//GRRLIB_Render();
 	}
 	return 0;
 }
 	
 int printEndSuccess(const char* msg) {
 	int i;
+	//PauseThread();
 	GRRLIB_DrawImg(0, 0, tex_background_png, 0, 1, 1, HEX_WHITE);
 	GRRLIB_DrawImg(256, 112, tex_Checkicon_png, 0, 1, 1, HEX_WHITE);
 	
@@ -324,7 +334,7 @@ inline void DrawCog(void) {
 
 int printEndError(const char* msg) {
 	int i;
-	
+	//PauseThread();
 	GRRLIB_DrawImg(0, 0, tex_background_png, 0, 1, 1, HEX_WHITE);
 	GRRLIB_DrawImg(256, 112, tex_Deleteicon_png, 0, 1, 1, HEX_WHITE);
 	

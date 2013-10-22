@@ -27,6 +27,9 @@ extern GRRLIB_texImg *tex_window_png;
 extern GRRLIB_texImg *tex_Cogs_png[5];
 extern GRRLIB_texImg *tex_ScreenBuf;
 
+extern u8 Cog_Num;
+extern u64 Last_Cog_Turn;
+
 int initGUI(void);
 void deinitGUI(void);
 int printError(const char* msg);
