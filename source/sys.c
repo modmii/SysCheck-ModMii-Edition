@@ -28,6 +28,7 @@
 #include "gui.h"
 #include "languages.h"
 #include "fatMounter.h"
+#include "thread.h"
 
 
 // Constants
@@ -478,7 +479,7 @@ char GetSysMenuRegion(u32 sysVersion) {
 		case 54449: // mauifrog 4.1U
 		case 481: //4.2U
 		case 513: //4.3U
-		//case 545:
+		case 545:
 			SysMenuRegion = 'U';
 			break;
 		case 130: //2.0E
@@ -521,7 +522,6 @@ char GetSysMenuRegion(u32 sysVersion) {
 			SysMenuRegion = 'K';
 			break;
 		default:
-			//SysMenuRegion = 'X';
 			SysMenuRegion = getSystemMenuRegionFromContent();
 			break;
 	}
@@ -536,23 +536,19 @@ void zero_sig(signed_blob *sig)
 
 
 // Get the boot2 version
-u32 GetBoot2Version(void)
+inline u32 GetBoot2Version(void)
 {
 	u32 boot2version = 0;
-
 	if (ES_GetBoot2Version(&boot2version) < 0) boot2version = 0;
-
 	return boot2version;
 }
 
 
 // Get the console ID
-u32 GetDeviceID(void)
+inline u32 GetDeviceID(void)
 {
 	u32 deviceId = 0;
-
 	if (ES_GetDeviceID(&deviceId) < 0) deviceId = 0;
-
 	return deviceId;
 }
 
@@ -631,7 +627,7 @@ bool CheckVersionPatch(void)
 
 	//RemoveBogusTicket();
 
-	/*gpritnf();
+	/*gprintf();
 
 	int ret2 = ES_AddTitleStart((signed_blob *)v1_tmd, v1_tmd_size, (signed_blob *)v1_cert, v1_cert_size, 0, 0);
 	if (ret2 >= 0) ES_AddTitleCancel();
@@ -854,7 +850,7 @@ char *url_encode(char *str) {
 }
 
 void transmitSyscheck(char ReportBuffer[200][100], int *lines) {
-
+	ResumeThread();
 	printLoadingBar(TXT_Upload, 0);
 	gprintf("TempReport bauen\n");
 
@@ -899,6 +895,7 @@ void transmitSyscheck(char ReportBuffer[200][100], int *lines) {
 
 	http_get_result(&http_status, &outbuf, &lenght);
 	printLoadingBar(TXT_Upload, 100);
+	PauseThread();
 
 	(*lines)++;
 	memset(ReportBuffer[*lines], 0, 100);

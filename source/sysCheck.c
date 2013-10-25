@@ -44,13 +44,13 @@ char miosInfo[128] = {0};
 extern void __exception_setreload(int t);
 
 // Stripped down version of IOS_ReloadIOS, run inline
-//inline void ReloadIOS(int version) {
-//	//__IOS_ShutdownSubsystems();
-//	__ES_Init();
-//	__IOS_LaunchNewIOS(version);
-//	__IOS_InitializeSubsystems();
-//	//WII_LaunchTitle(TITLE_ID(0x00000001,version));
-//}
+inline void ReloadIOS2(int version) {
+	//__IOS_ShutdownSubsystems();
+	__ES_Init();
+	__IOS_LaunchNewIOS(version);
+	__IOS_InitializeSubsystems();
+	//WII_LaunchTitle(TITLE_ID(0x00000001,version));
+}
 
 int get_title_ios(u64 title) {
 	s32 ret, fd;
@@ -366,9 +366,12 @@ int main(int argc, char **argv)
 
 	u32 tempTitles;
 	if (ES_GetNumTitles(&tempTitles) < 0) {
+		PauseThread();
 		printError(ERR_GetNrOfTitles);
 		sleep(5);
-		return false;
+		deinitGUI();
+		exit(1);
+		//return false;
 	}
 
 	s32 nbTitles = tempTitles;
@@ -379,7 +382,8 @@ int main(int argc, char **argv)
 		sprintf(MSG_Buffer, ERR_AllocateMemory, titles);
 		printError(MSG_Buffer);
 		sleep(5);
-		return false;
+		deinitGUI();
+		exit(1);
 	}
 
 	// Get list of titles
@@ -388,7 +392,8 @@ int main(int argc, char **argv)
 	if (ES_GetTitles(titles, nbTitles) < 0) {
 		printError(ERR_GetTitleList);
 		sleep(5);
-		return false;
+		deinitGUI();
+		exit(1);
 	}
 
 	int i;
@@ -489,7 +494,8 @@ int main(int argc, char **argv)
 			sprintf(MSG_Buffer, ERR_GetIosTMDSize, ios[i].titleID);
 			printError(MSG_Buffer);
 			sleep(5);
-			return false;
+			deinitGUI();
+			exit(1);
 		}
 
 		iosTMDBuffer = (signed_blob*)memalign(32, (tmdSize+31)&(~31));
@@ -503,7 +509,8 @@ int main(int argc, char **argv)
 			sprintf(MSG_Buffer, ERR_GetIosTMD, ios[i].titleID);
 			printError(MSG_Buffer);
 			sleep(5);
-			return false;
+			deinitGUI();
+			exit(1);
 		}
 
 		iosTMD = (tmd*)SIGNATURE_PAYLOAD(iosTMDBuffer);
@@ -578,7 +585,8 @@ int main(int argc, char **argv)
 		sprintf(MSG_Buffer, ERR_GetIosTMDSize, 2);
 		printError(MSG_Buffer);
 		sleep(5);
-		return false;
+		deinitGUI();
+		exit(1);
 	}
 
 	iosTMDBuffer = (signed_blob*)memalign(32, (tmdSize+31)&(~31));
@@ -590,7 +598,8 @@ int main(int argc, char **argv)
 		sprintf(MSG_Buffer, ERR_GetIosTMD, 2);
 		printError(MSG_Buffer);
 		sleep(5);
-		return false;
+		deinitGUI();
+		exit(1);
 	}
 
 	char filepath[ISFS_MAXPATH] ATTRIBUTE_ALIGN(0x20);
@@ -630,7 +639,8 @@ int main(int argc, char **argv)
 	if (!GetCertificates()) {
 		printError(ERR_GetCertificates);
 		sleep(5);
-		return false;
+		deinitGUI();
+		exit(1);
 	}
 
 	//Select an IOS to test
@@ -758,8 +768,8 @@ int main(int argc, char **argv)
 			// Reload IOS
 			gprintf("// IOS_ReloadIOS(%d)\n", ios[i].titleID);
 			logfile("// IOS_ReloadIOS(%d)\r\n", ios[i].titleID);
-			IOS_ReloadIOS(ios[i].titleID);
-			//ReloadIOS(ios[i].titleID);
+			//IOS_ReloadIOS(ios[i].titleID);
+			ReloadIOS(ios[i].titleID);
 
 			// Test fake signature
 			gprintf("// Test fake signature\n");
@@ -825,7 +835,8 @@ int main(int argc, char **argv)
 
 
 	// Reload the running IOS
-	IOS_ReloadIOS(runningIOS);
+	//IOS_ReloadIOS(runningIOS);
+	ReloadIOS(runningIOS);
 	sprintf(MSG_Buffer, MSG_ReloadIOS, runningIOS, runningIOSRevision);
 	printLoading(MSG_Buffer);
 	//usleep(250000);
@@ -1179,7 +1190,8 @@ int main(int argc, char **argv)
 		if (wpressed & WPAD_BUTTON_HOME) {
 			// Unmount the SD Card
 			UnmountSD();
-			if(*LOADER_STUB) return true;
+			deinitGUI();
+			if(*LOADER_STUB) exit(0);;
 			SYS_ResetSystem(SYS_RETURNTOMENU, 0, 0);
 		}
 
@@ -1187,6 +1199,7 @@ int main(int argc, char **argv)
 		if (wpressed & WPAD_BUTTON_PLUS) {
 			// Unmount the SD Card
 			UnmountSD();
+			deinitGUI();
 			SYS_ResetSystem(SYS_RETURNTOMENU, 0, 0);
 		}
 
@@ -1194,6 +1207,7 @@ int main(int argc, char **argv)
 		if (wpressed & WPAD_BUTTON_MINUS) {
 			// Unmount the SD Card
 			UnmountSD();
+			deinitGUI();
 			SYS_ResetSystem(SYS_POWEROFF, 0, 0);
 		}
 

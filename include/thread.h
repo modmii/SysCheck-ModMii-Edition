@@ -8,4 +8,5 @@ void InitThread(void);
 void * DrawCogThread(void *arg);
 s32 PauseThread(void);
 s32 ResumeThread(void);
+s32 StopThread(void);
 #endif
