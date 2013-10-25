@@ -168,8 +168,7 @@ int initGUI(void) {
 }
 
 void deinitGUI(void) {
-	//StopThread();
-	done = 1;
+	StopThread();
 	GRRLIB_FreeTTF(myFont);
 	GRRLIB_FreeTexture(tex_background_png);
 	GRRLIB_FreeTexture(tex_Checkicon_png);
@@ -203,7 +202,7 @@ void DrawDuringSort(void) {
 
 int printError(const char* msg) {
 	int i;
-	//PauseThread();
+	PauseThread();
 	GRRLIB_DrawImg(0, 0, tex_background_png, 0, 1, 1, HEX_WHITE);
 	GRRLIB_DrawImg(256, 112, tex_Deleteicon_png, 0, 1, 1, HEX_WHITE);
 	GRRLIB_PrintfTTF((640-strlen(msg)*9)/2, 256, myFont, msg, 20, HEX_WHITE);
@@ -218,7 +217,7 @@ int printError(const char* msg) {
 
 int printSuccess(const char* msg) {
 	int i;
-	//PauseThread();
+	PauseThread();
 	//GRRLIB_ClearTex(tex_ScreenBuf);
 	GRRLIB_DrawImg(0, 0, tex_background_png, 0, 1, 1, HEX_WHITE);
 	GRRLIB_DrawImg(256, 112, tex_Checkicon_png, 0, 1, 1, HEX_WHITE);
@@ -334,7 +333,7 @@ inline void DrawCog(void) {
 
 int printEndError(const char* msg) {
 	int i;
-	//PauseThread();
+	PauseThread();
 	GRRLIB_DrawImg(0, 0, tex_background_png, 0, 1, 1, HEX_WHITE);
 	GRRLIB_DrawImg(256, 112, tex_Deleteicon_png, 0, 1, 1, HEX_WHITE);
 	
@@ -398,6 +397,7 @@ int printReport(char report[200][100], int firstLine, bool completeReport) {
 
 int printUploadSuccess(const char* msg) {
 	int i;
+	PauseThread();
 	GRRLIB_DrawImg(0, 0, tex_background_png, 0, 1, 1, HEX_WHITE);
 	GRRLIB_DrawImg(256, 112, tex_Checkicon_png, 0, 1, 1, HEX_WHITE);
 	
@@ -417,6 +417,7 @@ int printUploadSuccess(const char* msg) {
 
 int printUploadError(const char* msg) {
 	int i;
+	PauseThread();
 	GRRLIB_DrawImg(0, 0, tex_background_png, 0, 1, 1, HEX_WHITE);
 	GRRLIB_DrawImg(256, 112, tex_Deleteicon_png, 0, 1, 1, HEX_WHITE);
 	

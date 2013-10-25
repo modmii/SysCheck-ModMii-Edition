@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <unistd.h>
 #include <ogc/lwp_watchdog.h>
 #include <ogc/lwp.h>
 
@@ -29,6 +30,7 @@ void * DrawCogThread(void *arg) {
 inline void InitThread(void) {
 	memset (&stack, 0, STACKSIZE);
 	LWP_CreateThread (&Cog_Thread, DrawCogThread, NULL, stack, STACKSIZE, PRIORITY);
+	usleep(200);
 }
 
 inline s32 PauseThread(void) {
@@ -41,6 +43,8 @@ inline s32 ResumeThread(void) {
 	return LWP_ResumeThread(Cog_Thread);
 }
 
-//inline s32 StopThread(void) {
-//	return LWP_JoinThread(Cog_Thread, NULL);
-//}
+inline s32 StopThread(void) {
+	done = 1;
+	ResumeThread();
+	return LWP_JoinThread(Cog_Thread, NULL);
+}
