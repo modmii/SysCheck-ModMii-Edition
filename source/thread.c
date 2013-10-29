@@ -6,15 +6,15 @@
 #include "thread.h"
 #include "gui.h"
 
-#define STACKSIZE (1024 * 64) 	// 64KB
-#define PRIORITY 50 			// Medium-ish
+#define STACKSIZE (1024 * 64) 	// 64KB of dedicated memory for thread
+#define PRIORITY 50 			// Medium-ish (0-127 accepted)
 
 lwp_t Cog_Thread;
 u8 stack[STACKSIZE] ATTRIBUTE_ALIGN (32);
 vu8 done = 0;
 
 void * DrawCogThread(void *arg) {
-	while(!done) {
+	while(!done) { // Keep the thread running until done != 0
 		GRRLIB_DrawImg(0, 0, tex_ScreenBuf, 0, 1, 1, HEX_WHITE);
 		if (CheckTime(Last_Cog_Turn, 25)) {
 			Cog_Num++;
@@ -34,15 +34,16 @@ inline void InitThread(void) {
 }
 
 inline s32 PauseThread(void) {
-	//if(!LWP_ThreadIsSuspended(Cog_Thread)) return 0;
+	if(LWP_ThreadIsSuspended(Cog_Thread) == LWP_ALREADY_SUSPENDED) return LWP_ALREADY_SUSPENDED;
 	return LWP_SuspendThread(Cog_Thread);
 }
 
 inline s32 ResumeThread(void) {
-	//if(LWP_ThreadIsSuspended(Cog_Thread)) return 0;
+	if(LWP_ThreadIsSuspended(Cog_Thread) == LWP_NOT_SUSPENDED) return LWP_NOT_SUSPENDED;
 	return LWP_ResumeThread(Cog_Thread);
 }
 
+// Have yet to test this
 inline s32 StopThread(void) {
 	done = 1;
 	ResumeThread();
