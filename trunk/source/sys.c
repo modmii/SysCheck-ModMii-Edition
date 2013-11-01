@@ -30,6 +30,9 @@
 #include "fatMounter.h"
 #include "thread.h"
 
+#define DM_INSTALLED 	((*(vu32*)(appfile+i)) == 0x44494F53 && (*(vu32*)(appfile+i+5)) == 0x4D494F53) // true = DM or DML installed
+#define DML_OR_DM		(*(vu32*)(appfile+i+10) == 0x4C697465) // true = DML
+#define CMP_TIME(X) 	(difftime(unixTime, (X)) >= 0)
 
 u8 sysMenuInfoContent = 0;
 const char *Regions[] = {"NTSC-J", "NTSC-U", "PAL", "", "KOR", "NTSC-J"}; //Last is actually China
@@ -95,31 +98,6 @@ s32 GetTMD(u64 TicketID, signed_blob **Output, u32 *Length)
 	*Length = TMD_Length;
 
 	return 0;
-}
-
-// Get the system menu version from TMD
-u32 GetSysMenuVersion(void)
-{
-	static u64 TitleID ATTRIBUTE_ALIGN(32) = 0x0000000100000002LL;
-	static u32 tmdSize ATTRIBUTE_ALIGN(32);
-
-	// Get the stored TMD size for the system menu
-	if (ES_GetStoredTMDSize(TitleID, &tmdSize) < 0) return false;
-
-	signed_blob *TMD = (signed_blob *)memalign(32, (tmdSize+32)&(~31));
-	memset(TMD, 0, tmdSize);
-
-	// Get the stored TMD for the system menu
-	if (ES_GetStoredTMD(TitleID, TMD, tmdSize) < 0) return false;
-
-	// Get the system menu version from TMD
-	tmd *rTMD = (tmd *)(TMD+(0x140/sizeof(tmd *)));
-	u32 version = rTMD->title_version;
-
-	free(TMD);
-
-	// Return the system menu version
-	return version;
 }
 
 s32 read_file_from_nand(char *filepath, u8 **buffer, u32 *filesize)
@@ -188,171 +166,6 @@ s32 read_file_from_nand(char *filepath, u8 **buffer, u32 *filesize)
 	}
 
 	return 0;
-}
-
-float GetSysMenuNintendoVersion(u32 sysVersion)
-{
-	float ninVersion = 0.0;
-
-	switch (sysVersion)
-	{
-		case 33:
-			ninVersion = 1.0f;
-			break;
-
-		case 97:
-		case 128:
-		case 130:
-			ninVersion = 2.0f;
-			break;
-
-		case 162:
-			ninVersion = 2.1f;
-			break;
-
-		case 192:
-		case 193:
-		case 194:
-			ninVersion = 2.2f;
-			break;
-
-		case 224:
-		case 225:
-		case 226:
-			ninVersion = 3.0f;
-			break;
-
-		case 256:
-		case 257:
-		case 258:
-			ninVersion = 3.1f;
-			break;
-
-		case 288:
-		case 289:
-		case 290:
-			ninVersion = 3.2f;
-			break;
-
-		case 352:
-		case 353:
-		case 354:
-		case 326:
-			ninVersion = 3.3f;
-			break;
-
-		case 384:
-		case 385:
-		case 386:
-			ninVersion = 3.4f;
-			break;
-
-		case 390:
-			ninVersion = 3.5f;
-			break;
-
-		case 416:
-		case 417:
-		case 418:
-			ninVersion = 4.0f;
-			break;
-
-		case 448:
-		case 449:
-		case 450:
-		case 454:
-		case 54448: // mauifrog's custom version
-		case 54449: // mauifrog's custom version
-		case 54450: // mauifrog's custom version
-		case 54454: // mauifrog's custom version
-			ninVersion = 4.1f;
-			break;
-
-		case 480:
-		case 481:
-		case 482:
-		case 486:
-			ninVersion = 4.2f;
-			break;
-
-		case 512:
-		case 513:
-		case 514:
-		case 518:
-		case 544:
-		case 545:
-		case 546:
-			ninVersion = 4.3f;
-			break;
-	}
-
-	return ninVersion;
-}
-
-char GetSysMenuRegion(u32 sysVersion) {
-	char SysMenuRegion;
-	switch(sysVersion)
-	{
-		case 1:  //Pre-launch
-		case 97: //2.0U
-		case 193: //2.2U
-		case 225: //3.0U
-		case 257: //3.1U
-		case 289: //3.2U
-		case 353: //3.3U
-		case 385: //3.4U
-		case 417: //4.0U
-		case 449: //4.1U
-		case 54449: // mauifrog 4.1U
-		case 481: //4.2U
-		case 513: //4.3U
-		case 545:
-			SysMenuRegion = 'U';
-			break;
-		case 130: //2.0E
-		case 162: //2.1E
-		case 194: //2.2E
-		case 226: //3.0E
-		case 258: //3.1E
-		case 290: //3.2E
-		case 354: //3.3E
-		case 386: //3.4E
-		case 418: //4.0E
-		case 450: //4.1E
-		case 54450: // mauifrog 4.1E
-		case 482: //4.2E
-		case 514: //4.3E
-		case 546:
-			SysMenuRegion = 'E';
-			break;
-		case 128: //2.0J
-		case 192: //2.2J
-		case 224: //3.0J
-		case 256: //3.1J
-		case 288: //3.2J
-		case 352: //3.3J
-		case 384: //3.4J
-		case 416: //4.0J
-		case 448: //4.1J
-		case 54448: // mauifrog 4.1J
-		case 480: //4.2J
-		case 512: //4.3J
-		case 544:
-			SysMenuRegion = 'J';
-			break;
-		case 326: //3.3K
-		case 390: //3.5K
-		case 454: //4.1K
-		case 54454: // mauifrog 4.1K
-		case 486: //4.2K
-		case 518: //4.3K
-			SysMenuRegion = 'K';
-			break;
-		default:
-			SysMenuRegion = getSystemMenuRegionFromContent();
-			break;
-	}
-	return SysMenuRegion;
 }
 
 void zero_sig(signed_blob *sig)
@@ -425,8 +238,8 @@ bool CheckFakeSignature(void)
 {
 	s32 ret = ES_AddTicket((signed_blob *)ticket_dat, ticket_dat_size, (signed_blob *)certs, sizeof(certs), 0, 0);
 
-	if (ret > -1) RemoveBogusTicket();
-	return (ret > -1 || ret == -1028);
+	if (ret >= 0) RemoveBogusTicket();
+	return (ret >= 0 || ret == -1028);
 }
 
 
@@ -616,6 +429,10 @@ s32 get_miosinfo(char *str)
 	// Timestamp of DML 1.2
 	strptime("Apr 24 2012 19:44:08", "%b %d %Y %H:%M:%S", &time);
 	const time_t dml_1_2_time = mktime(&time);
+	
+	// I can't find one for 1.4 or 1.3, so I'm just doing 1 second over 1.2
+	strptime("Apr 24 2012 19:44:09", "%b %d %Y %H:%M:%S", &time);
+	const time_t dml_1_4_time = mktime(&time);
 
 	// Timestamp of DML 1.4b
 	strptime("May  7 2012 21:12:47", "%b %d %Y %H:%M:%S", &time);
@@ -688,6 +505,38 @@ s32 get_miosinfo(char *str)
 	// Timestamp of DM 2.6.1
 	strptime("Dec  1 2012 16:42:34", "%b %d %Y %H:%M:%S", &time);
 	const time_t dm_2_6_1_time = mktime(&time);
+	
+	// Timestamp of DM 2.7
+	strptime("Feb 20 2013 14:54:33", "%b %d %Y %H:%M:%S", &time);
+	const time_t dm_2_7_time = mktime(&time);
+	
+	// Timestamp of DML 2.7
+	strptime("Feb 20 2013 14:54:36", "%b %d %Y %H:%M:%S", &time);
+	const time_t dml_2_7_time = mktime(&time);
+	
+	// Timestamp of DM 2.8
+	strptime("Feb 24 2013 14:17:03", "%b %d %Y %H:%M:%S", &time);
+	const time_t dm_2_8_time = mktime(&time);
+	
+	// Timestamp of DML 2.8
+	strptime("Feb 24 2013 13:30:29", "%b %d %Y %H:%M:%S", &time);
+	const time_t dml_2_8_time = mktime(&time);
+	
+	// Timestamp of DM 2.9
+	strptime("Apr  5 2013 18:29:35", "%b %d %Y %H:%M:%S", &time);
+	const time_t dm_2_9_time = mktime(&time);
+	
+	// Timestamp of DML 2.9
+	strptime("Apr  5 2013 18:20:33", "%b %d %Y %H:%M:%S", &time);
+	const time_t dml_2_9_time = mktime(&time);
+	
+	// Timestamp of DM 2.10
+	strptime("May 24 2013 21:22:22", "%b %d %Y %H:%M:%S", &time);
+	const time_t dm_2_10_time = mktime(&time);
+	
+	// Timestamp of DML 2.10
+	strptime("May 24 2013 18:51:58", "%b %d %Y %H:%M:%S", &time);
+	const time_t dml_2_10_time = mktime(&time);
 
 
 	u32 size = 0;
@@ -701,9 +550,9 @@ s32 get_miosinfo(char *str)
 	{
 		for(i = 0; i < size; ++i)
 		{
-			if((*(vu32*)(appfile+i)) == 0x44494F53 && (*(vu32*)(appfile+i+5)) == 0x4D494F53) //DIOS MIOS
+			if(DM_INSTALLED) //DIOS MIOS
 			{
-				if(*(vu32*)(appfile+i+10) == 0x4C697465) //Lite
+				if(DML_OR_DM) //Lite
 				{
 					memcpy(&buffer, appfile+i+31, sizeof(buffer));
 
@@ -712,19 +561,23 @@ s32 get_miosinfo(char *str)
 
 					strcat(str, " (DIOS MIOS Lite");
 
-					if(difftime(unixTime, dml_2_6_time) >= 0)			strcat(str, " 2.6+");
-					else if(difftime(unixTime, dml_2_5_time) >= 0)		strcat(str, " 2.5+");
-					else if(difftime(unixTime, dml_2_4_time) >= 0)		strcat(str, " 2.4+");
-					else if(difftime(unixTime, dml_2_3_time) >= 0)		strcat(str, " 2.3+");
-					else if(difftime(unixTime, dml_2_3m_time) >= 0)		strcat(str, " 2.3+");
-					else if(difftime(unixTime, dml_2_2_1_time) >= 0)	strcat(str, " 2.2.1+");
-					else if(difftime(unixTime, dml_2_2_time) >= 0)		strcat(str, " 2.2+");
-					else if(difftime(unixTime, dml_1_5_time) >= 0)		strcat(str, " 1.5+");
-					else if(difftime(unixTime, dml_1_4b_time) >= 0)		strcat(str, " 1.4b+");
-					else if(difftime(unixTime, dml_1_2_time) > 0)		strcat(str, " 1.4+");
-					else if(difftime(unixTime, dml_1_2_time) == 0)		strcat(str, " 1.2");
-					else if (difftime(unixTime, dml_r52_time) >= 0)		strcat(str, " r52");
-					else strcat(str, " r51-");
+					if(CMP_TIME(dml_2_10_time))			strcat(str, " 2.10+");
+					else if(CMP_TIME(dml_2_9_time))		strcat(str, " 2.9+");
+					else if(CMP_TIME(dml_2_8_time))		strcat(str, " 2.8+");
+					else if(CMP_TIME(dml_2_7_time))		strcat(str, " 2.7+");
+					else if(CMP_TIME(dml_2_6_time))		strcat(str, " 2.6+");
+					else if(CMP_TIME(dml_2_5_time))		strcat(str, " 2.5+");
+					else if(CMP_TIME(dml_2_4_time))		strcat(str, " 2.4+");
+					else if(CMP_TIME(dml_2_3_time))		strcat(str, " 2.3+");
+					else if(CMP_TIME(dml_2_3m_time))	strcat(str, " 2.3+");
+					else if(CMP_TIME(dml_2_2_1_time))	strcat(str, " 2.2.1+");
+					else if(CMP_TIME(dml_2_2_time))		strcat(str, " 2.2+");
+					else if(CMP_TIME(dml_1_5_time))		strcat(str, " 1.5+");
+					else if(CMP_TIME(dml_1_4b_time))	strcat(str, " 1.4b+");
+					else if(CMP_TIME(dml_1_4_time))		strcat(str, " 1.4+");
+					else if(CMP_TIME(dml_1_2_time))		strcat(str, " 1.2+");
+					else if (CMP_TIME(dml_r52_time))	strcat(str, " r52+");
+					else 								strcat(str, " r51-");
 
 					strcat(str, ")");
 					return 1;
@@ -735,16 +588,19 @@ s32 get_miosinfo(char *str)
 					time_t unixTime = mktime(&time);
 
 					strcat(str, " (DIOS MIOS");
-
-					if(difftime(unixTime, dm_2_6_1_time) >= 0)        	strcat(str, " 2.6.1+");
-					else if(difftime(unixTime, dm_2_6_0_time) >= 0)    strcat(str, " 2.6+");
-					else if(difftime(unixTime, dm_2_5_time) >= 0)      strcat(str, " 2.5+");
-					else if(difftime(unixTime, dm_2_4_time) >= 0)      strcat(str, " 2.4+");
-					else if(difftime(unixTime, dm_2_3_time) >= 0)      strcat(str, " 2.3+");
-					else if(difftime(unixTime, dm_2_2_2_time) >= 0)    strcat(str, " 2.2.2+");
-					else if(difftime(unixTime, dm_2_2_time) >= 0)      strcat(str, " 2.2+");
-					else if(difftime(unixTime, dm_2_1_time) >= 0)      strcat(str, " 2.1+");
-					else if(difftime(unixTime, dm_2_0_time) >= 0)      strcat(str, " 2.0+");
+					if(CMP_TIME(dm_2_10_time))			strcat(str, " 2.10+");
+					else if(CMP_TIME(dm_2_9_time))		strcat(str, " 2.9+");
+					else if(CMP_TIME(dm_2_8_time))		strcat(str, " 2.8+");
+					else if(CMP_TIME(dm_2_7_time))		strcat(str, " 2.7+");
+					else if(CMP_TIME(dm_2_6_1_time))	strcat(str, " 2.6.1+");
+					else if(CMP_TIME(dm_2_6_0_time))	strcat(str, " 2.6+");
+					else if(CMP_TIME(dm_2_5_time))		strcat(str, " 2.5+");
+					else if(CMP_TIME(dm_2_4_time))		strcat(str, " 2.4+");
+					else if(CMP_TIME(dm_2_3_time))		strcat(str, " 2.3+");
+					else if(CMP_TIME(dm_2_2_2_time))	strcat(str, " 2.2.2+");
+					else if(CMP_TIME(dm_2_2_time))		strcat(str, " 2.2+");
+					else if(CMP_TIME(dm_2_1_time))		strcat(str, " 2.1+");
+					else if(CMP_TIME(dm_2_0_time))		strcat(str, " 2.0+");
 
 					strcat(str, ")");
 					return 2;
