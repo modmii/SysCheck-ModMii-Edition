@@ -31,63 +31,8 @@
 #include "thread.h"
 
 
-// Constants
-#define BASE_PATH "/tmp"
-
-
-//The amount of memory in bytes reserved initially to store the HTTP response in
-//Be careful in increasing this number, reading from a socket on the Wii
-//will fail if you request more than 20k or so
-#define HTTP_BUFFER_SIZE 1024 * 5
-
-//The amount of memory the buffer should expanded with if the buffer is full
-#define HTTP_BUFFER_GROWTH 1024 * 5
-
-
-#define NET_BUFFER_SIZE 3600
-
-// Variables
-bool NandInitialized = false;
-bool debug = false;
-
-char incommingIP[50];
 u8 sysMenuInfoContent = 0;
 const char *Regions[] = {"NTSC-J", "NTSC-U", "PAL", "", "KOR", "NTSC-J"}; //Last is actually China
-
-
-void logfile(const char *format, ...)
-{
-  if (!debug) return;
-  MountSD();
-  char buffer[4096];
-  //char temp[256];
-  va_list args;
-  va_start (args, format);
-  vsprintf (buffer,format, args);
-  FILE *f;
-  //sprintf(temp, "SD:/sysCheckDebug.log");
-  f = fopen("SD:/sysCheckDebug.log", "a");
-  fputs(buffer, f);
-  fclose(f);
-  va_end (args);
-  UnmountSD();
-}
-
-/**
-* A simple structure to keep track of the size of a malloc()ated block of memory
-*/
-struct block
-{
-	u32 size;
-	unsigned char *data;
-};
-
-const struct block emptyblock = { 0, NULL };
-
-void *allocate_memory(u32 size)
-{
-	return memalign(32, (size+31)&(~31) );
-}
 
 s32 brute_tmd(tmd *p_tmd)
 {
@@ -103,124 +48,6 @@ s32 brute_tmd(tmd *p_tmd)
 		}
 	}
 	return -1;
-}
-
-static void disable_memory_protection() {
-    write32(MEM_PROT, read32(MEM_PROT) & 0x0000FFFF);
-}
-
-static u32 apply_patch(char *name, const u8 *old, u32 old_size, const u8 *patch, u32 patch_size, u32 patch_offset) {
-	u8 *ptr_start = (u8*)*((u32*)0x80003134), *ptr_end = (u8*)0x94000000;
-    u32 found = 0;
-    u8 *location = NULL;
-    while (ptr_start < (ptr_end - patch_size)) {
-        if (!memcmp(ptr_start, old, old_size)) {
-            found++;
-            location = ptr_start + patch_offset;
-            u8 *start = location;
-            u32 i;
-            for (i = 0; i < patch_size; i++) {
-                *location++ = patch[i];
-            }
-            DCFlushRange((u8 *)(((u32)start) >> 5 << 5), (patch_size >> 5 << 5) + 64);
-			ICInvalidateRange((u8 *)(((u32)start) >> 5 << 5), (patch_size >> 5 << 5) + 64);
-        }
-        ptr_start++;
-    }
-    return found;
-}
-
-static const u8 di_readlimit_old[] = {
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x01, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x46, 0x0A, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x00, 0x00,
-    0x7E, 0xD4, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x08
-};
-static const u8 di_readlimit_patch[] = { 0x7e, 0xd4 };
-
-const u8 isfs_permissions_old[] = { 0x42, 0x8B, 0xD0, 0x01, 0x25, 0x66 };
-const u8 isfs_permissions_patch[] = { 0x42, 0x8B, 0xE0, 0x01, 0x25, 0x66 };
-static const u8 setuid_old[] = { 0xD1, 0x2A, 0x1C, 0x39 };
-static const u8 setuid_patch[] = { 0x46, 0xC0 };
-const u8 es_identify_old[] = { 0x28, 0x03, 0xD1, 0x23 };
-const u8 es_identify_patch[] = { 0x00, 0x00 };
-const u8 hash_old[] = { 0x20, 0x07, 0x23, 0xA2 };
-const u8 hash_patch[] = { 0x00 };
-const u8 new_hash_old[] = { 0x20, 0x07, 0x4B, 0x0B };
-const u8 addticket_vers_check[] = { 0xD2, 0x01, 0x4E, 0x56 };
-const u8 addticket_patch[] = { 0xE0 };
-const u8 es_set_ahbprot_pattern[] = { 0x68, 0x5B, 0x22, 0xEC, 0x00, 0x52, 0x18, 0x9B, 0x68, 0x1B, 0x46, 0x98, 0x07, 0xDB };
-const u8 es_set_ahbprot_patch[]   = { 0x01 };
-
-
-u32 IOSPATCH_Apply(void) {
-    u32 count = 0;
-	s32 ret = 0;
-
-	if (HAVE_AHBPROT) {
-		disable_memory_protection();
-		ret = apply_patch("es_set_ahbprot", es_set_ahbprot_pattern, sizeof(es_set_ahbprot_pattern), es_set_ahbprot_patch, sizeof(es_set_ahbprot_patch), 25);
-	}
-	if (ret) {
-		IOS_ReloadIOS(IOS_GetVersion());
-	} else {
-		return 0;
-	}
-
-    if (HAVE_AHBPROT) {
-        disable_memory_protection();
-        //count += apply_patch("di_readlimit", di_readlimit_old, sizeof(di_readlimit_old), di_readlimit_patch, sizeof(di_readlimit_patch), 12);
-        count += apply_patch("isfs_permissions", isfs_permissions_old, sizeof(isfs_permissions_old), isfs_permissions_patch, sizeof(isfs_permissions_patch), 0);
-        //count += apply_patch("es_setuid", setuid_old, sizeof(setuid_old), setuid_patch, sizeof(setuid_patch), 0);
-        //count += apply_patch("es_identify", es_identify_old, sizeof(es_identify_old), es_identify_patch, sizeof(es_identify_patch), 2);
-        //count += apply_patch("hash_check", hash_old, sizeof(hash_old), hash_patch, sizeof(hash_patch), 1);
-        //count += apply_patch("new_hash_check", new_hash_old, sizeof(new_hash_old), hash_patch, sizeof(hash_patch), 1);
-		//count += apply_patch("add ticket patch", addticket_vers_check, sizeof(addticket_vers_check), addticket_patch, sizeof(addticket_patch), 0);
-		count += apply_patch("es_set_ahbprot", es_set_ahbprot_pattern, sizeof(es_set_ahbprot_pattern), es_set_ahbprot_patch, sizeof(es_set_ahbprot_patch), 25);
-	}
-    return count;
-}
-
-u32 es_set_ahbprot(void) {
-	disable_memory_protection();
-	return apply_patch("es_set_ahbprot", es_set_ahbprot_pattern, sizeof(es_set_ahbprot_pattern), es_set_ahbprot_patch, sizeof(es_set_ahbprot_patch), 25);
-}
-
-bool checkISFSinRAM(void) {
-	disable_memory_protection();
-	bool ret = true;
-	u8 *ptr_start = (u8*)*((u32*)0x80003134), *ptr_end = (u8*)0x94000000;
-    while (ptr_start < (ptr_end - sizeof(isfs_permissions_old))) {
-        if (!memcmp(ptr_start, isfs_permissions_old, sizeof(isfs_permissions_old))) {
-            ret = false;
-        }
-        ptr_start++;
-    }
-	return ret;
-}
-
-int NandStartup(void)
-{
-	if (NandInitialized)
-		return 1;
-
-    int ret = ISFS_Initialize();
-
-	NandInitialized = (ret == ISFS_OK);
-
-	sleep(1);
-
-	return ret;
-}
-
-void NandShutdown(void)
-{
-	if (!NandInitialized)
-		return;
-
-	ISFS_Deinitialize();
-
-	NandInitialized = false;
 }
 
 // Certificates
@@ -240,34 +67,34 @@ bool GetCertificates(void)
 
 s32 GetTMD(u64 TicketID, signed_blob **Output, u32 *Length)
 {
-    signed_blob* TMD = NULL;
+	signed_blob* TMD = NULL;
 
-    u32 TMD_Length;
-    s32 ret;
+	u32 TMD_Length;
+	s32 ret;
 
-    /* Retrieve TMD length */
-    ret = ES_GetStoredTMDSize(TicketID, &TMD_Length);
-    if (ret < 0)
-        return ret;
+	/* Retrieve TMD length */
+	ret = ES_GetStoredTMDSize(TicketID, &TMD_Length);
+	if (ret < 0)
+		return ret;
 
-    /* Allocate memory */
-    TMD = (signed_blob*)memalign(32, (TMD_Length+31)&(~31));
-    if (!TMD)
-        return IPC_ENOMEM;
+	/* Allocate memory */
+	TMD = (signed_blob*)memalign(32, (TMD_Length+31)&(~31));
+	if (!TMD)
+		return IPC_ENOMEM;
 
-    /* Retrieve TMD */
-    ret = ES_GetStoredTMD(TicketID, TMD, TMD_Length);
-    if (ret < 0)
-    {
-        free(TMD);
-        return ret;
-    }
+	/* Retrieve TMD */
+	ret = ES_GetStoredTMD(TicketID, TMD, TMD_Length);
+	if (ret < 0)
+	{
+		free(TMD);
+		return ret;
+	}
 
-    /* Set values */
-    *Output = TMD;
-    *Length = TMD_Length;
+	/* Set values */
+	*Output = TMD;
+	*Length = TMD_Length;
 
-    return 0;
+	return 0;
 }
 
 // Get the system menu version from TMD
@@ -457,7 +284,7 @@ float GetSysMenuNintendoVersion(u32 sysVersion)
 		case 546:
 			ninVersion = 4.3f;
 			break;
-    }
+	}
 
 	return ninVersion;
 }
@@ -587,62 +414,26 @@ int RemoveBogusTicket(void)
 }
 
 // Remove bogus ticket
-int RemoveBogusTMD(void)
+inline s32 RemoveBogusTMD(void)
 {
-	u64 titleId = 0x100000000LL;
-	s32 ret;
-
-	// Delete Title
-	ret = ES_DeleteTitle(titleId);
-
-	return ret;
+	return ES_DeleteTitle(0x100000000LL);
 }
 
 
 // Check fake signatures (aka Trucha Bug)
 bool CheckFakeSignature(void)
 {
-	int ret = ES_AddTicket((signed_blob *)ticket_dat, ticket_dat_size, (signed_blob *)certs, sizeof(certs), 0, 0);
+	s32 ret = ES_AddTicket((signed_blob *)ticket_dat, ticket_dat_size, (signed_blob *)certs, sizeof(certs), 0, 0);
 
 	if (ret > -1) RemoveBogusTicket();
 	return (ret > -1 || ret == -1028);
 }
 
-// Check fake signatures (aka Trucha Bug)
-bool CheckVersionPatch(void)
-{
-	//int ret;
-
-	//tmd_content *content = &tmd_data->contents[0];
-
-	//ret = ES_AddTicket((signed_blob *)v2_tik, v2_tik_size, (signed_blob *)certs, sizeof(certs), 0, 0);
-
-	//gprintf("ES_AddTicket returned: %d\n", ret);
-
-	//ret = ES_AddTitleFinish();
-
-	//ret = ES_AddTicket((signed_blob *)v1_tik, v1_tik_size, (signed_blob *)v1_cert, v1_cert_size, 0, 0);
-
-	//gprintf("ES_AddTicket returned: %d\n", ret);
-
-	//RemoveBogusTicket();
-
-	/*gprintf();
-
-	int ret2 = ES_AddTitleStart((signed_blob *)v1_tmd, v1_tmd_size, (signed_blob *)v1_cert, v1_cert_size, 0, 0);
-	if (ret2 >= 0) ES_AddTitleCancel();
-
-	if (ret1 >= 0) RemoveBogusTMD();
-	if (ret2 > -1 || ret2 == -1028) return true;*/
-
-	return false;
-}
 
 // Check if you can still call ES_DiVerify (aka ES_Identify) to make IOS think that you actually are a different title
 bool CheckESIdentify(void)
 {
 	int ret = ES_Identify((signed_blob *)certs, sizeof(certs), (signed_blob *)tmd_dat, tmd_dat_size, (signed_blob *)ticket_dat, ticket_dat_size, NULL);
-
 	return ((ret >= 0) || (ret == -2011));
 }
 
@@ -650,7 +441,7 @@ bool CheckESIdentify(void)
 // Check flash access
 bool CheckFlashAccess(void)
 {
-	int ret = IOS_Open("/dev/flash", 1);
+	s32 ret = IOS_Open("/dev/flash", 1);
 	if (ret >= 0) IOS_Close(ret);
 	return (ret >= 0);
 }
@@ -685,28 +476,16 @@ bool CheckBoot2Access(void)
 bool CheckUSB2(u32 titleID)
 {
 	// Hermes' IOS supports USB 2.0 module
-    switch (titleID)
+	switch (titleID)
 	{
 		case 58:
-			return true;
-			break;
-
 		case 202:
-			return true;
-			break;
-
 		case 222:
-			return true;
-			break;
-
 		case 223:
-			return true;
-			break;
-
 		case 224:
 			return true;
 			break;
-    }
+	}
 
 	// Open USB 2.0 module
 	gprintf("IOS_Open(\"/dev/usb2\", 1) \n");
@@ -724,14 +503,12 @@ bool CheckUSB2(u32 titleID)
 // Check if this is an IOS stub (according to WiiBrew.org)
 bool IsKnownStub(u32 noIOS, s32 noRevision)
 {
-
-	if (noIOS == 254 && noRevision ==     2) return true;
-	if (noIOS == 254 && noRevision ==     3) return true;
-	if (noIOS == 254 && noRevision ==   260) return true;
-	if (noIOS == 254 && noRevision == 65280) return true;
-
-
-
+	if (noIOS == 254) {
+		if (noRevision == 65280 ||
+			noRevision ==   260 ||
+			noRevision ==   3   ||
+			noRevision ==   2 ) return true;
+	}
 	// BootMii As IOS is installed on IOS254 rev 31338
 	if (noIOS == 254 && (noRevision == 31338 || noRevision == 65281)) return true;
 	if (noIOS == 253 && noRevision == 65535) return true;
@@ -826,118 +603,7 @@ end:
 
 }
 
-/* Converts an integer value to its hex character*/
-char to_hex(char code) {
-  static char hex[] = "0123456789abcdef";
-  return hex[code & 15];
-}
 
-/* Returns a url-encoded version of str */
-/* IMPORTANT: be sure to free() the returned string after use */
-char *url_encode(char *str) {
-  char *pstr = str, *buf = malloc(strlen(str) * 3 + 1), *pbuf = buf;
-  while (*pstr) {
-    if (isalnum((unsigned char) *pstr) || *pstr == '-' || *pstr == '_' || *pstr == '.' || *pstr == '~')
-      *pbuf++ = *pstr;
-    else if (*pstr == ' ')
-      *pbuf++ = '+';
-    else
-      *pbuf++ = '%', *pbuf++ = to_hex(*pstr >> 4), *pbuf++ = to_hex(*pstr & 15);
-    pstr++;
-  }
-  *pbuf = '\0';
-  return buf;
-}
-
-void transmitSyscheck(char ReportBuffer[200][100], int *lines) {
-	ResumeThread();
-	printLoadingBar(TXT_Upload, 0);
-	gprintf("TempReport bauen\n");
-
-	int i = 0;
-	int strl = 0;
-	for (i = 0; i <= *lines; i++) {
-		if (i == 9) continue;
-		strl += strlen(ReportBuffer[i]);
-		strl += strlen("\n");
-	}
-	printLoadingBar(TXT_Upload, 5);
-	char tempReport[strl];
-	memset(tempReport, 0, strl);
-	for (i = 0; i <= *lines; i++) {
-		if (i == 9) continue;
-		strcat(tempReport, ReportBuffer[i]);
-		strcat(tempReport, "\n");
-	}
-	printLoadingBar(TXT_Upload, 30);
-
-	net_init();
-	printLoadingBar(TXT_Upload, 60);
-	gprintf("OK\n");
-	char *encodedReport = url_encode(tempReport);
-	char bufTransmit[18+strlen(encodedReport)];
-	char password[12] = {0};
-	gprintf("OK2\n");
-	sprintf(bufTransmit, "password=%s&syscheck=%s", password, encodedReport);
-	gprintf("bufTransmit: %s ENDE len:%u\n", bufTransmit, strlen(bufTransmit));
-	gprintf("OK3\n");
-	char host[48] = {"\0"};
-	sprintf(host, "http://syscheck.softwii.de/syscheck_receiver.php");
-	http_post(host, 1024, bufTransmit);
-	printLoadingBar(TXT_Upload, 80);
-	gprintf("OK4\n");
-
-	gprintf("\n");
-
-	u32 http_status;
-	u8* outbuf;
-	u32 lenght;
-
-	http_get_result(&http_status, &outbuf, &lenght);
-	printLoadingBar(TXT_Upload, 100);
-	PauseThread();
-
-	(*lines)++;
-	memset(ReportBuffer[*lines], 0, 100);
-	(*lines)++;
-	memcpy(ReportBuffer[*lines], outbuf, lenght);
-
-
-	free(outbuf);
-	gprintf("len: %d, String: %s\n", lenght, ReportBuffer[*lines]);
-
-	u16 wpressed;
-
-	if (!strncmp(ReportBuffer[*lines], "ERROR: ", 7)) {
-		char temp[100];
-		strncpy(temp, ReportBuffer[*lines]+7, 100);
-		printUploadError(temp);
-		memset(ReportBuffer[*lines], 0, 100);
-		(*lines)--;
-		(*lines)--;
-		while (1) {
-			WPAD_ScanPads();
-			wpressed = WPAD_ButtonsHeld(0);
-
-			if (wpressed & WPAD_BUTTON_A) {
-				break;
-			}
-		}
-	} else {
-		printUploadSuccess(ReportBuffer[*lines]);
-		while (1) {
-			WPAD_ScanPads();
-			wpressed = WPAD_ButtonsHeld(0);
-
-			if (wpressed & WPAD_BUTTON_A) {
-				break;
-			}
-		}
-	}
-
-	free(encodedReport);
-	net_deinit();
-}
 
 s32 get_miosinfo(char *str)
 {
@@ -1046,18 +712,18 @@ s32 get_miosinfo(char *str)
 
 					strcat(str, " (DIOS MIOS Lite");
 
-					if(difftime(unixTime, dml_2_6_time) >= 0)          strcat(str, " 2.6+");
-					else if(difftime(unixTime, dml_2_5_time) >= 0)     strcat(str, " 2.5+");
-					else if(difftime(unixTime, dml_2_4_time) >= 0)     strcat(str, " 2.4+");
-					else if(difftime(unixTime, dml_2_3_time) >= 0)     strcat(str, " 2.3+");
-					else if(difftime(unixTime, dml_2_3m_time) >= 0)    strcat(str, " 2.3+");
-					else if(difftime(unixTime, dml_2_2_1_time) >= 0)   strcat(str, " 2.2.1+");
-					else if(difftime(unixTime, dml_2_2_time) >= 0)     strcat(str, " 2.2+");
-					else if(difftime(unixTime, dml_1_5_time) >= 0)     strcat(str, " 1.5+");
-					else if(difftime(unixTime, dml_1_4b_time) >= 0)    strcat(str, " 1.4b+");
+					if(difftime(unixTime, dml_2_6_time) >= 0)			strcat(str, " 2.6+");
+					else if(difftime(unixTime, dml_2_5_time) >= 0)		strcat(str, " 2.5+");
+					else if(difftime(unixTime, dml_2_4_time) >= 0)		strcat(str, " 2.4+");
+					else if(difftime(unixTime, dml_2_3_time) >= 0)		strcat(str, " 2.3+");
+					else if(difftime(unixTime, dml_2_3m_time) >= 0)		strcat(str, " 2.3+");
+					else if(difftime(unixTime, dml_2_2_1_time) >= 0)	strcat(str, " 2.2.1+");
+					else if(difftime(unixTime, dml_2_2_time) >= 0)		strcat(str, " 2.2+");
+					else if(difftime(unixTime, dml_1_5_time) >= 0)		strcat(str, " 1.5+");
+					else if(difftime(unixTime, dml_1_4b_time) >= 0)		strcat(str, " 1.4b+");
 					else if(difftime(unixTime, dml_1_2_time) > 0)		strcat(str, " 1.4+");
 					else if(difftime(unixTime, dml_1_2_time) == 0)		strcat(str, " 1.2");
-					else if (difftime(unixTime, dml_r52_time) >= 0) 	strcat(str, " r52");
+					else if (difftime(unixTime, dml_r52_time) >= 0)		strcat(str, " r52");
 					else strcat(str, " r51-");
 
 					strcat(str, ")");

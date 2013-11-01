@@ -5,7 +5,6 @@
 #include <malloc.h>
 #include <fat.h>
 #include <unistd.h>
-#include <wiilight.h>
 #include <ogc/conf.h>
 #include <ogc/es.h>
 #include <ogc/ios.h>
@@ -34,8 +33,7 @@
 #define REPORT "sd:/sysCheck.csv"
 #define HASHLOG "sd:/IOSsyscheck.log"
 #define VERSION_1_1_0 65536
-#define FLASH_SIZE (512 * 1024 * 1024)
-#define SECTOR_SIZE (0x4000)
+
 
 extern bool geckoinit;
 extern void ReloadIOS(int version);
@@ -43,14 +41,6 @@ extern void ReloadIOS(int version);
 char miosInfo[128] = {0};
 extern void __exception_setreload(int t);
 
-// Stripped down version of IOS_ReloadIOS, run inline
-inline void ReloadIOS2(int version) {
-	//__IOS_ShutdownSubsystems();
-	__ES_Init();
-	__IOS_LaunchNewIOS(version);
-	__IOS_InitializeSubsystems();
-	//WII_LaunchTitle(TITLE_ID(0x00000001,version));
-}
 
 int get_title_ios(u64 title) {
 	s32 ret, fd;
@@ -213,9 +203,6 @@ void sort(u64 *titles, u32 cnt) {
 	for (i = 0; i < cnt -1; ++i) {
 		for (j = 0; j < cnt - i - 1; ++j) {
 			if (titles[j] > titles[j + 1]) {
-				//DrawBuf();
-				//DrawCog();
-				//GRRLIB_Render();
 				u64 tmp = titles[j];
 				titles[j] = titles[j + 1];
 				titles[j + 1] = tmp;

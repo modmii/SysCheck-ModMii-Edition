@@ -118,7 +118,6 @@ int checkSysLoader(void);
 void transmitSyscheck(char ReportBuffer[200][100], int *lines);
 u32 IOSPATCH_Apply(void);
 s32 brute_tmd(tmd *p_tmd);
-bool CheckVersionPatch(void);
 bool checkISFSinRAM(void);
 u32 es_set_ahbprot(void);
 void *allocate_memory(u32 size);
