@@ -56,8 +56,7 @@ static const u8 WIIFONT_HASH[]		= {0x32, 0xb3, 0x39, 0xcb, 0xbb, 0x50, 0x7d, 0x5
 static const u8 WIIFONT_HASH_KOR[]	= {0xb7, 0x15, 0x6d, 0xf0, 0xf4, 0xae, 0x07, 0x8f, 0xd1, 0x53, 0x58, 0x3e, 0x93, 0x6e, 0x07, 0xc0, 0x98, 0x77, 0x49, 0x0e};
 u8 *systemFont;
 s32 systemFontSize = 0;
-u8 Cog_Num = 0;
-u64 Last_Cog_Turn = 0;
+
 
 bool loadSystemFont(bool korean)
 {
@@ -193,13 +192,6 @@ void deinitGUI(void) {
 	return;
 }
 
-void DrawDuringSort(void) {
-	DrawBuf();
-	DrawCog();
-	GRRLIB_Render();
-	return;
-}
-
 int printError(const char* msg) {
 	int i;
 	PauseThread();
@@ -321,7 +313,7 @@ int printEndSuccess(const char* msg) {
 	return 0;
 }
 
-inline void DrawCog(void) {
+/*inline void DrawCog(void) {
 	if (CheckTime(Last_Cog_Turn, 25)) {
 		Cog_Num++;
 		if (Cog_Num > 4) Cog_Num = 0;
@@ -329,7 +321,7 @@ inline void DrawCog(void) {
 	}
 	GRRLIB_DrawImg(220, 150, tex_Cogs_png[Cog_Num], 0, 1, 1, HEX_WHITE);
 	return;
-}
+}*/
 
 int printEndError(const char* msg) {
 	int i;

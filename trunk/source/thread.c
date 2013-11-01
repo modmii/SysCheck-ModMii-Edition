@@ -12,6 +12,8 @@
 lwp_t Cog_Thread;
 u8 stack[STACKSIZE] ATTRIBUTE_ALIGN (32);
 vu8 done = 0;
+u8 Cog_Num = 0;
+u64 Last_Cog_Turn = 0;
 
 void * DrawCogThread(void *arg) {
 	while(!done) { // Keep the thread running until done != 0
@@ -34,12 +36,12 @@ inline void InitThread(void) {
 }
 
 inline s32 PauseThread(void) {
-	if(LWP_ThreadIsSuspended(Cog_Thread) == LWP_ALREADY_SUSPENDED) return LWP_ALREADY_SUSPENDED;
+	//if(LWP_ThreadIsSuspended(Cog_Thread) == false) return LWP_ALREADY_SUSPENDED;
 	return LWP_SuspendThread(Cog_Thread);
 }
 
 inline s32 ResumeThread(void) {
-	if(LWP_ThreadIsSuspended(Cog_Thread) == LWP_NOT_SUSPENDED) return LWP_NOT_SUSPENDED;
+	//if(LWP_ThreadIsSuspended(Cog_Thread) == true) return LWP_NOT_SUSPENDED;
 	return LWP_ResumeThread(Cog_Thread);
 }
 
