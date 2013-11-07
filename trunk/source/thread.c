@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include <ogc/lwp_watchdog.h>
 #include <ogc/lwp.h>
+#include <ogc/mutex.h>
 
 #include "thread.h"
 #include "gui.h"
@@ -32,7 +33,7 @@ void * DrawCogThread(void *arg) {
 inline void InitThread(void) {
 	memset (&stack, 0, STACKSIZE);
 	LWP_CreateThread (&Cog_Thread, DrawCogThread, NULL, stack, STACKSIZE, PRIORITY);
-	usleep(200);
+	//usleep(200);
 }
 
 inline s32 PauseThread(void) {
