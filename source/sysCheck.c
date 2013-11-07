@@ -13,6 +13,7 @@
 #include <stdarg.h>
 #include <di/di.h>
 #include <CheckRegion.h>
+#include <runtimeiospatch/runtimeiospatch.h>
 
 #include "tmd_dat.h"
 #include "sys.h"
@@ -125,11 +126,11 @@ bool getInfoFromContent(IOS *ios) {
 
 	iosinfo = (iosinfo_t *)(buffer);
 	if (ret >= 0 && ios->titleID == 252 && ios->num_contents == 1) {
-		const char *checkStr = "bootcb2";
+		//const char *checkStr = "bootcb2";
 		int i;
-		for (i = 0; i < filesize - strlen(checkStr); i++)
+		for (i = 0; i < filesize - sizeof("bootcb2")-1; i++)
 		{
-			if (!strncmp((char*)buffer + i, checkStr, strlen(checkStr)))
+			if (!strncmp((char*)buffer + i, "bootcb2", sizeof("bootcb2")-1))
 			{
 				sprintf(ios->info, " cBoot252");
 				gprintf("is cBoot252\n");
@@ -231,7 +232,8 @@ int main(int argc, char **argv)
 	
 
 	if (HAVE_AHBPROT && !forceNoAHBPROT)
-		IOSPATCH_Apply();
+		//IOSPATCH_Apply();
+		IosPatch_RUNTIME(true, false, false, false);
 	bool nandAccess = CheckNANDAccess();
 
 	// Get and display the current date and time

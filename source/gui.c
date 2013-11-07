@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <wiiuse/wpad.h>
 #include <ogc/lwp_watchdog.h>
+#include <ogc/mutex.h>
 
 #include "tahoma_ttf.h"
 
@@ -45,6 +46,8 @@ GRRLIB_texImg *tex_loadingbarblue_png;
 GRRLIB_texImg *tex_window_png;
 GRRLIB_texImg *tex_Cogs_png[5];
 GRRLIB_texImg *tex_ScreenBuf;
+
+//mutex_t lock_thread;
 
 typedef struct map_entry
 {
@@ -162,6 +165,7 @@ int initGUI(void) {
 	tex_Cogs_png[4] = GRRLIB_LoadTexturePNG(Cog5);
 	tex_ScreenBuf = GRRLIB_CreateEmptyTexture(rmode->fbWidth, rmode->efbHeight);
 	InitThread();
+	//LWP_MutexInit(&lock_thread, false);
 	
 	return 0;
 }
@@ -226,10 +230,12 @@ int printLoading(const char* msg) {
 	//int i;
 	//ResumeThread();
 	u64 current_ticks = gettick();
+	PauseThread();
 	//GRRLIB_DrawImg(256, 112, tex_Refreshicon_png, 0, 1, 1, HEX_WHITE);
 	GRRLIB_DrawImg(0, 0, tex_background_png, 0, 1, 1, HEX_WHITE);
 	GRRLIB_PrintfTTF((640-strlen(msg)*9)/2, 256, myFont, msg, 20, HEX_WHITE);
 	CopyBuf();
+	ResumeThread();
 	//for (i = 0; i < 3; i++) { //Workaround for GRRLIB_Render() bug
 	while(!CheckTime(current_ticks, 250)) {
 		//DrawBuf();
@@ -243,7 +249,7 @@ int printSelectIOS(const char* msg, const char* ios) {
 	int i;
 	PauseThread();
 	GRRLIB_DrawImg(0, 0, tex_background_png, 0, 1, 1, HEX_WHITE);
-	GRRLIB_DrawImg(256, 112, tex_Refreshicon_png, 0, 1, 1, HEX_WHITE);
+	//GRRLIB_DrawImg(256, 112, tex_Refreshicon_png, 0, 1, 1, HEX_WHITE);
 	
 	GRRLIB_PrintfTTF((640-strlen(msg)*9)/2, 256, myFont, msg, 20, HEX_WHITE);
 	GRRLIB_PrintfTTF((640-strlen(ios)*9)/2, 300, myFont, ios, 20, HEX_WHITE);
@@ -253,6 +259,7 @@ int printSelectIOS(const char* msg, const char* ios) {
 	GRRLIB_DrawImg(310, 388, tex_WiiButtonPlus_png, 0, 1, 1, HEX_WHITE);
 	GRRLIB_PrintfTTF(335-(strlen(BUT_Update)*7.8)/2, 425, myFont, BUT_Update, 14, HEX_WHITE);
 	CopyBuf();
+	ResumeThread();
 	for (i = 0; i < 3; i++) { //Workaround for GRRLIB_Render() bug
 		DrawBuf();
 		GRRLIB_Render();
@@ -270,12 +277,14 @@ int printLoadingBar(const char* msg, const f32 percent) {
 	notloaded = 536 - loaded;
 	
 	//int i;
+	PauseThread();
 	GRRLIB_DrawImg(0, 0, tex_background_png, 0, 1, 1, HEX_WHITE);
 	//GRRLIB_DrawImg(256, 112, tex_Refreshicon_png, 0, 1, 1, HEX_WHITE);
 	GRRLIB_PrintfTTF((640-strlen(msg)*9)/2, 256, myFont, msg, 20, HEX_WHITE);
 	GRRLIB_DrawPart(52, 340, 0, 0, loaded, 36, tex_loadingbarblue_png, 0, 1, 1, HEX_WHITE);
 	GRRLIB_DrawPart(52+loaded, 340, loaded, 0, notloaded, 36, tex_loadingbargrey_png, 0, 1, 1, HEX_WHITE);
 	CopyBuf();
+	ResumeThread();
 	//for (i = 0; i < 3; i++) { //Workaround for GRRLIB_Render() bug
 	while(!CheckTime(current_ticks, 250)) {
 		//DrawBuf();
@@ -287,7 +296,7 @@ int printLoadingBar(const char* msg, const f32 percent) {
 	
 int printEndSuccess(const char* msg) {
 	int i;
-	//PauseThread();
+	PauseThread();
 	GRRLIB_DrawImg(0, 0, tex_background_png, 0, 1, 1, HEX_WHITE);
 	GRRLIB_DrawImg(256, 112, tex_Checkicon_png, 0, 1, 1, HEX_WHITE);
 	
