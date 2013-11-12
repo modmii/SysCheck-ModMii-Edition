@@ -1,6 +1,8 @@
 #ifndef __THREAD_H__
 #define __THREAD_H__
 
+#include <ogc/lwp.h>
+
 extern lwp_t Cog_Thread;
 extern u64 Last_Cog_Turn;
 extern u8 Cog_Num;
