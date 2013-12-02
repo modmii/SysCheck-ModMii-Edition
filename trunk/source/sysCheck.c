@@ -834,283 +834,281 @@ int main(int argc, char **argv)
 	printLoading(MSG_GenerateReport);
 	//usleep(250000);
 
-		char ReportBuffer[200][100] = {{0}};
+	char ReportBuffer[200][100] = {{0}};
 
-		if (dvdSupport > 0)
-			formatDate(dvdSupport, ReportBuffer);
+	if (dvdSupport > 0)
+		formatDate(dvdSupport, ReportBuffer);
+	else
+		sprintf(ReportBuffer[DVD], TXT_NoDVD);
+
+	// Display Title
+	sprintf(ReportBuffer[APP_TITLE], TXT_AppTitle, TXT_AppVersion);
+	sprintf(ReportBuffer[APP_IOS], TXT_AppIOS, runningIOS, IOS_GetRevision());
+	bool validregion = regionSelection >= CONF_REGION_JP && regionSelection <= CONF_REGION_CN;
+
+	// Display the console region
+	if (sysNinVersion != 0.0f) {
+		sprintf(ReportBuffer[TEXT_REGION], "%s: %s", TXT_Region, validregion ? Regions[regionSelection] : "");
+		if (validregion)
+			sprintf(ReportBuffer[SYSMENU], TXT_SysMenu, sysNinVersion, SysMenuRegion, sysVersion);
 		else
-			sprintf(ReportBuffer[DVD], TXT_NoDVD);
+			strcat(ReportBuffer[SYSMENU], TXT_Unknown);
+		
+	} else if (systemmenu.hasInfo) {
+		u32 realSysVersion = systemmenu.realRevision;
+		sysNinVersion = GetSysMenuNintendoVersion(realSysVersion);
+		SysMenuRegion = GetSysMenuRegion(sysVersion);
+		sprintf(ReportBuffer[TEXT_REGION], "%s: %s", TXT_Region, validregion ? Regions[regionSelection] : "");
+		if (validregion)
+			sprintf(ReportBuffer[SYSMENU], TXT_SysMenu3, sysNinVersion, SysMenuRegion, sysVersion, realSysVersion, systemmenu.info);
+		else
+			strcat(ReportBuffer[SYSMENU], TXT_Unknown);
+	} else {
+		signed_blob *TMD = NULL;
+		tmd *t = NULL;
+		u32 TMD_size = 0;
 
-		// Display Title
-		sprintf(ReportBuffer[APP_TITLE], TXT_AppTitle, TXT_AppVersion);
-		sprintf(ReportBuffer[APP_IOS], TXT_AppIOS, runningIOS, IOS_GetRevision());
-		bool validregion = regionSelection >= CONF_REGION_JP && regionSelection <= CONF_REGION_CN;
+		ret = GetTMD((((u64)(1) << 32) | (0x0000000100000002LL)), &TMD, &TMD_size);
 
-		// Display the console region
-		if (sysNinVersion != 0.0f) {
-			sprintf(ReportBuffer[TEXT_REGION], "%s: %s", TXT_Region, validregion ? Regions[regionSelection] : "");
-			if (validregion)
-				sprintf(ReportBuffer[SYSMENU], TXT_SysMenu, sysNinVersion, SysMenuRegion, sysVersion);
-			else
-				strcat(ReportBuffer[SYSMENU], TXT_Unknown);
-			
-		} else if (systemmenu.hasInfo) {
-			u32 realSysVersion = systemmenu.realRevision;
-			sysNinVersion = GetSysMenuNintendoVersion(realSysVersion);
-			SysMenuRegion = GetSysMenuRegion(sysVersion);
-			sprintf(ReportBuffer[TEXT_REGION], "%s: %s", TXT_Region, validregion ? Regions[regionSelection] : "");
-			if (validregion)
-				sprintf(ReportBuffer[SYSMENU], TXT_SysMenu3, sysNinVersion, SysMenuRegion, sysVersion, realSysVersion, systemmenu.info);
-			else
-				strcat(ReportBuffer[SYSMENU], TXT_Unknown);
-		} else {
-			signed_blob *TMD = NULL;
-			tmd *t = NULL;
-			u32 TMD_size = 0;
+		t = (tmd*)SIGNATURE_PAYLOAD(TMD);
+		t->title_id = ((u64)(1) << 32) | 249;
+		brute_tmd(t);
 
-			ret = GetTMD((((u64)(1) << 32) | (0x0000000100000002LL)), &TMD, &TMD_size);
+		sha1 hash;
+		SHA1((u8 *)TMD, TMD_size, hash);
 
-			t = (tmd*)SIGNATURE_PAYLOAD(TMD);
-			t->title_id = ((u64)(1) << 32) | 249;
-			brute_tmd(t);
+		free(TMD);
 
-			sha1 hash;
-			SHA1((u8 *)TMD, TMD_size, hash);
+		u32 hashtest[5] = {0xc6404e23, 0x39eff390, 0x1d17c28f, 0xc3970680, 0xf44524e7};
 
-			free(TMD);
-
-			u32 hashtest[5] = {0xc6404e23, 0x39eff390, 0x1d17c28f, 0xc3970680, 0xf44524e7};
-
-			if (memcmp((void *)hash, (u32 *)&hashtest, sizeof(sha1)) == 0)
-			{
-				sysNinVersion = 4.1f;
-				sprintf(ReportBuffer[TEXT_REGION], "%s: PAL", TXT_Region);
-				sprintf(ReportBuffer[SYSMENU], TXT_SysMenu, sysNinVersion, "E", sysVersion);
-			} else {
-				s32 sysIOS = get_title_ios(TITLE_ID(0x00000001, 0x00000002));
-
-				char Region[100];
-
-				switch (regionSelection)
-				{
-					case CONF_REGION_US:
-						sprintf(ReportBuffer[TEXT_REGION], "%s: NTSC-U", TXT_Region);
-						break;
-
-					case CONF_REGION_EU:
-						sprintf(ReportBuffer[TEXT_REGION], "%s: PAL", TXT_Region);
-						break;
-
-					case CONF_REGION_JP:
-						sprintf(ReportBuffer[TEXT_REGION], "%s: NTSC-J", TXT_Region);
-						break;
-
-					case CONF_REGION_KR:
-						sprintf(ReportBuffer[TEXT_REGION], "%s: KOR", TXT_Region);
-						break;
-
-					default:
-						sprintf(ReportBuffer[TEXT_REGION], "%s: ", TXT_Region);
-						strcat(ReportBuffer[TEXT_REGION], TXT_Unknown);
-				}
-				sprintf(Region, "%c", SysMenuRegion);
-
-				switch (sysIOS)
-				{
-					case 9:
-					sprintf(ReportBuffer[SYSMENU], TXT_SysMenu2, "1.0", Region, sysVersion);
-					break;
-
-					case 11:
-					sprintf(ReportBuffer[SYSMENU], TXT_SysMenu2, "2.0/2.1", Region, sysVersion);
-					break;
-
-					case 20:
-					sprintf(ReportBuffer[SYSMENU], TXT_SysMenu2, "2.2", Region);
-					break;
-
-					case 30:
-					sprintf(ReportBuffer[SYSMENU], TXT_SysMenu2, "3.0/3.1/3.2/3.3", Region, sysVersion);
-					break;
-
-					case 40:
-					sprintf(ReportBuffer[SYSMENU], TXT_SysMenu2, "3.3", Region, sysVersion);
-					break;
-
-					case 50:
-					sprintf(ReportBuffer[SYSMENU], TXT_SysMenu2, "3.4", Region, sysVersion);
-					break;
-
-					case 60:
-					sprintf(ReportBuffer[SYSMENU], TXT_SysMenu2, "4.0/4.1", Region, sysVersion);
-					break;
-
-					case 70:
-					sprintf(ReportBuffer[SYSMENU], TXT_SysMenu2, "4.2", Region, sysVersion);
-					break;
-
-					case 80:
-					sprintf(ReportBuffer[SYSMENU], TXT_SysMenu2, "4.3", Region, sysVersion);
-					break;
-
-					default:
-					sprintf(ReportBuffer[SYSMENU], TXT_SysMenu2, "0.0", Region, sysVersion);
-
-				}
-			}
-		}
-
-		switch (CONF_GetSerialCode(NULL)) {
-			case CONF_CODE_JPN:
-			case CONF_CODE_VJPNI:
-			case CONF_CODE_VJPNO:
-				// JAP
-				if (regionSelection != CONF_REGION_JP) {
-					strcat(ReportBuffer[TEXT_REGION], TXT_OriginalRegion);
-					strcat(ReportBuffer[TEXT_REGION], "JAP)");
-				}
-				break;
-			case CONF_CODE_USA:
-			case CONF_CODE_USAK:
-			case CONF_CODE_VUSAI:
-			case CONF_CODE_VUSAO:
-				// USA
-				if (regionSelection != CONF_REGION_US) {
-					strcat(ReportBuffer[TEXT_REGION], TXT_OriginalRegion);
-					strcat(ReportBuffer[TEXT_REGION], "USA)");
-				}
-				break;
-			case CONF_CODE_EURH:
-			case CONF_CODE_EURHK:
-			case CONF_CODE_EURM:
-			case CONF_CODE_EURMK:
-			case CONF_CODE_EURF:
-			case CONF_CODE_EURFK:
-			case CONF_CODE_VEURHI:
-			case CONF_CODE_VEURHO:
-			case CONF_CODE_VEURMI:
-			case CONF_CODE_VEURMO:
-			case CONF_CODE_VEURFI:
-			case CONF_CODE_VEURFO:
-				// EU
-				if (regionSelection != CONF_REGION_EU) {
-					strcat(ReportBuffer[TEXT_REGION], TXT_OriginalRegion);
-					strcat(ReportBuffer[TEXT_REGION], "PAL)");
-				}
-				break;
-			case CONF_CODE_KOR:
-				// KOR
-				if (regionSelection != CONF_REGION_KR) {
-					strcat(ReportBuffer[TEXT_REGION], TXT_OriginalRegion);
-					strcat(ReportBuffer[TEXT_REGION], "KOR)");
-				}
-				break;
-			case CONF_CODE_AUS:
-			case CONF_CODE_AUSK:
-			case CONF_CODE_VAUSI:
-			case CONF_CODE_VAUSO:
-				// AUS
-				strcat(ReportBuffer[TEXT_REGION], TXT_OriginalRegion);
-				strcat(ReportBuffer[TEXT_REGION], "AUS)");
-				break;
-			default:
-				break;
-		}
-
-		if (priiloader == 1)
-			sprintf(ReportBuffer[PRIILOADER], TXT_Priiloader);
-		else if (priiloader == 2)
-			sprintf(ReportBuffer[PRIILOADER], TXT_PreFiix);
-
-		if (hbc == 0 || hbcversion == 0)
-			sprintf(ReportBuffer[HBC], "Homebrew Channel is not installed");
-		else if (hbcIOS == 0)
-			sprintf(ReportBuffer[HBC], TXT_HBC_STUB);
-		else if (hbc == 4)
-			sprintf(ReportBuffer[HBC], TXT_HBC_112, hbcversion, hbcIOS);
-		else if (hbcversion == VERSION_1_1_0)
-			sprintf(ReportBuffer[HBC], TXT_HBC_NEW, hbcIOS);
-		else if (hbcversion > 0)
-			sprintf(ReportBuffer[HBC], TXT_HBC, hbcversion, hbcIOS);
-
-		if (hbf > 0)
-			sprintf(ReportBuffer[HBF], TXT_HBF, hbfversion);
-
-		sprintf(ReportBuffer[HOLLYWOOD], TXT_Hollywood, *HOLLYWOOD_VERSION);
-		sprintf(ReportBuffer[CONSOLE_ID], TXT_ConsoleID, deviceID);
-		sprintf(ReportBuffer[BOOT2_VERSION], TXT_vBoot2, boot2version);
-		sprintf(ReportBuffer[COUNTRY], "Shop Channel Country: %s (%u)", (strlen(country)) ? country : TXT_Unknown, shopcode);
-		sprintf(ReportBuffer[NR_OF_TITLES], TXT_NrOfTitles, countTitles);
-		sprintf(ReportBuffer[NR_OF_IOS], TXT_NrOfIOS, (countIOS - countBCMIOS), countStubs);
-
-
-		// Display IOS vulnerabilities
-		int lineOffset = 0;
-		for (i = 0; i < nbTitles; i++)
+		if (memcmp((void *)hash, (u32 *)&hashtest, sizeof(sha1)) == 0)
 		{
-			lineOffset = i;
-			if (selectedIOS > -1) i = selectedIOS; //If specific IOS is selected
+			sysNinVersion = 4.1f;
+			sprintf(ReportBuffer[TEXT_REGION], "%s: PAL", TXT_Region);
+			sprintf(ReportBuffer[SYSMENU], TXT_SysMenu, sysNinVersion, "E", sysVersion);
+		} else {
+			s32 sysIOS = get_title_ios(TITLE_ID(0x00000001, 0x00000002));
 
-			if (ios[i].titleID == 256) {
-				sprintf(ReportBuffer[LAST+lineOffset], "BC v%d", ios[i].revision);
-			} else if (ios[i].titleID == 257) {
-				sprintf(ReportBuffer[LAST+lineOffset], "MIOS v%d%s", ios[i].revision, miosInfo);
-			} else if ((ios[i].titleID==222 || ios[i].titleID==224 || ios[i].titleID==223 || ios[i].titleID==202 || ios[i].titleID==225) && ios[i].baseIOS == 75) {
-				sprintf(ReportBuffer[LAST+lineOffset], "IOS%d[38+37] (rev %d, Info: %s):", ios[i].titleID, ios[i].revision, ios[i].info);
-			} else {
-				if(ios[i].mloadVersion > 0 && ios[i].baseIOS > 0) {
-					int v, s;
-					v = ios[i].mloadVersion;
-					s = v & 0x0F;
-					v = v >> 4;
-					if (v == 0 && s == 1) {
-						v = 4;
-						s = 0;
-					}
-					sprintf(ReportBuffer[LAST+lineOffset], "IOS%d[%d] (rev %d, Info: hermes-v%d.%d):", ios[i].titleID, ios[i].baseIOS, ios[i].revision, v, s);
-				} else if(ios[i].baseIOS > 0) {
-					sprintf(ReportBuffer[LAST+lineOffset], "IOS%d[%d] (rev %d, Info: %s):", ios[i].titleID, ios[i].baseIOS, ios[i].revision, ios[i].info);
-				} else if (strcmp(ios[i].info, "NULL") != 0 && !ios[i].isStub) {
-					sprintf(ReportBuffer[LAST+lineOffset], "IOS%d (rev %d, Info: %s):", ios[i].titleID, ios[i].revision, ios[i].info);
-				} else if (ios[i].titleID == 249 && ios[i].revision > 11 && ios[i].revision < 18)  {
-					sprintf(ReportBuffer[LAST+lineOffset], "IOS%d[38] (rev %d):", ios[i].titleID, ios[i].revision);
-				} else {
-					sprintf(ReportBuffer[LAST+lineOffset], "IOS%d (rev %d):", ios[i].titleID, ios[i].revision);
-				}
-			}
+			char Region[100];
 
-			// Check BootMii As IOS (BootMii As IOS is installed on IOS254 rev 31338)
-			if (ios[i].titleID == 254 && (ios[i].revision == 31338 || ios[i].revision == 65281))
-				strcat (ReportBuffer[LAST+lineOffset]," BootMii");
-			else if (ios[i].titleID == 253 && ios[i].revision == 65535)
-				strcat (ReportBuffer[LAST+lineOffset]," NANDEmu");
-			else
+			switch (regionSelection)
 			{
-				if (ios[i].isStub && strcmp(ios[i].info, "NULL") == 0) {
-					gprintf("1. titleID: %d %s\n", ios[i].titleID, ios[i].info);
-					strcat (ReportBuffer[LAST+lineOffset], TXT_Stub);
-				} else if (ios[i].isStub && strcmp(ios[i].info, "NULL") != 0) {
-					gprintf("2. titleID: %d %s\n", ios[i].titleID, ios[i].info);
-					strcat (ReportBuffer[LAST+lineOffset], ios[i].info);
-				} else if(ios[i].titleID == 256 || ios[i].titleID == 257) {
-					//Do nothing
-				} else {
-					if(ios[i].infoFakeSignature) strcat(ReportBuffer[LAST+lineOffset], TXT_Trucha);
-					if(ios[i].infoESIdentify) strcat(ReportBuffer[LAST+lineOffset], TXT_ES);
-					if(ios[i].infoFlashAccess) strcat(ReportBuffer[LAST+lineOffset], TXT_Flash);
-					if(ios[i].infoNANDAccess) strcat(ReportBuffer[LAST+lineOffset], TXT_NAND);
-					if(ios[i].infoVersionPatch) strcat(ReportBuffer[LAST+lineOffset], TXT_VersionP);
-					if(ios[i].infoBoot2Access) strcat(ReportBuffer[LAST+lineOffset], TXT_Boot2);
-					if(ios[i].infoUSB2) strcat(ReportBuffer[LAST+lineOffset], TXT_USB);
-					if(!ios[i].infoFakeSignature && !ios[i].infoESIdentify && !ios[i].infoFlashAccess && !ios[i].infoNANDAccess && !ios[i].infoUSB2 && !ios[i].infoVersionPatch) strcat(ReportBuffer[LAST+lineOffset], TXT_NoPatch);
+				case CONF_REGION_US:
+					sprintf(ReportBuffer[TEXT_REGION], "%s: NTSC-U", TXT_Region);
+					break;
 
-					ReportBuffer[LAST+lineOffset][strlen(ReportBuffer[LAST+lineOffset])-1]='\0';
+				case CONF_REGION_EU:
+					sprintf(ReportBuffer[TEXT_REGION], "%s: PAL", TXT_Region);
+					break;
+
+				case CONF_REGION_JP:
+					sprintf(ReportBuffer[TEXT_REGION], "%s: NTSC-J", TXT_Region);
+					break;
+
+				case CONF_REGION_KR:
+					sprintf(ReportBuffer[TEXT_REGION], "%s: KOR", TXT_Region);
+					break;
+
+				default:
+					sprintf(ReportBuffer[TEXT_REGION], "%s: ", TXT_Region);
+					strcat(ReportBuffer[TEXT_REGION], TXT_Unknown);
+			}
+			sprintf(Region, "%c", SysMenuRegion);
+
+			switch (sysIOS)
+			{
+				case 9:
+				sprintf(ReportBuffer[SYSMENU], TXT_SysMenu2, "1.0", Region, sysVersion);
+				break;
+
+				case 11:
+				sprintf(ReportBuffer[SYSMENU], TXT_SysMenu2, "2.0/2.1", Region, sysVersion);
+				break;
+
+				case 20:
+				sprintf(ReportBuffer[SYSMENU], TXT_SysMenu2, "2.2", Region);
+				break;
+
+				case 30:
+				sprintf(ReportBuffer[SYSMENU], TXT_SysMenu2, "3.0/3.1/3.2/3.3", Region, sysVersion);
+				break;
+
+				case 40:
+				sprintf(ReportBuffer[SYSMENU], TXT_SysMenu2, "3.3", Region, sysVersion);
+				break;
+
+				case 50:
+				sprintf(ReportBuffer[SYSMENU], TXT_SysMenu2, "3.4", Region, sysVersion);
+				break;
+
+				case 60:
+				sprintf(ReportBuffer[SYSMENU], TXT_SysMenu2, "4.0/4.1", Region, sysVersion);
+				break;
+
+				case 70:
+				sprintf(ReportBuffer[SYSMENU], TXT_SysMenu2, "4.2", Region, sysVersion);
+				break;
+
+				case 80:
+				sprintf(ReportBuffer[SYSMENU], TXT_SysMenu2, "4.3", Region, sysVersion);
+				break;
+
+				default:
+				sprintf(ReportBuffer[SYSMENU], TXT_SysMenu2, "0.0", Region, sysVersion);
+
+			}
+		}
+	}
+
+	switch (CONF_GetSerialCode(NULL)) {
+		case CONF_CODE_JPN:
+		case CONF_CODE_VJPNI:
+		case CONF_CODE_VJPNO:
+			// JAP
+			if (regionSelection != CONF_REGION_JP) {
+				strcat(ReportBuffer[TEXT_REGION], TXT_OriginalRegion);
+				strcat(ReportBuffer[TEXT_REGION], "JAP)");
+			}
+			break;
+		case CONF_CODE_USA:
+		case CONF_CODE_USAK:
+		case CONF_CODE_VUSAI:
+		case CONF_CODE_VUSAO:
+			// USA
+			if (regionSelection != CONF_REGION_US) {
+				strcat(ReportBuffer[TEXT_REGION], TXT_OriginalRegion);
+				strcat(ReportBuffer[TEXT_REGION], "USA)");
+			}
+			break;
+		case CONF_CODE_EURH:
+		case CONF_CODE_EURHK:
+		case CONF_CODE_EURM:
+		case CONF_CODE_EURMK:
+		case CONF_CODE_EURF:
+		case CONF_CODE_EURFK:
+		case CONF_CODE_VEURHI:
+		case CONF_CODE_VEURHO:
+		case CONF_CODE_VEURMI:
+		case CONF_CODE_VEURMO:
+		case CONF_CODE_VEURFI:
+		case CONF_CODE_VEURFO:
+			// EU
+			if (regionSelection != CONF_REGION_EU) {
+				strcat(ReportBuffer[TEXT_REGION], TXT_OriginalRegion);
+				strcat(ReportBuffer[TEXT_REGION], "PAL)");
+			}
+			break;
+		case CONF_CODE_KOR:
+			// KOR
+			if (regionSelection != CONF_REGION_KR) {
+				strcat(ReportBuffer[TEXT_REGION], TXT_OriginalRegion);
+				strcat(ReportBuffer[TEXT_REGION], "KOR)");
+			}
+			break;
+		case CONF_CODE_AUS:
+		case CONF_CODE_AUSK:
+		case CONF_CODE_VAUSI:
+		case CONF_CODE_VAUSO:
+			// AUS
+			strcat(ReportBuffer[TEXT_REGION], TXT_OriginalRegion);
+			strcat(ReportBuffer[TEXT_REGION], "AUS)");
+			break;
+		default:
+			break;
+	}
+
+	if (priiloader == 1)
+		sprintf(ReportBuffer[PRIILOADER], TXT_Priiloader);
+	else if (priiloader == 2)
+		sprintf(ReportBuffer[PRIILOADER], TXT_PreFiix);
+
+	if (hbc == 0 || hbcversion == 0)
+		sprintf(ReportBuffer[HBC], "Homebrew Channel is not installed");
+	else if (hbcIOS == 0)
+		sprintf(ReportBuffer[HBC], TXT_HBC_STUB);
+	else if (hbc == 4)
+		sprintf(ReportBuffer[HBC], TXT_HBC_112, hbcversion, hbcIOS);
+	else if (hbcversion == VERSION_1_1_0)
+		sprintf(ReportBuffer[HBC], TXT_HBC_NEW, hbcIOS);
+	else if (hbcversion > 0)
+		sprintf(ReportBuffer[HBC], TXT_HBC, hbcversion, hbcIOS);
+
+	if (hbf > 0)
+		sprintf(ReportBuffer[HBF], TXT_HBF, hbfversion);
+
+	sprintf(ReportBuffer[HOLLYWOOD], TXT_Hollywood, *HOLLYWOOD_VERSION);
+	sprintf(ReportBuffer[CONSOLE_ID], TXT_ConsoleID, deviceID);
+	sprintf(ReportBuffer[BOOT2_VERSION], TXT_vBoot2, boot2version);
+	sprintf(ReportBuffer[COUNTRY], "Shop Channel Country: %s (%u)", (strlen(country)) ? country : TXT_Unknown, shopcode);
+	sprintf(ReportBuffer[NR_OF_TITLES], TXT_NrOfTitles, countTitles);
+	sprintf(ReportBuffer[NR_OF_IOS], TXT_NrOfIOS, (countIOS - countBCMIOS), countStubs);
+
+
+	// Display IOS vulnerabilities
+	int lineOffset = 0;
+	for (i = 0; i < nbTitles; i++)
+	{
+		lineOffset = i + LAST;
+		if (selectedIOS > -1) i = selectedIOS; //If specific IOS is selected
+
+		if (ios[i].titleID == 256) {
+			sprintf(ReportBuffer[lineOffset], "BC v%d", ios[i].revision);
+		} else if (ios[i].titleID == 257) {
+			sprintf(ReportBuffer[lineOffset], "MIOS v%d%s", ios[i].revision, miosInfo);
+		} else if ((ios[i].titleID==222 || ios[i].titleID==224 || ios[i].titleID==223 || ios[i].titleID==202 || ios[i].titleID==225) && ios[i].baseIOS == 75) {
+			sprintf(ReportBuffer[lineOffset], "IOS%d[38+37] (rev %d, Info: %s):", ios[i].titleID, ios[i].revision, ios[i].info);
+		} else {
+			if(ios[i].mloadVersion > 0 && ios[i].baseIOS > 0) {
+				int v, s;
+				v = ios[i].mloadVersion;
+				s = v & 0x0F;
+				v = v >> 4;
+				if (v == 0 && s == 1) {
+					v = 4;
+					s = 0;
 				}
+				sprintf(ReportBuffer[lineOffset], "IOS%d[%d] (rev %d, Info: hermes-v%d.%d):", ios[i].titleID, ios[i].baseIOS, ios[i].revision, v, s);
+			} else if(ios[i].baseIOS > 0) {
+				sprintf(ReportBuffer[lineOffset], "IOS%d[%d] (rev %d, Info: %s):", ios[i].titleID, ios[i].baseIOS, ios[i].revision, ios[i].info);
+			} else if (strcmp(ios[i].info, "NULL") != 0 && !ios[i].isStub) {
+				sprintf(ReportBuffer[lineOffset], "IOS%d (rev %d, Info: %s):", ios[i].titleID, ios[i].revision, ios[i].info);
+			} else if (ios[i].titleID == 249 && ios[i].revision > 11 && ios[i].revision < 18)  {
+				sprintf(ReportBuffer[lineOffset], "IOS%d[38] (rev %d):", ios[i].titleID, ios[i].revision);
+			} else {
+				sprintf(ReportBuffer[lineOffset], "IOS%d (rev %d):", ios[i].titleID, ios[i].revision);
 			}
 		}
 
-		sprintf(ReportBuffer[17+lineOffset], TXT_ReportDate);
-		int NumLines = 17+lineOffset;
+		// Check BootMii As IOS (BootMii As IOS is installed on IOS254 rev 31338)
+		if (ios[i].titleID == 254 && (ios[i].revision == 31338 || ios[i].revision == 65281))
+			strcat (ReportBuffer[lineOffset]," BootMii");
+		else if (ios[i].titleID == 253 && ios[i].revision == 65535)
+			strcat (ReportBuffer[lineOffset]," NANDEmu");
+		else
+		{
+			if (ios[i].isStub && strcmp(ios[i].info, "NULL") == 0) {
+				gprintf("1. titleID: %d %s\n", ios[i].titleID, ios[i].info);
+				strcat (ReportBuffer[lineOffset], TXT_Stub);
+			} else if (ios[i].isStub && strcmp(ios[i].info, "NULL") != 0) {
+				gprintf("2. titleID: %d %s\n", ios[i].titleID, ios[i].info);
+				strcat (ReportBuffer[lineOffset], ios[i].info);
+			} else if(ios[i].titleID != 256 && ios[i].titleID != 257) {
+				if(ios[i].infoFakeSignature) strcat(ReportBuffer[lineOffset], TXT_Trucha);
+				if(ios[i].infoESIdentify) strcat(ReportBuffer[lineOffset], TXT_ES);
+				if(ios[i].infoFlashAccess) strcat(ReportBuffer[lineOffset], TXT_Flash);
+				if(ios[i].infoNANDAccess) strcat(ReportBuffer[lineOffset], TXT_NAND);
+				if(ios[i].infoVersionPatch) strcat(ReportBuffer[lineOffset], TXT_VersionP);
+				if(ios[i].infoBoot2Access) strcat(ReportBuffer[lineOffset], TXT_Boot2);
+				if(ios[i].infoUSB2) strcat(ReportBuffer[lineOffset], TXT_USB);
+				if(!ios[i].infoFakeSignature && !ios[i].infoESIdentify && !ios[i].infoFlashAccess && !ios[i].infoNANDAccess && !ios[i].infoUSB2 && !ios[i].infoVersionPatch) strcat(ReportBuffer[lineOffset], TXT_NoPatch);
+
+				ReportBuffer[lineOffset][strlen(ReportBuffer[lineOffset])-1]='\0';
+			}
+		}
+	}
+
+	int NumLines = lineOffset+1;
+	sprintf(ReportBuffer[NumLines], TXT_ReportDate);
 
 	// Mount the SD Card
 	printLoading(MSG_MountSD);
