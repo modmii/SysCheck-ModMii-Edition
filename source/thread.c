@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include <ogc/lwp_watchdog.h>
 #include <ogc/lwp.h>
+#include <ogc/mutex.h>
 
 #include "thread.h"
 #include "gui.h"
@@ -13,7 +14,9 @@ lwp_t Cog_Thread;
 u8 stack[STACKSIZE] ATTRIBUTE_ALIGN (32);
 vu8 done = 0;
 u8 Cog_Num = 0;
-u64 Last_Cog_Turn = 0;
+static u64 Last_Cog_Turn = 0;
+static mutex_t GUI_mutex = LWP_THREAD_NULL;
+static bool mutex_initialized = false;
 
 void * DrawCogThread(void *arg) {
 	while(!done) { // Keep the thread running until done != 0
@@ -50,4 +53,22 @@ inline s32 StopThread(void) {
 	done = 1;
 	ResumeThread();
 	return LWP_JoinThread(Cog_Thread, NULL);
+}
+
+inline void InitMutex(void) {
+	if (GUI_mutex == LWP_THREAD_NULL) LWP_MutexInit(&GUI_mutex, false);
+	mutex_initialized = true;
+}
+	
+inline void DeinitMutex(void) {
+	if (GUI_mutex != LWP_THREAD_NULL) LWP_MutexDestroy(GUI_mutex);
+	mutex_initialized = false;
+}
+	
+inline void LockMutex(void) {
+	if (mutex_initialized) LWP_MutexLock(GUI_mutex);
+}
+
+inline void UnlockMutex(void) {
+	if (mutex_initialized) LWP_MutexUnlock(GUI_mutex);
 }

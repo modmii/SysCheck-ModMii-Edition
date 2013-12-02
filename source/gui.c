@@ -162,12 +162,13 @@ int initGUI(void) {
 	tex_Cogs_png[4] = GRRLIB_LoadTexturePNG(Cog5);
 	tex_ScreenBuf = GRRLIB_CreateEmptyTexture(rmode->fbWidth, rmode->efbHeight);
 	InitThread();
-	
+	InitMutex();
 	return 0;
 }
 
 void deinitGUI(void) {
 	StopThread();
+	DeinitMutex();
 	GRRLIB_FreeTTF(myFont);
 	GRRLIB_FreeTexture(tex_background_png);
 	GRRLIB_FreeTexture(tex_Checkicon_png);
@@ -225,11 +226,13 @@ int printSuccess(const char* msg) {
 int printLoading(const char* msg) {
 	//int i;
 	//ResumeThread();
+	LockMutex();
 	u64 current_ticks = gettick();
 	//GRRLIB_DrawImg(256, 112, tex_Refreshicon_png, 0, 1, 1, HEX_WHITE);
 	GRRLIB_DrawImg(0, 0, tex_background_png, 0, 1, 1, HEX_WHITE);
 	GRRLIB_PrintfTTF((640-strlen(msg)*9)/2, 256, myFont, msg, 20, HEX_WHITE);
 	CopyBuf();
+	UnlockMutex();
 	//for (i = 0; i < 3; i++) { //Workaround for GRRLIB_Render() bug
 	while(!CheckTime(current_ticks, 250)) {
 		//DrawBuf();
@@ -268,6 +271,7 @@ int printLoadingBar(const char* msg, const f32 percent) {
 	if (loaded > 536) loaded = 536;
 	
 	notloaded = 536 - loaded;
+	LockMutex();
 	
 	//int i;
 	GRRLIB_DrawImg(0, 0, tex_background_png, 0, 1, 1, HEX_WHITE);
@@ -276,6 +280,7 @@ int printLoadingBar(const char* msg, const f32 percent) {
 	GRRLIB_DrawPart(52, 340, 0, 0, loaded, 36, tex_loadingbarblue_png, 0, 1, 1, HEX_WHITE);
 	GRRLIB_DrawPart(52+loaded, 340, loaded, 0, notloaded, 36, tex_loadingbargrey_png, 0, 1, 1, HEX_WHITE);
 	CopyBuf();
+	UnlockMutex();
 	//for (i = 0; i < 3; i++) { //Workaround for GRRLIB_Render() bug
 	while(!CheckTime(current_ticks, 250)) {
 		//DrawBuf();
@@ -312,16 +317,6 @@ int printEndSuccess(const char* msg) {
 	
 	return 0;
 }
-
-/*inline void DrawCog(void) {
-	if (CheckTime(Last_Cog_Turn, 25)) {
-		Cog_Num++;
-		if (Cog_Num > 4) Cog_Num = 0;
-		Last_Cog_Turn = gettick();
-	}
-	GRRLIB_DrawImg(220, 150, tex_Cogs_png[Cog_Num], 0, 1, 1, HEX_WHITE);
-	return;
-}*/
 
 int printEndError(const char* msg) {
 	int i;
