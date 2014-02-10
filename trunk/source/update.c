@@ -12,12 +12,12 @@
 
 s32 downloadSyscheckFile(const char* fileName)  {
 	int ret = 0;
-	static char buf[128];
+	char buf[128] = {0};
 	u32 http_status;
 	u8* outbuf;
 	u32 lenght;
 	
-	snprintf(buf, 127, "http://syscheck-hd.googlecode.com/svn/trunk/SysCheckHDE/%s", fileName);
+	snprintf(buf, sizeof(buf), "http://syscheck-hd.googlecode.com/svn/trunk/SysCheckHDE/%s", fileName);
 		
 	ret = http_request(buf, 1 << 31);
 	if (!ret) 
@@ -63,13 +63,13 @@ s32 updateApp(void) {
 	if (ret < 0)
 		goto out;
 	
-	static char buf[128];
+	char buf[128] = {0};
 	u32 http_status;
 	u8* outbuf;
 	u32 length;
 	const char	*checkStr = "Version=";
 
-	snprintf(buf, 128, "http://syscheck-hd.googlecode.com/svn/trunk/Version.txt");
+	snprintf(buf, sizeof(buf), "http://syscheck-hd.googlecode.com/svn/trunk/Version.txt");
 	
 	ret = http_request(buf, 1 << 31);
 	if (!ret) 

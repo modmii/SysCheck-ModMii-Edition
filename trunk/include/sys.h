@@ -1,11 +1,12 @@
 #ifndef _TOOLS_H_
 #define _TOOLS_H_
 
-#define HAVE_AHBPROT ((*(vu32*)0xcd800064 == 0xFFFFFFFF) ? 1 : 0)
-#define MEM_REG_BASE 0xd8b4000
-#define MEM_PROT (MEM_REG_BASE + 0x20a)
-#define HOLLYWOOD_VERSION (vu32*)0x80003138
-#define LOADER_STUB (vu32*)0x80001800
+#define AHB_ACCESS			((*(vu32*)0xcd800064 == 0xFFFFFFFF) ? 1 : 0)
+#define MEM_REG_BASE 		0xd8b4000
+#define MEM_PROT 			(MEM_REG_BASE + 0x20a)
+#define HOLLYWOOD_VERSION 	(vu32*)0x80003138
+#define LOADER_STUB 		(vu32*)0x80001800
+#define IS_WII_U			((*(vu32*)(0xCd8005A0) >> 16 ) == 0xCAFE);
 
 // Turn upper and lower into a full title ID
 #define TITLE_ID(x,y)           (((u64)(x) << 32) | (y))

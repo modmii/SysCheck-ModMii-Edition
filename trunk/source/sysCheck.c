@@ -25,6 +25,7 @@
 #include "title.h"
 #include "sha1.h"
 #include "wiibasics.h"
+#include "SysMenuInfo.h"
 #include "tmdIdentification.h"
 #include "gecko.h"
 #include "update.h"
@@ -36,9 +37,7 @@
 
 
 extern bool geckoinit;
-extern void ReloadIOS(int version);
 
-char miosInfo[128] = {0};
 extern void __exception_setreload(int t);
 
 
@@ -228,12 +227,10 @@ int main(int argc, char **argv)
 			}
 		}
 	}
-	
+	SYSSETTINGS SystemInfo;
 
-	if (HAVE_AHBPROT && !forceNoAHBPROT)
-		//IOSPATCH_Apply();
-		IosPatch_RUNTIME(true, false, false, false);
-	bool nandAccess = CheckNANDAccess();
+	if (AHB_ACCESS && !forceNoAHBPROT) IosPatch_RUNTIME(true, false, false, false);
+	SystemInfo.nandAccess = CheckNANDAccess();
 
 	// Get and display the current date and time
 	struct tm today;
@@ -246,27 +243,30 @@ int main(int argc, char **argv)
 
 	// Get the console region
 	printLoading(MSG_GetConsoleRegion);
-	//usleep(250000);
-	int regionSelection = CONF_GetRegion();
+	usleep(200000);
+	SystemInfo.systemRegion = CONF_GetRegion();
 	
-	u8 shopcode = 0;
-	char country[COUNTRY_SIZE] = "Unknown";
-	if (!CONF_GetShopCode(&shopcode)) strncpy(country, CONF_CountryCodes[shopcode], COUNTRY_SIZE);
+	SystemInfo.shopcode = 0;
+	if (!CONF_GetShopCode(&SystemInfo.shopcode)) {
+		strcpy(SystemInfo.country, CONF_CountryCodes[SystemInfo.shopcode]);
+	} else {
+		strcpy(SystemInfo.country, "Unknown");
+	}
 
 	// Get the system menu version
 	printLoading(MSG_GetSysMenuVer);
-	//usleep(250000);
-	u32 sysVersion = GetSysMenuVersion();
+	usleep(200000);
+	SystemInfo.sysMenuVer = GetSysMenuVersion();
 	sysMenu systemmenu;
 
 	printLoading(MSG_GetHBCVer);
-	//usleep(250000);
+	usleep(200000);
 	u32 hbcversion = 0;
 	u32 hbfversion = 0;
 	s32 hbc = 0;
 	s32 hbf = 0;
 	u32 hbcIOS = 0;
-	u32 dvdSupport = 0;
+	SystemInfo.dvdSupport = 0;
 	s32 ret = Title_GetVersionNObuf(0x000100014C554C5All);
 	if (ret<0) {
 		ret = Title_GetVersionNObuf(0x00010001AF1BF516ll);
@@ -319,38 +319,38 @@ int main(int argc, char **argv)
 		hbfversion = ret;
 	}
 
-	if (HAVE_AHBPROT && !forceNoAHBPROT) {
+	if (AHB_ACCESS && !forceNoAHBPROT) {
 		DI_Init();
 		DI_DriveID id;
 
 		if(DI_Identify(&id) == 0) {
-			dvdSupport = id.rel_date;
+			SystemInfo.dvdSupport = id.rel_date;
 		}
 		DI_Close();
 	}
 
-	float sysNinVersion = GetSysMenuNintendoVersion(sysVersion);
-	char SysMenuRegion = GetSysMenuRegion(sysVersion);
+	SystemInfo.sysNinVersion = GetSysMenuNintendoVersion(SystemInfo.sysMenuVer);
+	SystemInfo.sysMenuRegion = GetSysMenuRegion(SystemInfo.sysMenuVer);
 
 	// Get the running IOS version and revision
 	u32 runningIOS = IOS_GetVersion();
 	u32 runningIOSRevision = IOS_GetRevision();
 	printLoading(MSG_GetRunningIOS);
-	//usleep(250000);
+	usleep(200000);
 
 	// Get the console ID
 	printLoading(MSG_GetConsoleID);
-	//usleep(250000);
-	u32 deviceID = GetDeviceID();
+	usleep(200000);
+	SystemInfo.deviceID = GetDeviceID();
 
 	// Get the boot2 version
 	printLoading(MSG_GetBoot2);
-	//usleep(250000);
-	u32 boot2version = GetBoot2Version();
+	usleep(200000);
+	SystemInfo.boot2version = GetBoot2Version();
 
 	// Get number of titles
 	printLoading(MSG_GetNrOfTitles);
-	//usleep(250000);
+	usleep(200000);
 
 	u32 tempTitles;
 	if (ES_GetNumTitles(&tempTitles) < 0) {
@@ -375,7 +375,7 @@ int main(int argc, char **argv)
 
 	// Get list of titles
 	printLoading(MSG_GetTitleList);
-	//usleep(250000);
+	usleep(200000);
 	if (ES_GetTitles(titles, nbTitles) < 0) {
 		printError(ERR_GetTitleList);
 		sleep(5);
@@ -385,9 +385,9 @@ int main(int argc, char **argv)
 
 	int i;
 	int j;
-	int countIOS = 0; // Number of IOS
-	int countStubs = 0; // Number of IOS Stubs
-	int countBCMIOS = 0; //Number of BC and MIOS. Should be 2.
+	SystemInfo.countIOS = 0; // Number of IOS
+	SystemInfo.countStubs = 0; // Number of IOS Stubs
+	SystemInfo.countBCMIOS = 0; //Number of BC and MIOS. Should be 2.
 	u32 titleID;
 	char HashLogBuffer[300][100] = {{0}};
 	int lines = 0;
@@ -416,14 +416,14 @@ int main(int argc, char **argv)
 			titles[i] = 0;
 			continue;
 		}
-		countIOS++;
+		SystemInfo.countIOS++;
 	}
 
 	// Sort IOS titles
 	printLoading(MSG_SortTitles);
-	//usleep(250000);
+	//usleep(200000);
 
-	u64 *newTitles = memalign(32, countIOS*sizeof(u64));
+	u64 *newTitles = memalign(32, SystemInfo.countIOS*sizeof(u64));
 	u32 cnt = 0;
 	for (i = 0; i < nbTitles; i++) {
 		if (titles[i] > 0) {
@@ -432,13 +432,13 @@ int main(int argc, char **argv)
 		}
 	}
 
-	sort(newTitles, countIOS);
+	sort(newTitles, SystemInfo.countIOS);
 	free(titles);
 
-	IOS ios[countIOS];
+	IOS ios[SystemInfo.countIOS];
 	// ios Liste initialisieren
 	//for (i = 0; i < countIOS; i++) {
-	for (i = countIOS; i--;) { // Should be slightly faster
+	for (i = SystemInfo.countIOS; i--;) { // Should be slightly faster
 		ios[i].infoContent = 0;
 		ios[i].titleID = 0;
 		ios[i].mloadVersion = 0;
@@ -459,14 +459,14 @@ int main(int argc, char **argv)
 	NandStartup();
 
 	// Check Priiloader
-	int priiloader = checkSysLoader();
+	SystemInfo.priiloader = checkSysLoader();
 
 	// Check MIOS
-	if (nandAccess) get_miosinfo(miosInfo);
+	if (SystemInfo.nandAccess) get_miosinfo(SystemInfo.miosInfo);
 
 	// For each titles found
 	//for (i = 0; i < countIOS; i++)
-	for (i = countIOS; i--;) // Should be slightly faster
+	for (i = SystemInfo.countIOS; i--;) // Should be slightly faster
 	{
 		ios[i].titleID = newTitles[i] & 0xFFFFFFFF;
 
@@ -528,7 +528,7 @@ int main(int argc, char **argv)
 		}
 
 		if (!ios[i].isStub || ios[i].titleID == 252) {
-			if (nandAccess)
+			if (SystemInfo.nandAccess)
 				if (!getInfoFromContent(&ios[i])) {
 					// Hash des TMDs abrufen
 					iosTMD->title_id = ((u64)(1) << 32) | 249;
@@ -557,9 +557,9 @@ int main(int argc, char **argv)
 
 		free(iosTMDBuffer);
 
-		if (ios[i].titleID == 256 || ios[i].titleID == 257) countBCMIOS++;
+		if (ios[i].titleID == 256 || ios[i].titleID == 257) SystemInfo.countBCMIOS++;
 
-		if (ios[i].isStub && !(iosTMD->title_version == 31338) && !(iosTMD->title_version == 65281) && !(iosTMD->title_version == 65535)) countStubs++;
+		if (ios[i].isStub && !(iosTMD->title_version == 31338) && !(iosTMD->title_version == 65281) && !(iosTMD->title_version == 65535)) SystemInfo.countStubs++;
 	}
 
 	// Check if this title is an IOS stub
@@ -617,12 +617,12 @@ int main(int argc, char **argv)
 	NandShutdown();
 	UnmountSD();
 
-	u32 countTitles = nbTitles;
-	nbTitles = countIOS;
+	SystemInfo.countTitles = nbTitles;
+	nbTitles = SystemInfo.countIOS;
 
 	// Get the certificates from the NAND
 	printLoading(MSG_GetCertificates);
-	//usleep(250000);
+	usleep(200000);
 	if (!GetCertificates()) {
 		printError(ERR_GetCertificates);
 		sleep(5);
@@ -633,7 +633,7 @@ int main(int argc, char **argv)
 	//Select an IOS to test
 	WPAD_Init();
 	int selectedIOS = -1;
-	u16 wpressed;
+	u32 wpressed;
 	time_t starttime;
 	starttime = time(NULL);
 
@@ -658,11 +658,9 @@ int main(int argc, char **argv)
 				case 256:
 					sprintf(MSG_Buffer, "BC");
 					break;
-
 				case 257:
 					sprintf(MSG_Buffer, "MIOS");
 					break;
-
 				default:
 					sprintf(MSG_Buffer, "IOS%d", titleID);
 					break;
@@ -682,11 +680,9 @@ int main(int argc, char **argv)
 					case 256:
 						sprintf(MSG_Buffer, "BC");
 						break;
-
 					case 257:
 						sprintf(MSG_Buffer, "MIOS");
 						break;
-
 					default:
 						sprintf(MSG_Buffer, "IOS%d", titleID);
 						break;
@@ -791,12 +787,12 @@ int main(int argc, char **argv)
 			}
 
 			// Check Priiloader
-			if (!nandAccess && priiloader == -2 && ios[i].infoNANDAccess) {
-				priiloader = checkSysLoader();
+			if (!SystemInfo.nandAccess && SystemInfo.priiloader == -2 && ios[i].infoNANDAccess) {
+				SystemInfo.priiloader = checkSysLoader();
 			}
 
 			// Check Base IOS
-			if (!nandAccess && ios[i].infoNANDAccess) {
+			if (!SystemInfo.nandAccess && ios[i].infoNANDAccess) {
 				NandStartup();
 				int k = 0;
 				for (k = 0; k < nbTitles; k++) {
@@ -823,39 +819,39 @@ int main(int argc, char **argv)
 	IOS_ReloadIOS(runningIOS);
 	sprintf(MSG_Buffer, MSG_ReloadIOS, runningIOS, runningIOSRevision);
 	printLoading(MSG_Buffer);
-	//usleep(250000);
+	usleep(200000);
 
 	//--Generate Report--
 	printLoading(MSG_GenerateReport);
-	//usleep(250000);
+	usleep(200000);
 
 	char ReportBuffer[200][100] = {{0}};
 
-	if (dvdSupport > 0)
-		formatDate(dvdSupport, ReportBuffer);
+	if (SystemInfo.dvdSupport > 0)
+		formatDate(SystemInfo.dvdSupport, ReportBuffer);
 	else
 		sprintf(ReportBuffer[DVD], TXT_NoDVD);
 
 	// Display Title
 	sprintf(ReportBuffer[APP_TITLE], TXT_AppTitle, TXT_AppVersion);
 	sprintf(ReportBuffer[APP_IOS], TXT_AppIOS, runningIOS, IOS_GetRevision());
-	bool validregion = regionSelection >= CONF_REGION_JP && regionSelection <= CONF_REGION_CN;
+	bool validregion = SystemInfo.systemRegion >= CONF_REGION_JP && SystemInfo.systemRegion <= CONF_REGION_CN;
 
 	// Display the console region
-	if (sysNinVersion != 0.0f) {
-		sprintf(ReportBuffer[TEXT_REGION], "%s: %s", TXT_Region, validregion ? Regions[regionSelection] : "");
+	if (SystemInfo.sysNinVersion != 0.0f) {
+		sprintf(ReportBuffer[TEXT_REGION], "%s: %s", TXT_Region, validregion ? Regions[SystemInfo.systemRegion] : "");
 		if (validregion)
-			sprintf(ReportBuffer[SYSMENU], TXT_SysMenu, sysNinVersion, SysMenuRegion, sysVersion);
+			sprintf(ReportBuffer[SYSMENU], TXT_SysMenu, SystemInfo.sysNinVersion, SystemInfo.sysMenuRegion, SystemInfo.sysMenuVer);
 		else
 			strcat(ReportBuffer[SYSMENU], TXT_Unknown);
 		
 	} else if (systemmenu.hasInfo) {
 		u32 realSysVersion = systemmenu.realRevision;
-		sysNinVersion = GetSysMenuNintendoVersion(realSysVersion);
-		SysMenuRegion = GetSysMenuRegion(sysVersion);
-		sprintf(ReportBuffer[TEXT_REGION], "%s: %s", TXT_Region, validregion ? Regions[regionSelection] : "");
+		SystemInfo.sysNinVersion = GetSysMenuNintendoVersion(realSysVersion);
+		SystemInfo.sysMenuRegion = GetSysMenuRegion(SystemInfo.sysMenuVer);
+		sprintf(ReportBuffer[TEXT_REGION], "%s: %s", TXT_Region, validregion ? Regions[SystemInfo.systemRegion] : "");
 		if (validregion)
-			sprintf(ReportBuffer[SYSMENU], TXT_SysMenu3, sysNinVersion, SysMenuRegion, sysVersion, realSysVersion, systemmenu.info);
+			sprintf(ReportBuffer[SYSMENU], TXT_SysMenu3, SystemInfo.sysNinVersion, SystemInfo.sysMenuRegion, SystemInfo.sysMenuVer, realSysVersion, systemmenu.info);
 		else
 			strcat(ReportBuffer[SYSMENU], TXT_Unknown);
 	} else {
@@ -878,15 +874,15 @@ int main(int argc, char **argv)
 
 		if (memcmp((void *)hash, (u32 *)&hashtest, sizeof(sha1)) == 0)
 		{
-			sysNinVersion = 4.1f;
+			SystemInfo.sysNinVersion = 4.1f;
 			sprintf(ReportBuffer[TEXT_REGION], "%s: PAL", TXT_Region);
-			sprintf(ReportBuffer[SYSMENU], TXT_SysMenu, sysNinVersion, "E", sysVersion);
+			sprintf(ReportBuffer[SYSMENU], TXT_SysMenu, SystemInfo.sysNinVersion, "E", SystemInfo.sysMenuVer);
 		} else {
-			s32 sysIOS = get_title_ios(TITLE_ID(0x00000001, 0x00000002));
+			SystemInfo.sysMenuIOS = get_title_ios(TITLE_ID(0x00000001, 0x00000002));
 
 			char Region[100];
 
-			switch (regionSelection)
+			switch (SystemInfo.systemRegion)
 			{
 				case CONF_REGION_US:
 					sprintf(ReportBuffer[TEXT_REGION], "%s: NTSC-U", TXT_Region);
@@ -908,49 +904,40 @@ int main(int argc, char **argv)
 					sprintf(ReportBuffer[TEXT_REGION], "%s: ", TXT_Region);
 					strcat(ReportBuffer[TEXT_REGION], TXT_Unknown);
 			}
-			sprintf(Region, "%c", SysMenuRegion);
+			sprintf(Region, "%c", SystemInfo.sysMenuRegion);
 
-			switch (sysIOS)
+			switch (SystemInfo.sysMenuIOS)
 			{
 				case 9:
-				sprintf(ReportBuffer[SYSMENU], TXT_SysMenu2, "1.0", Region, sysVersion);
-				break;
-
+					sprintf(ReportBuffer[SYSMENU], TXT_SysMenu2, "1.0", Region, SystemInfo.sysMenuVer);
+					break;
 				case 11:
-				sprintf(ReportBuffer[SYSMENU], TXT_SysMenu2, "2.0/2.1", Region, sysVersion);
-				break;
-
+					sprintf(ReportBuffer[SYSMENU], TXT_SysMenu2, "2.0/2.1", Region, SystemInfo.sysMenuVer);
+					break;
 				case 20:
-				sprintf(ReportBuffer[SYSMENU], TXT_SysMenu2, "2.2", Region);
-				break;
-
+					sprintf(ReportBuffer[SYSMENU], TXT_SysMenu2, "2.2", Region);
+					break;
 				case 30:
-				sprintf(ReportBuffer[SYSMENU], TXT_SysMenu2, "3.0/3.1/3.2/3.3", Region, sysVersion);
-				break;
-
+					sprintf(ReportBuffer[SYSMENU], TXT_SysMenu2, "3.0/3.1/3.2/3.3", Region, SystemInfo.sysMenuVer);
+					break;
 				case 40:
-				sprintf(ReportBuffer[SYSMENU], TXT_SysMenu2, "3.3", Region, sysVersion);
-				break;
-
+					sprintf(ReportBuffer[SYSMENU], TXT_SysMenu2, "3.3", Region, SystemInfo.sysMenuVer);
+					break;
 				case 50:
-				sprintf(ReportBuffer[SYSMENU], TXT_SysMenu2, "3.4", Region, sysVersion);
-				break;
-
+					sprintf(ReportBuffer[SYSMENU], TXT_SysMenu2, "3.4", Region, SystemInfo.sysMenuVer);
+					break;
 				case 60:
-				sprintf(ReportBuffer[SYSMENU], TXT_SysMenu2, "4.0/4.1", Region, sysVersion);
-				break;
-
+					sprintf(ReportBuffer[SYSMENU], TXT_SysMenu2, "4.0/4.1", Region, SystemInfo.sysMenuVer);
+					break;
 				case 70:
-				sprintf(ReportBuffer[SYSMENU], TXT_SysMenu2, "4.2", Region, sysVersion);
-				break;
-
+					sprintf(ReportBuffer[SYSMENU], TXT_SysMenu2, "4.2", Region, SystemInfo.sysMenuVer);
+					break;
 				case 80:
-				sprintf(ReportBuffer[SYSMENU], TXT_SysMenu2, "4.3", Region, sysVersion);
-				break;
-
+					sprintf(ReportBuffer[SYSMENU], TXT_SysMenu2, "4.3", Region, SystemInfo.sysMenuVer);
+					break;
 				default:
-				sprintf(ReportBuffer[SYSMENU], TXT_SysMenu2, "0.0", Region, sysVersion);
-
+					sprintf(ReportBuffer[SYSMENU], TXT_SysMenu2, "0.0", Region, SystemInfo.sysMenuVer);
+					break;
 			}
 		}
 	}
@@ -960,7 +947,7 @@ int main(int argc, char **argv)
 		case CONF_CODE_VJPNI:
 		case CONF_CODE_VJPNO:
 			// JAP
-			if (regionSelection != CONF_REGION_JP) {
+			if (SystemInfo.systemRegion != CONF_REGION_JP) {
 				strcat(ReportBuffer[TEXT_REGION], TXT_OriginalRegion);
 				strcat(ReportBuffer[TEXT_REGION], "JAP)");
 			}
@@ -970,7 +957,7 @@ int main(int argc, char **argv)
 		case CONF_CODE_VUSAI:
 		case CONF_CODE_VUSAO:
 			// USA
-			if (regionSelection != CONF_REGION_US) {
+			if (SystemInfo.systemRegion != CONF_REGION_US) {
 				strcat(ReportBuffer[TEXT_REGION], TXT_OriginalRegion);
 				strcat(ReportBuffer[TEXT_REGION], "USA)");
 			}
@@ -988,14 +975,14 @@ int main(int argc, char **argv)
 		case CONF_CODE_VEURFI:
 		case CONF_CODE_VEURFO:
 			// EU
-			if (regionSelection != CONF_REGION_EU) {
+			if (SystemInfo.systemRegion != CONF_REGION_EU) {
 				strcat(ReportBuffer[TEXT_REGION], TXT_OriginalRegion);
 				strcat(ReportBuffer[TEXT_REGION], "PAL)");
 			}
 			break;
 		case CONF_CODE_KOR:
 			// KOR
-			if (regionSelection != CONF_REGION_KR) {
+			if (SystemInfo.systemRegion != CONF_REGION_KR) {
 				strcat(ReportBuffer[TEXT_REGION], TXT_OriginalRegion);
 				strcat(ReportBuffer[TEXT_REGION], "KOR)");
 			}
@@ -1012,9 +999,9 @@ int main(int argc, char **argv)
 			break;
 	}
 
-	if (priiloader == 1)
+	if (SystemInfo.priiloader == 1)
 		sprintf(ReportBuffer[PRIILOADER], TXT_Priiloader);
-	else if (priiloader == 2)
+	else if (SystemInfo.priiloader == 2)
 		sprintf(ReportBuffer[PRIILOADER], TXT_PreFiix);
 
 	if (hbc == 0 || hbcversion == 0)
@@ -1032,11 +1019,11 @@ int main(int argc, char **argv)
 		sprintf(ReportBuffer[HBF], TXT_HBF, hbfversion);
 
 	sprintf(ReportBuffer[HOLLYWOOD], TXT_Hollywood, *HOLLYWOOD_VERSION);
-	sprintf(ReportBuffer[CONSOLE_ID], TXT_ConsoleID, deviceID);
-	sprintf(ReportBuffer[BOOT2_VERSION], TXT_vBoot2, boot2version);
-	sprintf(ReportBuffer[COUNTRY], "Shop Channel Country: %s (%u)", (strlen(country)) ? country : TXT_Unknown, shopcode);
-	sprintf(ReportBuffer[NR_OF_TITLES], TXT_NrOfTitles, countTitles);
-	sprintf(ReportBuffer[NR_OF_IOS], TXT_NrOfIOS, (countIOS - countBCMIOS), countStubs);
+	sprintf(ReportBuffer[CONSOLE_ID], TXT_ConsoleID, SystemInfo.deviceID);
+	sprintf(ReportBuffer[BOOT2_VERSION], TXT_vBoot2, SystemInfo.boot2version);
+	sprintf(ReportBuffer[COUNTRY], "Shop Channel Country: %s (%u)", (strlen(SystemInfo.country)) ? SystemInfo.country : TXT_Unknown, SystemInfo.shopcode);
+	sprintf(ReportBuffer[NR_OF_TITLES], TXT_NrOfTitles, SystemInfo.countTitles);
+	sprintf(ReportBuffer[NR_OF_IOS], TXT_NrOfIOS, (SystemInfo.countIOS - SystemInfo.countBCMIOS), SystemInfo.countStubs);
 
 
 	// Display IOS vulnerabilities
@@ -1049,7 +1036,7 @@ int main(int argc, char **argv)
 		if (ios[i].titleID == 256) {
 			sprintf(ReportBuffer[lineOffset], "BC v%d", ios[i].revision);
 		} else if (ios[i].titleID == 257) {
-			sprintf(ReportBuffer[lineOffset], "MIOS v%d%s", ios[i].revision, miosInfo);
+			sprintf(ReportBuffer[lineOffset], "MIOS v%d%s", ios[i].revision, SystemInfo.miosInfo);
 		} else if ((ios[i].titleID==222 || ios[i].titleID==224 || ios[i].titleID==223 || ios[i].titleID==202 || ios[i].titleID==225) && ios[i].baseIOS == 75) {
 			sprintf(ReportBuffer[lineOffset], "IOS%d[38+37] (rev %d, Info: %s):", ios[i].titleID, ios[i].revision, ios[i].info);
 		} else {
@@ -1107,12 +1094,12 @@ int main(int argc, char **argv)
 
 	// Mount the SD Card
 	printLoading(MSG_MountSD);
-	//usleep(250000);
+	usleep(200000);
 	MountSD();
 
 	// Initialise the FAT file system
 	printLoading(MSG_InitFAT);
-	//usleep(250000);
+	usleep(200000);
 	if (!fatInitDefault())
 	{
 		sprintf(MSG_Buffer, ERR_InitFAT);
@@ -1132,6 +1119,7 @@ int main(int argc, char **argv)
 			for (i = 0; i <= NumLines; i++) {
 				fprintf(file, ReportBuffer[i]);
 				fprintf(file, "\r\n");
+				fflush(file);
 			}
 			// Close the report
 			fclose(file);
@@ -1209,31 +1197,32 @@ int main(int argc, char **argv)
 				printReport(ReportBuffer, LineNr, completeReport);
 			} else {
 				printReport(ReportBuffer, LineNr, completeReport);
+				usleep(500000); // A little pause to decrease the chance of accidental upload
 				reportIsDisplayed = true;
 			}
 		}
+		if (NumLines > 14) { // Just a safety measure in case the report is less than 14 lines for some reason
+			if (wpressed & WPAD_BUTTON_UP) {
+				if (LineNr > 0) LineNr--;
+				printReport(ReportBuffer, LineNr, completeReport);
+			}
 
-		if (wpressed & WPAD_BUTTON_UP) {
-			if (LineNr > 0) LineNr--;
-			printReport(ReportBuffer, LineNr, completeReport);
-		}
+			if (wpressed & WPAD_BUTTON_DOWN) {
+				if (LineNr < NumLines-14) LineNr++;
+				printReport(ReportBuffer, LineNr, completeReport);
+			}
+			if (wpressed & WPAD_BUTTON_LEFT) {
+				if (LineNr > 0) LineNr = LineNr - 15;
+				if (LineNr < 0) LineNr = 0;
+				printReport(ReportBuffer, LineNr, completeReport);
+			}
 
-		if (wpressed & WPAD_BUTTON_DOWN) {
-			if (LineNr < NumLines-14) LineNr++;
-			printReport(ReportBuffer, LineNr, completeReport);
+			if (wpressed & WPAD_BUTTON_RIGHT) {
+				if (LineNr < NumLines-14) LineNr = LineNr + 15;
+				if (LineNr + 14 > NumLines) LineNr = NumLines-14;
+				printReport(ReportBuffer, LineNr, completeReport);
+			}
 		}
-		if (wpressed & WPAD_BUTTON_LEFT) {
-			if (LineNr > 0) LineNr = LineNr - 15;
-			if (LineNr < 0) LineNr = 0;
-			printReport(ReportBuffer, LineNr, completeReport);
-		}
-
-		if (wpressed & WPAD_BUTTON_RIGHT) {
-			if (LineNr < NumLines-14) LineNr = LineNr + 15;
-			if (LineNr > NumLines) LineNr = NumLines;
-			printReport(ReportBuffer, LineNr, completeReport);
-		}
-
 	}
 }
 
