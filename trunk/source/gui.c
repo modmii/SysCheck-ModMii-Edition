@@ -1,33 +1,26 @@
 #include <stdlib.h>
 #include <wiiuse/wpad.h>
-#include <ogc/lwp_watchdog.h>
 
 #include "tahoma_ttf.h"
 
-#include "background.h"
-#include "Checkicon.h"
-#include "Deleteicon.h"
-#include "Refreshicon.h"
-#include "WiiButtonA.h"
-#include "WiiButtonHome.h"
-#include "WiiButtonMinus.h"
-#include "WiiButtonPlus.h"
-#include "WiiDpadLeft.h"
-#include "WiiDpadRight.h"
-#include "loadingbargrey.h"
-#include "loadingbarblue.h"
-#include "window.h"
-#include "Cog1.h"
-#include "Cog2.h"
-#include "Cog3.h"
-#include "Cog4.h"
-#include "Cog5.h"
+#include "background_png.h"
+#include "Checkicon_png.h"
+#include "Deleteicon_png.h"
+#include "Refreshicon_png.h"
+#include "WiiButtonA_png.h"
+#include "WiiButtonHome_png.h"
+#include "WiiButtonMinus_png.h"
+#include "WiiButtonPlus_png.h"
+#include "WiiDpadLeft_png.h"
+#include "WiiDpadRight_png.h"
+#include "loadingbargrey_png.h"
+#include "loadingbarblue_png.h"
+#include "window_png.h"
 #include "languages.h"
 #include "gui.h"
 #include "gecko.h"
 #include "sys.h"
 #include "fatMounter.h"
-#include "thread.h"
 
 GRRLIB_ttfFont *myFont;
 GRRLIB_texImg *tex_background_png;
@@ -43,7 +36,6 @@ GRRLIB_texImg *tex_WiiDpadRight_png;
 GRRLIB_texImg *tex_loadingbargrey_png;
 GRRLIB_texImg *tex_loadingbarblue_png;
 GRRLIB_texImg *tex_window_png;
-GRRLIB_texImg *tex_Cogs_png[5];
 GRRLIB_texImg *tex_ScreenBuf;
 
 typedef struct map_entry
@@ -142,33 +134,24 @@ int initGUI(void) {
 	
 	//Load Images
 	myFont = GRRLIB_LoadTTF(tahoma_ttf, tahoma_ttf_size);
-	tex_background_png = GRRLIB_LoadTexturePNG(background);
-	tex_Checkicon_png = GRRLIB_LoadTexturePNG(Checkicon);
-	tex_Deleteicon_png = GRRLIB_LoadTexturePNG(Deleteicon);
-	tex_Refreshicon_png = GRRLIB_LoadTexturePNG(Refreshicon);
-	tex_WiiButtonA_png = GRRLIB_LoadTexturePNG(WiiButtonA);
-	tex_WiiButtonHome_png = GRRLIB_LoadTexturePNG(WiiButtonHome);
-	tex_WiiButtonMinus_png = GRRLIB_LoadTexturePNG(WiiButtonMinus);
-	tex_WiiButtonPlus_png = GRRLIB_LoadTexturePNG(WiiButtonPlus);
-	tex_WiiDpadLeft_png = GRRLIB_LoadTexturePNG(WiiDpadLeft);
-	tex_WiiDpadRight_png = GRRLIB_LoadTexturePNG(WiiDpadRight);
-	tex_loadingbargrey_png = GRRLIB_LoadTexturePNG(loadingbargrey);
-	tex_loadingbarblue_png = GRRLIB_LoadTexturePNG(loadingbarblue);
-	tex_window_png = GRRLIB_LoadTexturePNG(window);
-	tex_Cogs_png[0] = GRRLIB_LoadTexturePNG(Cog1);
-	tex_Cogs_png[1] = GRRLIB_LoadTexturePNG(Cog2);
-	tex_Cogs_png[2] = GRRLIB_LoadTexturePNG(Cog3);
-	tex_Cogs_png[3] = GRRLIB_LoadTexturePNG(Cog4);
-	tex_Cogs_png[4] = GRRLIB_LoadTexturePNG(Cog5);
+	tex_background_png = GRRLIB_LoadTexturePNG(background_png);
+	tex_Checkicon_png = GRRLIB_LoadTexturePNG(Checkicon_png);
+	tex_Deleteicon_png = GRRLIB_LoadTexturePNG(Deleteicon_png);
+	tex_Refreshicon_png = GRRLIB_LoadTexturePNG(Refreshicon_png);
+	tex_WiiButtonA_png = GRRLIB_LoadTexturePNG(WiiButtonA_png);
+	tex_WiiButtonHome_png = GRRLIB_LoadTexturePNG(WiiButtonHome_png);
+	tex_WiiButtonMinus_png = GRRLIB_LoadTexturePNG(WiiButtonMinus_png);
+	tex_WiiButtonPlus_png = GRRLIB_LoadTexturePNG(WiiButtonPlus_png);
+	tex_WiiDpadLeft_png = GRRLIB_LoadTexturePNG(WiiDpadLeft_png);
+	tex_WiiDpadRight_png = GRRLIB_LoadTexturePNG(WiiDpadRight_png);
+	tex_loadingbargrey_png = GRRLIB_LoadTexturePNG(loadingbargrey_png);
+	tex_loadingbarblue_png = GRRLIB_LoadTexturePNG(loadingbarblue_png);
+	tex_window_png = GRRLIB_LoadTexturePNG(window_png);
 	tex_ScreenBuf = GRRLIB_CreateEmptyTexture(rmode->fbWidth, rmode->efbHeight);
-	InitThread();
-	InitMutex();
 	return 0;
 }
 
 void deinitGUI(void) {
-	StopThread();
-	DeinitMutex();
 	GRRLIB_FreeTTF(myFont);
 	GRRLIB_FreeTexture(tex_background_png);
 	GRRLIB_FreeTexture(tex_Checkicon_png);
@@ -183,11 +166,6 @@ void deinitGUI(void) {
 	GRRLIB_FreeTexture(tex_loadingbargrey_png);
 	GRRLIB_FreeTexture(tex_loadingbarblue_png);
 	GRRLIB_FreeTexture(tex_window_png);
-	GRRLIB_FreeTexture(tex_Cogs_png[0]);
-	GRRLIB_FreeTexture(tex_Cogs_png[1]);
-	GRRLIB_FreeTexture(tex_Cogs_png[2]);
-	GRRLIB_FreeTexture(tex_Cogs_png[3]);
-	GRRLIB_FreeTexture(tex_Cogs_png[4]);
 	GRRLIB_FreeTexture(tex_ScreenBuf);
 	GRRLIB_Exit();
 	return;
@@ -195,7 +173,6 @@ void deinitGUI(void) {
 
 int printError(const char* msg) {
 	int i;
-	PauseThread();
 	GRRLIB_DrawImg(0, 0, tex_background_png, 0, 1, 1, HEX_WHITE);
 	GRRLIB_DrawImg(256, 112, tex_Deleteicon_png, 0, 1, 1, HEX_WHITE);
 	GRRLIB_PrintfTTF((640-strlen(msg)*9)/2, 256, myFont, msg, 20, HEX_WHITE);
@@ -210,8 +187,6 @@ int printError(const char* msg) {
 
 int printSuccess(const char* msg) {
 	int i;
-	PauseThread();
-	//GRRLIB_ClearTex(tex_ScreenBuf);
 	GRRLIB_DrawImg(0, 0, tex_background_png, 0, 1, 1, HEX_WHITE);
 	GRRLIB_DrawImg(256, 112, tex_Checkicon_png, 0, 1, 1, HEX_WHITE);
 	GRRLIB_PrintfTTF((640-strlen(msg)*9)/2, 256, myFont, msg, 20, HEX_WHITE);
@@ -224,27 +199,20 @@ int printSuccess(const char* msg) {
 }
 
 int printLoading(const char* msg) {
-	//int i;
-	//ResumeThread();
-	LockMutex();
-	u64 current_ticks = gettick();
-	//GRRLIB_DrawImg(256, 112, tex_Refreshicon_png, 0, 1, 1, HEX_WHITE);
-	GRRLIB_DrawImg(0, 0, tex_background_png, 0, 1, 1, HEX_WHITE);
-	GRRLIB_PrintfTTF((640-strlen(msg)*9)/2, 256, myFont, msg, 20, HEX_WHITE);
-	CopyBuf();
-	UnlockMutex();
-	//for (i = 0; i < 3; i++) { //Workaround for GRRLIB_Render() bug
-	while(!CheckTime(current_ticks, 250)) {
-		//DrawBuf();
-		//DrawCog();
-		//GRRLIB_Render();
+	int i;
+	for (i = 0; i < 3; i++) { //Workaround for GRRLIB_Render() bug
+		GRRLIB_DrawImg(0, 0, tex_background_png, 0, 1, 1, HEX_WHITE);
+		GRRLIB_DrawImg(256, 112, tex_Refreshicon_png, 0, 1, 1, HEX_WHITE);
+		GRRLIB_PrintfTTF((640-strlen(msg)*9)/2, 256, myFont, msg, 20, HEX_WHITE);
+
+		GRRLIB_Render();
 	}
 	return 0;
 }
 
 int printSelectIOS(const char* msg, const char* ios) {
 	int i;
-	PauseThread();
+
 	GRRLIB_DrawImg(0, 0, tex_background_png, 0, 1, 1, HEX_WHITE);
 	GRRLIB_DrawImg(256, 112, tex_Refreshicon_png, 0, 1, 1, HEX_WHITE);
 	
@@ -264,35 +232,29 @@ int printSelectIOS(const char* msg, const char* ios) {
 }
 
 int printLoadingBar(const char* msg, const f32 percent) {
-	int loaded, notloaded;
-	u64 current_ticks = gettick();
+	int loaded, notloaded, i;
 	
 	loaded = 536.0/100.0*percent;
 	if (loaded > 536) loaded = 536;
 	
 	notloaded = 536 - loaded;
-	LockMutex();
 	
-	//int i;
 	GRRLIB_DrawImg(0, 0, tex_background_png, 0, 1, 1, HEX_WHITE);
-	//GRRLIB_DrawImg(256, 112, tex_Refreshicon_png, 0, 1, 1, HEX_WHITE);
+	GRRLIB_DrawImg(256, 112, tex_Refreshicon_png, 0, 1, 1, HEX_WHITE);
 	GRRLIB_PrintfTTF((640-strlen(msg)*9)/2, 256, myFont, msg, 20, HEX_WHITE);
 	GRRLIB_DrawPart(52, 340, 0, 0, loaded, 36, tex_loadingbarblue_png, 0, 1, 1, HEX_WHITE);
 	GRRLIB_DrawPart(52+loaded, 340, loaded, 0, notloaded, 36, tex_loadingbargrey_png, 0, 1, 1, HEX_WHITE);
 	CopyBuf();
-	UnlockMutex();
-	//for (i = 0; i < 3; i++) { //Workaround for GRRLIB_Render() bug
-	while(!CheckTime(current_ticks, 250)) {
-		//DrawBuf();
-		//DrawCog();
-		//GRRLIB_Render();
+	for (i = 0; i < 3; i++) { //Workaround for GRRLIB_Render() bug
+		DrawBuf();
+		GRRLIB_Render();
 	}
 	return 0;
 }
 	
 int printEndSuccess(const char* msg) {
 	int i;
-	//PauseThread();
+	
 	GRRLIB_DrawImg(0, 0, tex_background_png, 0, 1, 1, HEX_WHITE);
 	GRRLIB_DrawImg(256, 112, tex_Checkicon_png, 0, 1, 1, HEX_WHITE);
 	
@@ -320,7 +282,7 @@ int printEndSuccess(const char* msg) {
 
 int printEndError(const char* msg) {
 	int i;
-	PauseThread();
+
 	GRRLIB_DrawImg(0, 0, tex_background_png, 0, 1, 1, HEX_WHITE);
 	GRRLIB_DrawImg(256, 112, tex_Deleteicon_png, 0, 1, 1, HEX_WHITE);
 	
@@ -384,7 +346,7 @@ int printReport(char report[200][100], int firstLine, bool completeReport) {
 
 int printUploadSuccess(const char* msg) {
 	int i;
-	PauseThread();
+
 	GRRLIB_DrawImg(0, 0, tex_background_png, 0, 1, 1, HEX_WHITE);
 	GRRLIB_DrawImg(256, 112, tex_Checkicon_png, 0, 1, 1, HEX_WHITE);
 	
@@ -404,7 +366,7 @@ int printUploadSuccess(const char* msg) {
 
 int printUploadError(const char* msg) {
 	int i;
-	PauseThread();
+
 	GRRLIB_DrawImg(0, 0, tex_background_png, 0, 1, 1, HEX_WHITE);
 	GRRLIB_DrawImg(256, 112, tex_Deleteicon_png, 0, 1, 1, HEX_WHITE);
 	

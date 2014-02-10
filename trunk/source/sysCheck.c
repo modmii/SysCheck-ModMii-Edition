@@ -28,7 +28,6 @@
 #include "tmdIdentification.h"
 #include "gecko.h"
 #include "update.h"
-#include "thread.h"
 
 // Filename
 #define REPORT "sd:/sysCheck.csv"
@@ -355,7 +354,6 @@ int main(int argc, char **argv)
 
 	u32 tempTitles;
 	if (ES_GetNumTitles(&tempTitles) < 0) {
-		PauseThread();
 		printError(ERR_GetNrOfTitles);
 		sleep(5);
 		deinitGUI();
@@ -390,7 +388,7 @@ int main(int argc, char **argv)
 	int countIOS = 0; // Number of IOS
 	int countStubs = 0; // Number of IOS Stubs
 	int countBCMIOS = 0; //Number of BC and MIOS. Should be 2.
-	//u32 titleID;
+	u32 titleID;
 	char HashLogBuffer[300][100] = {{0}};
 	int lines = 0;
 
@@ -402,7 +400,7 @@ int main(int argc, char **argv)
 			titles[i] = 0;
 			continue;
 		}
-		u32 titleID = titles[i] & 0xFFFFFFFF;
+		titleID = titles[i] & 0xFFFFFFFF;
 
 		// Skip BC, MIOS and possible other non-IOS titles
 		if (titleID > 200 && titleID < 258) {
@@ -653,7 +651,7 @@ int main(int argc, char **argv)
 			selectedIOS++;
 			starttime = time(NULL);
 
-			u32 titleID = newTitles[selectedIOS] & 0xFFFFFFFF;
+			titleID = newTitles[selectedIOS] & 0xFFFFFFFF;
 
 			switch (titleID)
 			{
@@ -677,7 +675,7 @@ int main(int argc, char **argv)
 			starttime = time(NULL);
 
 			if (selectedIOS > -1) {
-				u32 titleID = newTitles[selectedIOS] & 0xFFFFFFFF;
+				titleID = newTitles[selectedIOS] & 0xFFFFFFFF;
 
 				switch (titleID)
 				{
@@ -731,7 +729,6 @@ int main(int argc, char **argv)
 	}
 
 	// Test vulnerabilities in IOS
-	ResumeThread();
 	for (i = 0; i < nbTitles; i++)
 	{
 		if (selectedIOS > -1) i = selectedIOS; //If specific IOS is selected
@@ -757,8 +754,7 @@ int main(int argc, char **argv)
 			// Reload IOS
 			gprintf("// IOS_ReloadIOS(%d)\n", ios[i].titleID);
 			logfile("// IOS_ReloadIOS(%d)\r\n", ios[i].titleID);
-			//IOS_ReloadIOS(ios[i].titleID);
-			ReloadIOS(ios[i].titleID);
+			IOS_ReloadIOS(ios[i].titleID);
 
 			// Test fake signature
 			gprintf("// Test fake signature\n");
@@ -824,8 +820,7 @@ int main(int argc, char **argv)
 
 
 	// Reload the running IOS
-	//IOS_ReloadIOS(runningIOS);
-	ReloadIOS(runningIOS);
+	IOS_ReloadIOS(runningIOS);
 	sprintf(MSG_Buffer, MSG_ReloadIOS, runningIOS, runningIOSRevision);
 	printLoading(MSG_Buffer);
 	//usleep(250000);
@@ -1118,7 +1113,6 @@ int main(int argc, char **argv)
 	// Initialise the FAT file system
 	printLoading(MSG_InitFAT);
 	//usleep(250000);
-	PauseThread();
 	if (!fatInitDefault())
 	{
 		sprintf(MSG_Buffer, ERR_InitFAT);

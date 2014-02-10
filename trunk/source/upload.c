@@ -28,7 +28,6 @@
 #include "gui.h"
 #include "languages.h"
 #include "fatMounter.h"
-#include "thread.h"
 
 /* Converts an integer value to its hex character*/
 char to_hex(char code) {
@@ -54,7 +53,6 @@ char *url_encode(char *str) {
 }
 
 void transmitSyscheck(char ReportBuffer[200][100], int *lines) {
-	ResumeThread();
 	printLoadingBar(TXT_Upload, 0);
 	gprintf("TempReport bauen\n");
 
@@ -99,7 +97,6 @@ void transmitSyscheck(char ReportBuffer[200][100], int *lines) {
 
 	http_get_result(&http_status, &outbuf, &lenght);
 	printLoadingBar(TXT_Upload, 100);
-	PauseThread();
 
 	(*lines)++;
 	memset(ReportBuffer[*lines], 0, 100);

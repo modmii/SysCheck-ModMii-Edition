@@ -159,6 +159,10 @@ $(OUTPUT).elf: $(OFILES)
 	@echo $(notdir $<)
 	$(bin2o)
 
+%.png.o	:	%.png
+	@echo $(notdir $<)
+	$(bin2o)
+
 %.certs.o : %.certs
 	@echo $(notdir $<)
 	$(bin2o)

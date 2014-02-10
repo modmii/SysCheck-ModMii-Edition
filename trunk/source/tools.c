@@ -28,7 +28,6 @@
 #include "gui.h"
 #include "languages.h"
 #include "fatMounter.h"
-#include "thread.h"
 
 // Variables
 bool NandInitialized = false;
