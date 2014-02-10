@@ -3,6 +3,7 @@
  detect_settings.h -- detects various system settings
  
  Copyright (C) 2008 tona
+ Copyright (C) 2014 JoostinOnline
  Unless other credit specified
  
  This software is provided 'as-is', without any express or implied
@@ -29,37 +30,29 @@
 #ifndef __SYSMENUINFO_H__
 #define __SYSMENUINFO_H__
 
+
 #define SADR_LENGTH 0x1007+1
 #define round_up(x,n) (-(-(x) & -(n)))
 
 typedef struct {
-    u32 deviceId;
-    u32 hollywoodVersion;
+    u32 deviceID;
     u32 boot2version;
-    u16 sysMenuVer;
+    u32 sysMenuVer;
+    u32 dvdSupport;
     s32 sysMenuIOS;
-    bool sysMenuIOSisStub;
-    bool regionChangedKoreanWii;
-    double sysMenuNinVersion;
+    float sysNinVersion;
     char sysMenuRegion;
-    char regionFromSerial;
-    s32 lang;
-    s32 area;
-    s32 game;
-    s32 video;
-    s32 eula;
-    s32 country;
-    bool reRunWithSU;
-    bool missingIOSwarning;
-    bool SMRegionMismatchWarning;
-    bool failSMContentRead;
-    u16 bcVersion;
-    u16 miosVersion;
-    u32 titleCnt;
-    u32 iosCount;
-    bool ahbprot;
+	s32 systemRegion;
+    char country[44];
+	char miosInfo[128];
+    u32 countTitles;
+    u32 countBCMIOS;
+    u32 countIOS;
+    u32 countStubs;
+	u8 shopcode;
+	u8 priiloader;
+	bool nandAccess;
 } SYSSETTINGS;
-extern SYSSETTINGS wiiSettings;
 
 typedef struct {
     char name[ISFS_MAXPATH + 1];

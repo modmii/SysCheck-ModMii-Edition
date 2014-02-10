@@ -31,7 +31,7 @@
 
 /* Converts an integer value to its hex character*/
 char to_hex(char code) {
-  static char hex[] = "0123456789abcdef";
+  char hex[] = "0123456789abcdef";
   return hex[code & 15];
 }
 
@@ -107,7 +107,7 @@ void transmitSyscheck(char ReportBuffer[200][100], int *lines) {
 	free(outbuf);
 	gprintf("len: %d, String: %s\n", lenght, ReportBuffer[*lines]);
 
-	u16 wpressed;
+	u32 wpressed;
 
 	if (!strncmp(ReportBuffer[*lines], "ERROR: ", 7)) {
 		char temp[100];
