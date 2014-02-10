@@ -28,7 +28,6 @@
 #include "gui.h"
 #include "languages.h"
 #include "fatMounter.h"
-#include "thread.h"
 
 #define DM_INSTALLED 	((*(vu32*)(appfile+i)) == 0x44494F53 && (*(vu32*)(appfile+i+5)) == 0x4D494F53) // true = DM or DML installed
 #define DML_OR_DM		(*(vu32*)(appfile+i+10) == 0x4C697465) // true = DML
