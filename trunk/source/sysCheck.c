@@ -228,6 +228,7 @@ int main(int argc, char **argv)
 		}
 	}
 	SYSSETTINGS SystemInfo;
+	SystemInfo.deviceType = IS_WII_U;
 
 	if (AHB_ACCESS && !forceNoAHBPROT) IosPatch_RUNTIME(true, false, false, false);
 	SystemInfo.nandAccess = CheckNANDAccess();
@@ -261,11 +262,12 @@ int main(int argc, char **argv)
 
 	printLoading(MSG_GetHBCVer);
 	usleep(200000);
-	u32 hbcversion = 0;
-	u32 hbfversion = 0;
-	s32 hbc = 0;
-	s32 hbf = 0;
-	u32 hbcIOS = 0;
+	homebrew_t homebrew;
+	homebrew.hbcversion = 0;
+	homebrew.hbfversion = 0;
+	homebrew.hbc = HBC_NONE;
+	homebrew.hbf = HBF_NONE;
+	homebrew.hbcIOS = 0;
 	SystemInfo.dvdSupport = 0;
 	s32 ret = Title_GetVersionNObuf(0x000100014C554C5All);
 	if (ret<0) {
@@ -273,50 +275,50 @@ int main(int argc, char **argv)
 		if (ret<0) {
 			ret = Title_GetVersionNObuf(0x000100014A4F4449ll);
 			if (ret<0) {
-				hbc = 1;
+				homebrew.hbc = HBC_HAXX;
 				ret = Title_GetVersionNObuf(0x0001000148415858ll);
 				if (ret<0) {
-					hbc = 0;
+					homebrew.hbc = HBC_NONE;
 				} else {
-					hbc = 1;
-					hbcversion = ret;
+					homebrew.hbc = HBC_HAXX;
+					homebrew.hbcversion = ret;
 				}
 			} else {
-				hbc = 2;
-				hbcversion = ret;
+				homebrew.hbc = HBC_JODI;
+				homebrew.hbcversion = ret;
 			}
 		} else {
-			hbc = 3;
-			hbcversion = ret;
-			if (hbcversion == 0)
-				hbcversion = VERSION_1_1_0;
+			homebrew.hbc = HBC_1_0_7;
+			homebrew.hbcversion = ret;
+			if (homebrew.hbcversion == 0)
+				homebrew.hbcversion = VERSION_1_1_0;
 		}
 	} else {
-		hbc = 4;
-		hbcversion = (ret != 257) +1;
+		homebrew.hbc = HBC_LULZ;
+		homebrew.hbcversion = (ret != 257) + 1;
 	}
-	if (hbc == 4) {
-		hbcIOS =  get_title_ios(TITLE_ID(0x10001, 0x4C554C5A));
-	} else if (hbc == 3) {
-		hbcIOS =  get_title_ios(TITLE_ID(0x10001, 0xAF1BF516));
-	} else if (hbc == 2) {
-		hbcIOS =  get_title_ios(TITLE_ID(0x10001, 0x4A4F4449));
-	} else if (hbc == 1) {
-		hbcIOS = get_title_ios(TITLE_ID(0x10001, 0x48415858));
+	if (homebrew.hbc == HBC_LULZ) {
+		homebrew.hbcIOS =  get_title_ios(TITLE_ID(0x10001, 0x4C554C5A)); // LULZ
+	} else if (homebrew.hbc == HBC_1_0_7) {
+		homebrew.hbcIOS =  get_title_ios(TITLE_ID(0x10001, 0xAF1BF516)); // ????
+	} else if (homebrew.hbc == HBC_JODI) {
+		homebrew.hbcIOS =  get_title_ios(TITLE_ID(0x10001, 0x4A4F4449)); // JODI
+	} else if (homebrew.hbc == HBC_HAXX) {
+		homebrew.hbcIOS = get_title_ios(TITLE_ID(0x10001, 0x48415858)); // HAXX
 	}
 
 	ret = Title_GetVersionNObuf(0x0001000148424630LL); //HBF0
 	if (ret<0) {
 		ret = Title_GetVersionNObuf(0x0001000154484246LL); //THBF
 		if (ret<0) {
-			hbf = 0;
+			homebrew.hbf = HBF_NONE;
 		} else {
-			hbf = 1;
-			hbfversion = ret;
+			homebrew.hbf = HBF_HBF0;
+			homebrew.hbfversion = ret;
 		}
 	} else {
-		hbf = 2;
-		hbfversion = ret;
+		homebrew.hbf = HBF_THBF;
+		homebrew.hbfversion = ret;
 	}
 
 	if (AHB_ACCESS && !forceNoAHBPROT) {
@@ -755,36 +757,33 @@ int main(int argc, char **argv)
 			// Test fake signature
 			gprintf("// Test fake signature\n");
 			logfile("// Test fake signature\r\n");
-			ios[i].infoFakeSignature = (CheckFakeSignature());
+			ios[i].infoFakeSignature = CheckFakeSignature();
 
 			// Test ES Identify
 			gprintf("// Test ES Identify\n");
 			logfile("// Test ES Identify\r\n");
-			ios[i].infoESIdentify = (CheckESIdentify());
+			ios[i].infoESIdentify = CheckESIdentify();
 
 			// Test Flash Access
 			gprintf("// Test Flash Access\n");
 			logfile("// Test Flash Access\r\n");
-			ios[i].infoFlashAccess = (CheckFlashAccess());
+			ios[i].infoFlashAccess = CheckFlashAccess();
 
 			// Test NAND Access
 			gprintf("// Test NAND Access\n");
 			logfile("// Test NAND Access\r\n");
-			ios[i].infoNANDAccess = (CheckNANDAccess());
+			ios[i].infoNANDAccess = CheckNANDAccess();
 
 			// Test Boot2 Access
 			gprintf("// Test Boot2 Access\n");
 			logfile("// Test Boot2 Access\r\n");
-			ios[i].infoBoot2Access = (CheckBoot2Access());
+			ios[i].infoBoot2Access = CheckBoot2Access();
 
 			// Test USB 2.0
 			gprintf("// Test USB 2.0\n");
 			logfile("// Test USB 2.0\r\n");
-			ios[i].infoUSB2 = (CheckUSB2(ios[i].titleID));
+			ios[i].infoUSB2 = CheckUSB2(ios[i].titleID);
 
-			if (ios[i].infoFakeSignature) {
-				//ios[i].infoVersionPatch = (CheckVersionPatch());
-			}
 
 			// Check Priiloader
 			if (!SystemInfo.nandAccess && SystemInfo.priiloader == -2 && ios[i].infoNANDAccess) {
@@ -835,12 +834,12 @@ int main(int argc, char **argv)
 	// Display Title
 	sprintf(ReportBuffer[APP_TITLE], TXT_AppTitle, TXT_AppVersion);
 	sprintf(ReportBuffer[APP_IOS], TXT_AppIOS, runningIOS, IOS_GetRevision());
-	bool validregion = SystemInfo.systemRegion >= CONF_REGION_JP && SystemInfo.systemRegion <= CONF_REGION_CN;
+	SystemInfo.validregion = SystemInfo.systemRegion >= CONF_REGION_JP && SystemInfo.systemRegion <= CONF_REGION_CN;
 
 	// Display the console region
 	if (SystemInfo.sysNinVersion != 0.0f) {
-		sprintf(ReportBuffer[TEXT_REGION], "%s: %s", TXT_Region, validregion ? Regions[SystemInfo.systemRegion] : "");
-		if (validregion)
+		sprintf(ReportBuffer[TEXT_REGION], "%s: %s", TXT_Region, SystemInfo.validregion ? Regions[SystemInfo.systemRegion] : "");
+		if (SystemInfo.validregion)
 			sprintf(ReportBuffer[SYSMENU], TXT_SysMenu, SystemInfo.sysNinVersion, SystemInfo.sysMenuRegion, SystemInfo.sysMenuVer);
 		else
 			strcat(ReportBuffer[SYSMENU], TXT_Unknown);
@@ -849,8 +848,8 @@ int main(int argc, char **argv)
 		u32 realSysVersion = systemmenu.realRevision;
 		SystemInfo.sysNinVersion = GetSysMenuNintendoVersion(realSysVersion);
 		SystemInfo.sysMenuRegion = GetSysMenuRegion(SystemInfo.sysMenuVer);
-		sprintf(ReportBuffer[TEXT_REGION], "%s: %s", TXT_Region, validregion ? Regions[SystemInfo.systemRegion] : "");
-		if (validregion)
+		sprintf(ReportBuffer[TEXT_REGION], "%s: %s", TXT_Region, SystemInfo.validregion ? Regions[SystemInfo.systemRegion] : "");
+		if (SystemInfo.validregion)
 			sprintf(ReportBuffer[SYSMENU], TXT_SysMenu3, SystemInfo.sysNinVersion, SystemInfo.sysMenuRegion, SystemInfo.sysMenuVer, realSysVersion, systemmenu.info);
 		else
 			strcat(ReportBuffer[SYSMENU], TXT_Unknown);
@@ -880,8 +879,6 @@ int main(int argc, char **argv)
 		} else {
 			SystemInfo.sysMenuIOS = get_title_ios(TITLE_ID(0x00000001, 0x00000002));
 
-			char Region[100];
-
 			switch (SystemInfo.systemRegion)
 			{
 				case CONF_REGION_US:
@@ -904,39 +901,38 @@ int main(int argc, char **argv)
 					sprintf(ReportBuffer[TEXT_REGION], "%s: ", TXT_Region);
 					strcat(ReportBuffer[TEXT_REGION], TXT_Unknown);
 			}
-			sprintf(Region, "%c", SystemInfo.sysMenuRegion);
 
 			switch (SystemInfo.sysMenuIOS)
 			{
 				case 9:
-					sprintf(ReportBuffer[SYSMENU], TXT_SysMenu2, "1.0", Region, SystemInfo.sysMenuVer);
+					sprintf(ReportBuffer[SYSMENU], TXT_SysMenu2, "1.0", SystemInfo.sysMenuRegion, SystemInfo.sysMenuVer);
 					break;
 				case 11:
-					sprintf(ReportBuffer[SYSMENU], TXT_SysMenu2, "2.0/2.1", Region, SystemInfo.sysMenuVer);
+					sprintf(ReportBuffer[SYSMENU], TXT_SysMenu2, "2.0/2.1", SystemInfo.sysMenuRegion, SystemInfo.sysMenuVer);
 					break;
 				case 20:
-					sprintf(ReportBuffer[SYSMENU], TXT_SysMenu2, "2.2", Region);
+					sprintf(ReportBuffer[SYSMENU], TXT_SysMenu2, "2.2", SystemInfo.sysMenuRegion);
 					break;
 				case 30:
-					sprintf(ReportBuffer[SYSMENU], TXT_SysMenu2, "3.0/3.1/3.2/3.3", Region, SystemInfo.sysMenuVer);
+					sprintf(ReportBuffer[SYSMENU], TXT_SysMenu2, "3.0/3.1/3.2/3.3", SystemInfo.sysMenuRegion, SystemInfo.sysMenuVer);
 					break;
 				case 40:
-					sprintf(ReportBuffer[SYSMENU], TXT_SysMenu2, "3.3", Region, SystemInfo.sysMenuVer);
+					sprintf(ReportBuffer[SYSMENU], TXT_SysMenu2, "3.3", SystemInfo.sysMenuRegion, SystemInfo.sysMenuVer);
 					break;
 				case 50:
-					sprintf(ReportBuffer[SYSMENU], TXT_SysMenu2, "3.4", Region, SystemInfo.sysMenuVer);
+					sprintf(ReportBuffer[SYSMENU], TXT_SysMenu2, "3.4", SystemInfo.sysMenuRegion, SystemInfo.sysMenuVer);
 					break;
 				case 60:
-					sprintf(ReportBuffer[SYSMENU], TXT_SysMenu2, "4.0/4.1", Region, SystemInfo.sysMenuVer);
+					sprintf(ReportBuffer[SYSMENU], TXT_SysMenu2, "4.0/4.1", SystemInfo.sysMenuRegion, SystemInfo.sysMenuVer);
 					break;
 				case 70:
-					sprintf(ReportBuffer[SYSMENU], TXT_SysMenu2, "4.2", Region, SystemInfo.sysMenuVer);
+					sprintf(ReportBuffer[SYSMENU], TXT_SysMenu2, "4.2", SystemInfo.sysMenuRegion, SystemInfo.sysMenuVer);
 					break;
 				case 80:
-					sprintf(ReportBuffer[SYSMENU], TXT_SysMenu2, "4.3", Region, SystemInfo.sysMenuVer);
+					sprintf(ReportBuffer[SYSMENU], TXT_SysMenu2, "4.3", SystemInfo.sysMenuRegion, SystemInfo.sysMenuVer);
 					break;
 				default:
-					sprintf(ReportBuffer[SYSMENU], TXT_SysMenu2, "0.0", Region, SystemInfo.sysMenuVer);
+					sprintf(ReportBuffer[SYSMENU], TXT_SysMenu2, "0.0", SystemInfo.sysMenuRegion, SystemInfo.sysMenuVer);
 					break;
 			}
 		}
@@ -1004,24 +1000,25 @@ int main(int argc, char **argv)
 	else if (SystemInfo.priiloader == 2)
 		sprintf(ReportBuffer[PRIILOADER], TXT_PreFiix);
 
-	if (hbc == 0 || hbcversion == 0)
+	if (homebrew.hbc == HBC_NONE || homebrew.hbcversion == 0)
 		sprintf(ReportBuffer[HBC], "Homebrew Channel is not installed");
-	else if (hbcIOS == 0)
+	else if (homebrew.hbcIOS == 0)
 		sprintf(ReportBuffer[HBC], TXT_HBC_STUB);
-	else if (hbc == 4)
-		sprintf(ReportBuffer[HBC], TXT_HBC_112, hbcversion, hbcIOS);
-	else if (hbcversion == VERSION_1_1_0)
-		sprintf(ReportBuffer[HBC], TXT_HBC_NEW, hbcIOS);
-	else if (hbcversion > 0)
-		sprintf(ReportBuffer[HBC], TXT_HBC, hbcversion, hbcIOS);
+	else if (homebrew.hbc == HBC_LULZ)
+		sprintf(ReportBuffer[HBC], TXT_HBC_112, homebrew.hbcversion, homebrew.hbcIOS);
+	else if (homebrew.hbcversion == VERSION_1_1_0)
+		sprintf(ReportBuffer[HBC], TXT_HBC_NEW, homebrew.hbcIOS);
+	else if (homebrew.hbcversion > 0)
+		sprintf(ReportBuffer[HBC], TXT_HBC, homebrew.hbcversion, homebrew.hbcIOS);
 
-	if (hbf > 0)
-		sprintf(ReportBuffer[HBF], TXT_HBF, hbfversion);
+	if (homebrew.hbf > HBF_NONE)
+		sprintf(ReportBuffer[HBF], TXT_HBF, homebrew.hbfversion);
 
 	sprintf(ReportBuffer[HOLLYWOOD], TXT_Hollywood, *HOLLYWOOD_VERSION);
 	sprintf(ReportBuffer[CONSOLE_ID], TXT_ConsoleID, SystemInfo.deviceID);
-	sprintf(ReportBuffer[BOOT2_VERSION], TXT_vBoot2, SystemInfo.boot2version);
+	sprintf(ReportBuffer[CONSOLE_TYPE], TXT_ConsoleType, SystemInfo.deviceType ? "vWii" : "Wii");
 	sprintf(ReportBuffer[COUNTRY], "Shop Channel Country: %s (%u)", (strlen(SystemInfo.country)) ? SystemInfo.country : TXT_Unknown, SystemInfo.shopcode);
+	sprintf(ReportBuffer[BOOT2_VERSION], TXT_vBoot2, SystemInfo.boot2version);
 	sprintf(ReportBuffer[NR_OF_TITLES], TXT_NrOfTitles, SystemInfo.countTitles);
 	sprintf(ReportBuffer[NR_OF_IOS], TXT_NrOfIOS, (SystemInfo.countIOS - SystemInfo.countBCMIOS), SystemInfo.countStubs);
 
@@ -1107,6 +1104,7 @@ int main(int argc, char **argv)
 		sleep(2);
 		printEndError(MSG_ReportError);
 	} else {
+		//chdir("/");
 		// Create the report
 		FILE *file = fopen(REPORT, "w");
 
@@ -1139,6 +1137,7 @@ int main(int argc, char **argv)
 			for (i = 0; i <= lines; i++) {
 				fprintf(file, HashLogBuffer[i]);
 				fprintf(file, "\r\n");
+				fflush(file);
 			}
 			// Close the report
 			fclose(file);
@@ -1160,7 +1159,7 @@ int main(int argc, char **argv)
 			// Unmount the SD Card
 			UnmountSD();
 			deinitGUI();
-			if(*LOADER_STUB) exit(0);;
+			if(*LOADER_STUB) exit(0);
 			SYS_ResetSystem(SYS_RETURNTOMENU, 0, 0);
 		}
 
