@@ -36,6 +36,7 @@
 
 typedef struct {
     u32 deviceID;
+	bool deviceType;
     u32 boot2version;
     u32 sysMenuVer;
     u32 dvdSupport;
@@ -43,6 +44,7 @@ typedef struct {
     float sysNinVersion;
     char sysMenuRegion;
 	s32 systemRegion;
+	bool validregion;
     char country[44];
 	char miosInfo[128];
     u32 countTitles;
@@ -58,6 +60,14 @@ typedef struct {
     char name[ISFS_MAXPATH + 1];
     int type;
 } dirent_t;
+
+typedef struct {
+	u32 hbcversion;
+	u32 hbfversion;
+	s32 hbc;
+	s32 hbf;
+	u32 hbcIOS;
+} homebrew_t;
 
 char getSystemMenuRegionFromContent();
 

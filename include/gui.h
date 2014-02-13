@@ -6,9 +6,8 @@
 #define HEX_WHITE	0xFFFFFFFF
 #define HEX_BLACK	0x00000000
 
-#define CopyBuf() 			GRRLIB_Screen2Texture(0, 0, tex_ScreenBuf, GX_FALSE)
-#define DrawBuf()			GRRLIB_DrawImg(0, 0, tex_ScreenBuf, 0, 1, 1, HEX_WHITE)
-#define CheckTime(X,Y)		(ticks_to_millisecs(diff_ticks((X), gettick())) > (Y))
+#define CopyBuf() 	GRRLIB_Screen2Texture(0, 0, tex_ScreenBuf, GX_FALSE)
+#define DrawBuf()	GRRLIB_DrawImg(0, 0, tex_ScreenBuf, 0, 1, 1, HEX_WHITE)
 
 extern GRRLIB_ttfFont *myFont;
 extern GRRLIB_texImg *tex_background_png;
@@ -24,7 +23,6 @@ extern GRRLIB_texImg *tex_WiiDpadRight_png;
 extern GRRLIB_texImg *tex_loadingbargrey_png;
 extern GRRLIB_texImg *tex_loadingbarblue_png;
 extern GRRLIB_texImg *tex_window_png;
-extern GRRLIB_texImg *tex_Cogs_png[5];
 extern GRRLIB_texImg *tex_ScreenBuf;
 
 int initGUI(void);

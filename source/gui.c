@@ -106,10 +106,7 @@ bool loadSystemFont(bool korean)
 		free(fontArchive);
 		free(contentMap);
 		MountSD();
-		static char buf[128];
-		snprintf(buf, 128, "sd:/test.ttf");
-		FILE *fp = NULL;
-		fp = fopen(buf, "wb");
+		FILE *fp = fopen("sd:/test.ttf", "wb");
 		if (fp)
 		{
 			fwrite(systemFont, 1, systemFontSize, fp);
@@ -181,7 +178,6 @@ int printError(const char* msg) {
 		DrawBuf();
 		GRRLIB_Render();
 	}
-	
 	return 0;
 }
 
@@ -200,11 +196,12 @@ int printSuccess(const char* msg) {
 
 int printLoading(const char* msg) {
 	int i;
+	GRRLIB_DrawImg(0, 0, tex_background_png, 0, 1, 1, HEX_WHITE);
+	GRRLIB_DrawImg(256, 112, tex_Refreshicon_png, 0, 1, 1, HEX_WHITE);
+	GRRLIB_PrintfTTF((640-strlen(msg)*9)/2, 256, myFont, msg, 20, HEX_WHITE);
+	CopyBuf();
 	for (i = 0; i < 3; i++) { //Workaround for GRRLIB_Render() bug
-		GRRLIB_DrawImg(0, 0, tex_background_png, 0, 1, 1, HEX_WHITE);
-		GRRLIB_DrawImg(256, 112, tex_Refreshicon_png, 0, 1, 1, HEX_WHITE);
-		GRRLIB_PrintfTTF((640-strlen(msg)*9)/2, 256, myFont, msg, 20, HEX_WHITE);
-
+		DrawBuf();
 		GRRLIB_Render();
 	}
 	return 0;
@@ -276,7 +273,6 @@ int printEndSuccess(const char* msg) {
 		DrawBuf();
 		GRRLIB_Render();
 	}
-	
 	return 0;
 }
 
@@ -302,45 +298,44 @@ int printEndError(const char* msg) {
 		DrawBuf();
 		GRRLIB_Render();
 	}
-	
 	return 0;
 }
 
 int printReport(char report[200][100], int firstLine, bool completeReport) {
 	int i, j;
+	GRRLIB_DrawImg(0, 0, tex_background_png, 0, 1, 1, HEX_WHITE);
+	GRRLIB_DrawImg(36, 40, tex_window_png, 0, 1, 1, HEX_WHITE);
+	
+	for (j = 0; j < BLANK + 1; j++) {
+		GRRLIB_PrintfTTF(80, 98+j*17, myFont, report[firstLine+j], 12, HEX_BLACK);
+	}
+	if (completeReport) {
+		GRRLIB_DrawImg(80, 388, tex_WiiButtonMinus_png, 0, 1, 1, HEX_WHITE);
+		GRRLIB_PrintfTTF(96-(strlen(BUT_Shutoff)*7.8)/2, 425, myFont, BUT_Shutoff, 14, HEX_WHITE);
+	
+		GRRLIB_DrawImg(238, 386, tex_WiiButtonHome_png, 0, 1, 1, HEX_WHITE);
+		GRRLIB_PrintfTTF(256-(strlen(BUT_HBC)*7.8)/2, 425, myFont, BUT_HBC, 14, HEX_WHITE);
+		
+		GRRLIB_DrawImg(380, 388, tex_WiiButtonA_png, 0, 1, 1, HEX_WHITE);
+		GRRLIB_PrintfTTF(408-(strlen(BUT_ConfirmUpload)*7.8)/2, 425, myFont, BUT_ConfirmUpload, 14, HEX_WHITE);
+	
+		GRRLIB_DrawImg(528, 388, tex_WiiButtonPlus_png, 0, 1, 1, HEX_WHITE);
+		GRRLIB_PrintfTTF(544-(strlen(BUT_SysMenu)*7.8)/2, 425, myFont, BUT_SysMenu, 14, HEX_WHITE);
+	} else {
+		GRRLIB_DrawImg(144, 388, tex_WiiButtonMinus_png, 0, 1, 1, HEX_WHITE);
+		GRRLIB_PrintfTTF(160-(strlen(BUT_Shutoff)*7.8)/2, 425, myFont, BUT_Shutoff, 14, HEX_WHITE);
+	
+		GRRLIB_DrawImg(302, 386, tex_WiiButtonHome_png, 0, 1, 1, HEX_WHITE);
+		GRRLIB_PrintfTTF(320-(strlen(BUT_HBC)*7.8)/2, 425, myFont, BUT_HBC, 14, HEX_WHITE);
+	
+		GRRLIB_DrawImg(464, 388, tex_WiiButtonPlus_png, 0, 1, 1, HEX_WHITE);
+		GRRLIB_PrintfTTF(480-(strlen(BUT_SysMenu)*7.8)/2, 425, myFont, BUT_SysMenu, 14, HEX_WHITE);
+	}
+	CopyBuf();
 	for (i = 0; i < 3; i++) { //Workaround for GRRLIB_Render() bug
-		GRRLIB_DrawImg(0, 0, tex_background_png, 0, 1, 1, HEX_WHITE);
-		GRRLIB_DrawImg(36, 40, tex_window_png, 0, 1, 1, HEX_WHITE);
-		
-		for (j = 0; j < BLANK + 1; j++) {
-			GRRLIB_PrintfTTF(80, 98+j*17, myFont, report[firstLine+j], 12, HEX_BLACK);
-		}
-		if (completeReport) {
-			GRRLIB_DrawImg(80, 388, tex_WiiButtonMinus_png, 0, 1, 1, HEX_WHITE);
-			GRRLIB_PrintfTTF(96-(strlen(BUT_Shutoff)*7.8)/2, 425, myFont, BUT_Shutoff, 14, HEX_WHITE);
-		
-			GRRLIB_DrawImg(238, 386, tex_WiiButtonHome_png, 0, 1, 1, HEX_WHITE);
-			GRRLIB_PrintfTTF(256-(strlen(BUT_HBC)*7.8)/2, 425, myFont, BUT_HBC, 14, HEX_WHITE);
-			
-			GRRLIB_DrawImg(380, 388, tex_WiiButtonA_png, 0, 1, 1, HEX_WHITE);
-			GRRLIB_PrintfTTF(408-(strlen(BUT_ConfirmUpload)*7.8)/2, 425, myFont, BUT_ConfirmUpload, 14, HEX_WHITE);
-		
-			GRRLIB_DrawImg(528, 388, tex_WiiButtonPlus_png, 0, 1, 1, HEX_WHITE);
-			GRRLIB_PrintfTTF(544-(strlen(BUT_SysMenu)*7.8)/2, 425, myFont, BUT_SysMenu, 14, HEX_WHITE);
-		} else {
-			GRRLIB_DrawImg(144, 388, tex_WiiButtonMinus_png, 0, 1, 1, HEX_WHITE);
-			GRRLIB_PrintfTTF(160-(strlen(BUT_Shutoff)*7.8)/2, 425, myFont, BUT_Shutoff, 14, HEX_WHITE);
-		
-			GRRLIB_DrawImg(302, 386, tex_WiiButtonHome_png, 0, 1, 1, HEX_WHITE);
-			GRRLIB_PrintfTTF(320-(strlen(BUT_HBC)*7.8)/2, 425, myFont, BUT_HBC, 14, HEX_WHITE);
-		
-			GRRLIB_DrawImg(464, 388, tex_WiiButtonPlus_png, 0, 1, 1, HEX_WHITE);
-			GRRLIB_PrintfTTF(480-(strlen(BUT_SysMenu)*7.8)/2, 425, myFont, BUT_SysMenu, 14, HEX_WHITE);
-		}
-		
+		DrawBuf();
 		GRRLIB_Render();
 	}
-	
 	return 0;
 }
 
@@ -355,7 +350,7 @@ int printUploadSuccess(const char* msg) {
 	GRRLIB_DrawImg(302, 300, tex_WiiButtonA_png, 0, 1, 1, HEX_WHITE);
 	GRRLIB_PrintfTTF(319-(strlen(BUT_OK)*7.8)/2, 342, myFont, BUT_OK, 14, HEX_WHITE);
 	
-	//GRRLIB_DrawImg(52, 340, tex_loadingbarblue_png, 0, 1, 1, HEX_WHITE);
+	GRRLIB_DrawImg(52, 340, tex_loadingbarblue_png, 0, 1, 1, HEX_WHITE);
 	CopyBuf();
 	for (i = 0; i < 3; i++) { //Workaround for GRRLIB_Render() bug
 		DrawBuf();

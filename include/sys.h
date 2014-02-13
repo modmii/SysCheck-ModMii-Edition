@@ -6,7 +6,7 @@
 #define MEM_PROT 			(MEM_REG_BASE + 0x20a)
 #define HOLLYWOOD_VERSION 	(vu32*)0x80003138
 #define LOADER_STUB 		(vu32*)0x80001800
-#define IS_WII_U			((*(vu32*)(0xCd8005A0) >> 16 ) == 0xCAFE);
+#define IS_WII_U			((*(vu32*)(0xCd8005A0) >> 16 ) == 0xCAFE)
 
 // Turn upper and lower into a full title ID
 #define TITLE_ID(x,y)           (((u64)(x) << 32) | (y))
@@ -30,12 +30,27 @@ enum {
 	HBF,
 	HOLLYWOOD,
 	CONSOLE_ID,
+	CONSOLE_TYPE,
 	COUNTRY,
 	BOOT2_VERSION,
 	NR_OF_TITLES,
 	NR_OF_IOS,
 	BLANK,
 	LAST
+};
+
+enum {
+	HBC_NONE = 0,
+	HBC_HAXX,
+	HBC_JODI,
+	HBC_1_0_7,
+	HBC_LULZ
+};
+
+enum {
+	HBF_NONE = 0,
+	HBF_HBF0,
+	HBF_THBF
 };
 
 typedef struct {
@@ -108,19 +123,15 @@ bool CheckFlashAccess(void);
 bool CheckNANDAccess(void);
 bool CheckBoot2Access(void);
 bool CheckMload(void);
-bool CheckUSB2(u32);
-bool IsKnownStub(u32, s32);
+bool CheckUSB2(u32 titleID);
+bool IsKnownStub(u32 noIOS, s32 noRevision);
 s32 GetTMD(u64 TicketID, signed_blob **Output, u32 *Length);
-char GetBootFilename(u64 titleId);
 s32 read_file_from_nand(char *filepath, u8 **buffer, u32 *filesize);
 int NandStartup(void);
 void NandShutdown(void);
 int checkSysLoader(void);
 void transmitSyscheck(char ReportBuffer[200][100], int *lines);
-u32 IOSPATCH_Apply(void);
 s32 brute_tmd(tmd *p_tmd);
-bool checkISFSinRAM(void);
-u32 es_set_ahbprot(void);
 void *allocate_memory(u32 size);
 void logfile(const char *format, ...);
 s32 get_miosinfo(char *str);

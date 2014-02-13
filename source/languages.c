@@ -23,7 +23,7 @@
 
 int initLanguages(struct tm today)
 {
-	TXT_AppVersion = "v2.1.0 HD Edition";
+	TXT_AppVersion = "v2.2.0 HD Edition";
 	switch (CONF_GetLanguage())
 	{
 		case CONF_LANG_GERMAN:
@@ -59,10 +59,11 @@ int initLanguages(struct tm today)
 			TXT_HBF = "Homebrew Filter rev%d benutzt IOS58";
 			TXT_Hollywood = "Hollywood v0x%x";
 			TXT_ConsoleID = "Konsolen-ID: %d";
+			TXT_ConsoleType = "Konsolentyp: %s";
 			TXT_vBoot2 = "Boot2 v%u";
 			TXT_NrOfTitles = "Es wurden %d Titel gefunden.";
 			TXT_NrOfIOS = "Es wurden %d IOS gefunden, von denen %d funktionslos (Stub) sind.";
-			TXT_AppTitle = "sysCheck %s von Double_A und R2-D2199, JoostinOnline, Nano";
+			TXT_AppTitle = "SysCheck %s von Double_A und R2-D2199, JoostinOnline, Nano";
 			TXT_AppIOS = "...laeuft auf dem IOS%d (rev %d).";
 			ERR_AllocateMemory = "Speicher fuer %d Titel konnte nicht zugewiesen werden.";
 			ERR_OpenFile = "Zugriff auf die Speicherdatei des Berichts fehlgeschlagen!";
@@ -80,6 +81,7 @@ int initLanguages(struct tm today)
             TXT_NAND = " NAND Zugriff,";
             TXT_Boot2 = " Boot2 Zugriff,";
             TXT_USB = " USB 2.0,";
+			TXT_VersionP = " ES_Version,";
 			TXT_NoPatch = " Keine Patches,";
             sprintf(TXT_ReportDate, "Bericht wurde am %2.2d.%2.2d.%4.4d generiert.", today.tm_mday, today.tm_mon + 1, today.tm_year + 1900);
 			BUT_HBC = "Homebrew Channel";
@@ -88,7 +90,6 @@ int initLanguages(struct tm today)
 			BUT_Update = "Aktualisieren";
 			TXT_Priiloader = "Priiloader installiert";
 			TXT_PreFiix = "PreFiix installiert";
-			TXT_VersionP = " ES_Version,";
 			MSG_Update = "Aktualisiere SysCheck...";
 			MSG_NoUpdate = "Diese Version ist bereits auf dem neuesten Stand!";
 			MSG_UpdateSuccess = "Die Aktualisierung wurde erfolgreich geladen!";
@@ -132,10 +133,11 @@ int initLanguages(struct tm today)
 			TXT_HBF = "Homebrew Filter rev%d utilise IOS58";
 			TXT_Hollywood = "Hollywood v0x%x";
 			TXT_ConsoleID = "Identifiant de la console: %d";
+			TXT_ConsoleType = "Type de Console: %s";
 			TXT_vBoot2 = "Boot2 v%u";
 			TXT_NrOfTitles = "%d titres trouves.";
 			TXT_NrOfIOS = "%d IOS trouves sur cette console. %d sont des stubs.";
-			TXT_AppTitle = "sysCheck %s par Double_A et R2-D2199, JoostinOnline, Nano";
+			TXT_AppTitle = "SysCheck %s par Double_A et R2-D2199, JoostinOnline, Nano";
 			TXT_AppIOS = "...tourne sous l'IOS%d (rev %d).";
 			ERR_AllocateMemory = "Imposible d'allouer la memoire pour %d titres.";
 			ERR_OpenFile = "Impossible d'ouvrir le fichier.";
@@ -153,6 +155,7 @@ int initLanguages(struct tm today)
             TXT_NAND = " Acces NAND,";
             TXT_Boot2 = " Acces Boot2,";
             TXT_USB = " USB 2.0,";
+			TXT_VersionP = " ES_Version,";
 			TXT_NoPatch = " Pas de patches,";
 			sprintf(TXT_ReportDate, "Rapport genere le %4.4d/%2.2d/%2.2d.", today.tm_year + 1900, today.tm_mon + 1, today.tm_mday);
 			BUT_HBC = "Homebrew Channel";
@@ -204,10 +207,11 @@ int initLanguages(struct tm today)
 			TXT_HBF = "Homebrew Filter rev%d appoggiato all'IOS58";
 			TXT_Hollywood = "Hollywood v0x%x";
 			TXT_ConsoleID = "ID console: %d";
+			TXT_ConsoleType = "Tipo Console: %s";
 			TXT_vBoot2 = "Boot2 v%u";
 			TXT_NrOfTitles = "Trovati %d giochi.";
 			TXT_NrOfIOS = "Trovati %d IOS in questa console. %d di questi sono stub.";
-			TXT_AppTitle = "sysCheck %s by Double_A and R2-D2199, JoostinOnline, Nano";
+			TXT_AppTitle = "SysCheck %s by Double_A and R2-D2199, JoostinOnline, Nano";
 			TXT_AppIOS = "...appoggiato all'IOS%d (v. %d).";
 			ERR_AllocateMemory = "Impossibile allocare la memoria per %d giochi.";
 			ERR_OpenFile = "Impossibile aprire il file!";
@@ -225,6 +229,7 @@ int initLanguages(struct tm today)
             TXT_NAND = " Accesso NAND,";
             TXT_Boot2 = " Accesso Boot2,";
             TXT_USB = " USB 2.0,";
+			TXT_VersionP = " ES_Version,";
 			TXT_NoPatch = " Non patchato,";
 			sprintf(TXT_ReportDate, "Rapporto generato il %2.2d.%2.2d.%4.4d.", today.tm_mday, today.tm_mon + 1, today.tm_year + 1900);
 			BUT_HBC = "Canale Homebrew";
@@ -276,10 +281,11 @@ int initLanguages(struct tm today)
 			TXT_HBF = "Homebrew Filter rev%d corriendo en IOS58";
 			TXT_Hollywood = "Hollywood v0x%x";
 			TXT_ConsoleID = "ID de consola: %d";
+			TXT_ConsoleType = "Tipo Consola: %s";
 			TXT_vBoot2 = "Boot2 v%u";
 			TXT_NrOfTitles = "Encontrados %d titulos.";
 			TXT_NrOfIOS = "Se encontraron %d IOS en esta consola. %d de ellos son stubs.";
-			TXT_AppTitle = "sysCheck %s por Double_A y R2-D2199, JoostinOnline, Nano";
+			TXT_AppTitle = "SysCheck %s por Double_A y R2-D2199, JoostinOnline, Nano";
 			TXT_AppIOS = "...corre en IOS%d (rev %d).";
 			ERR_AllocateMemory = "Imposible asignar memoria para %d titulos.";
 			ERR_OpenFile = "Imposible abrir el archivo!";
@@ -297,6 +303,7 @@ int initLanguages(struct tm today)
 			TXT_NAND = " Acceso NAND,";
 			TXT_Boot2 = " Acceso Boot2,";
 			TXT_USB = " USB 2.0,";
+			TXT_VersionP = " ES_Version,";
 			TXT_NoPatch = " Sin Parches,";
 			sprintf(TXT_ReportDate, "Reporte generado el %2.2d/%2.2d/%4.4d.", today.tm_mday, today.tm_mon + 1, today.tm_year + 1900);
 			BUT_HBC = "Canal Homebrew";
@@ -348,10 +355,11 @@ int initLanguages(struct tm today)
 			TXT_HBF = "Homebrew Filter rev%d running on IOS58";
 			TXT_Hollywood = "Hollywood v0x%x";
 			TXT_ConsoleID = "Console ID: %d";
+			TXT_ConsoleType = "Console Type: %s";
 			TXT_vBoot2 = "Boot2 v%u";
 			TXT_NrOfTitles = "Found %d titles.";
 			TXT_NrOfIOS = "Found %d IOS on this console. %d of them are stub.";
-			TXT_AppTitle = "sysCheck %s by Double_A and R2-D2199, JoostinOnline, Nano";
+			TXT_AppTitle = "SysCheck %s by Double_A and R2-D2199, JoostinOnline, Nano";
 			TXT_AppIOS = "...runs on IOS%d (rev %d).";
 			ERR_AllocateMemory = "Unable to allocate the memory for %d titles.";
 			ERR_OpenFile = "Unable to open the file!";
@@ -369,6 +377,7 @@ int initLanguages(struct tm today)
             TXT_NAND = " NAND Access,";
             TXT_Boot2 = " Boot2 Access,";
             TXT_USB = " USB 2.0,";
+			TXT_VersionP = " ES_Version,";
 			TXT_NoPatch = " No Patches,";
 			sprintf(TXT_ReportDate, "Report generated on %2.2d/%2.2d/%4.4d.", today.tm_mon + 1, today.tm_mday, today.tm_year + 1900);
 			BUT_HBC = "Homebrew Channel";
