@@ -14,7 +14,6 @@
 #include <ctype.h>
 
 #include "sys.h"
-#include "video.h"
 #include "SysMenuInfo.h"
 
 #include "ticket_dat.h"
