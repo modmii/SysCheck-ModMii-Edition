@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <gccore.h>
 #include "sys.h"
-#include "video.h"
 #include "fatMounter.h"
 #include "languages.h"
 
@@ -60,6 +59,7 @@ int initLanguages(struct tm today)
 			TXT_Hollywood = "Hollywood v0x%x";
 			TXT_ConsoleID = "Konsolen-ID: %d";
 			TXT_ConsoleType = "Konsolentyp: %s";
+			TXT_ShopCountry ="Shop-Kanal-Land: %s (%u)";
 			TXT_vBoot2 = "Boot2 v%u";
 			TXT_NrOfTitles = "Es wurden %d Titel gefunden.";
 			TXT_NrOfIOS = "Es wurden %d IOS gefunden, von denen %d funktionslos (Stub) sind.";
@@ -134,6 +134,7 @@ int initLanguages(struct tm today)
 			TXT_Hollywood = "Hollywood v0x%x";
 			TXT_ConsoleID = "Identifiant de la console: %d";
 			TXT_ConsoleType = "Type de Console: %s";
+			TXT_ShopCountry ="Pays de la chaîne boutique: %s (%u)";
 			TXT_vBoot2 = "Boot2 v%u";
 			TXT_NrOfTitles = "%d titres trouves.";
 			TXT_NrOfIOS = "%d IOS trouves sur cette console. %d sont des stubs.";
@@ -208,6 +209,7 @@ int initLanguages(struct tm today)
 			TXT_Hollywood = "Hollywood v0x%x";
 			TXT_ConsoleID = "ID console: %d";
 			TXT_ConsoleType = "Tipo Console: %s";
+			TXT_ShopCountry ="Paese canale Shop: %s (%u)";
 			TXT_vBoot2 = "Boot2 v%u";
 			TXT_NrOfTitles = "Trovati %d giochi.";
 			TXT_NrOfIOS = "Trovati %d IOS in questa console. %d di questi sono stub.";
@@ -282,6 +284,7 @@ int initLanguages(struct tm today)
 			TXT_Hollywood = "Hollywood v0x%x";
 			TXT_ConsoleID = "ID de consola: %d";
 			TXT_ConsoleType = "Tipo Consola: %s";
+			TXT_ShopCountry ="Canal Tienda Country: %s (%u)";
 			TXT_vBoot2 = "Boot2 v%u";
 			TXT_NrOfTitles = "Encontrados %d titulos.";
 			TXT_NrOfIOS = "Se encontraron %d IOS en esta consola. %d de ellos son stubs.";
@@ -356,6 +359,7 @@ int initLanguages(struct tm today)
 			TXT_Hollywood = "Hollywood v0x%x";
 			TXT_ConsoleID = "Console ID: %d";
 			TXT_ConsoleType = "Console Type: %s";
+			TXT_ShopCountry =": %s (%u)";
 			TXT_vBoot2 = "Boot2 v%u";
 			TXT_NrOfTitles = "Found %d titles.";
 			TXT_NrOfIOS = "Found %d IOS on this console. %d of them are stub.";

@@ -17,7 +17,6 @@
 
 #include "tmd_dat.h"
 #include "sys.h"
-#include "video.h"
 #include "fatMounter.h"
 #include "languages.h"
 #include "gui.h"
@@ -1017,7 +1016,7 @@ int main(int argc, char **argv)
 	sprintf(ReportBuffer[HOLLYWOOD], TXT_Hollywood, *HOLLYWOOD_VERSION);
 	sprintf(ReportBuffer[CONSOLE_ID], TXT_ConsoleID, SystemInfo.deviceID);
 	sprintf(ReportBuffer[CONSOLE_TYPE], TXT_ConsoleType, SystemInfo.deviceType ? "vWii" : "Wii");
-	sprintf(ReportBuffer[COUNTRY], "Shop Channel Country: %s (%u)", (strlen(SystemInfo.country)) ? SystemInfo.country : TXT_Unknown, SystemInfo.shopcode);
+	sprintf(ReportBuffer[COUNTRY], TXT_ShopCountry, (strlen(SystemInfo.country)) ? SystemInfo.country : TXT_Unknown, SystemInfo.shopcode);
 	sprintf(ReportBuffer[BOOT2_VERSION], TXT_vBoot2, SystemInfo.boot2version);
 	sprintf(ReportBuffer[NR_OF_TITLES], TXT_NrOfTitles, SystemInfo.countTitles);
 	sprintf(ReportBuffer[NR_OF_IOS], TXT_NrOfIOS, (SystemInfo.countIOS - SystemInfo.countBCMIOS), SystemInfo.countStubs);

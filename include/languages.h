@@ -38,6 +38,7 @@ const char* TXT_HBC_STUB;
 const char* TXT_Hollywood;
 const char* TXT_ConsoleID;
 const char* TXT_ConsoleType;
+const char* TXT_ShopCountry;
 const char* TXT_vBoot2;
 const char* TXT_NrOfTitles;
 const char* TXT_NrOfIOS;
