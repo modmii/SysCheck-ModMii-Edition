@@ -217,10 +217,10 @@ int main(int argc, char **argv)
 	if(argc>=1){
 		int i;
 		for(i=0; i<argc; i++){
-			if(strncmp("--debug=true", argv[i], 12)==0){
+			if(strncmp("--debug=true", argv[i], sizeof("--debug=true"))==0){
 				debug = true;
 				gprintf("--debug=true\n");
-			} else if(strncmp("--forceNoAHBPROT=true", argv[i], 21)==0){
+			} else if(strncmp("--forceNoAHBPROT=true", argv[i], sizeof("--forceNoAHBPROT=true"))==0){
 				forceNoAHBPROT = true;
 				gprintf("--forceNoAHBPROT=true\n");
 			}
@@ -228,6 +228,7 @@ int main(int argc, char **argv)
 	}
 	SYSSETTINGS SystemInfo;
 	SystemInfo.deviceType = IS_WII_U;
+	memset(SystemInfo.miosInfo, 0, sizeof(SystemInfo.miosInfo));
 
 	if (AHB_ACCESS && !forceNoAHBPROT) IosPatch_RUNTIME(true, false, false, false);
 	SystemInfo.nandAccess = CheckNANDAccess();
@@ -844,12 +845,11 @@ int main(int argc, char **argv)
 			strcat(ReportBuffer[SYSMENU], TXT_Unknown);
 		
 	} else if (systemmenu.hasInfo) {
-		u32 realSysVersion = systemmenu.realRevision;
-		SystemInfo.sysNinVersion = GetSysMenuNintendoVersion(realSysVersion);
+		SystemInfo.sysNinVersion = GetSysMenuNintendoVersion(systemmenu.realRevision);
 		SystemInfo.sysMenuRegion = GetSysMenuRegion(SystemInfo.sysMenuVer);
 		sprintf(ReportBuffer[TEXT_REGION], "%s: %s", TXT_Region, SystemInfo.validregion ? Regions[SystemInfo.systemRegion] : "");
 		if (SystemInfo.validregion)
-			sprintf(ReportBuffer[SYSMENU], TXT_SysMenu3, SystemInfo.sysNinVersion, SystemInfo.sysMenuRegion, SystemInfo.sysMenuVer, realSysVersion, systemmenu.info);
+			sprintf(ReportBuffer[SYSMENU], TXT_SysMenu3, SystemInfo.sysNinVersion, SystemInfo.sysMenuRegion, SystemInfo.sysMenuVer, systemmenu.realRevision, systemmenu.info);
 		else
 			strcat(ReportBuffer[SYSMENU], TXT_Unknown);
 	} else {
