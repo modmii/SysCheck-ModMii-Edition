@@ -15,7 +15,7 @@ s32 downloadSyscheckFile(const char* fileName)  {
 	char buf[128] = {0};
 	u32 http_status;
 	u8* outbuf;
-	u32 lenght;
+	u32 length;
 	
 	snprintf(buf, sizeof(buf), "http://syscheck-hd.googlecode.com/svn/trunk/SysCheckHDE/%s", fileName);
 		
@@ -33,7 +33,7 @@ s32 downloadSyscheckFile(const char* fileName)  {
 		}
 	}
 				
-	ret = http_get_result(&http_status, &outbuf, &lenght); 
+	ret = http_get_result(&http_status, &outbuf, &length); 
 		
 	if (((int)*outbuf & 0xF0000000) == 0xF0000000) 
 	{
@@ -49,7 +49,7 @@ s32 downloadSyscheckFile(const char* fileName)  {
 		gprintf("File Error\n");
 		return -3;
 	} else {
-		fwrite(outbuf, lenght, 1, file);
+		fwrite(outbuf, length, 1, file);
 		fclose(file);
 	}
 	free(outbuf);

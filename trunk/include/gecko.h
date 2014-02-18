@@ -1,11 +1,11 @@
-
-
 #ifndef _GECKO_H_
 #define _GECKO_H_
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+//#define NO_DEBUG
 
 #ifndef NO_DEBUG
 	//use this just like printf();
@@ -19,8 +19,6 @@ extern "C" {
 	#define gsenddata(...)
 	#define InitGecko()      false
 #endif /* NO_DEBUG */
-
-
 
 #ifdef __cplusplus
 }
