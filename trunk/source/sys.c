@@ -560,21 +560,21 @@ s32 get_miosinfo(char *str)
 					strcat(str, " (DIOS MIOS Lite");
 
 					if(CMP_TIME(dml_2_10_time))			strcat(str, " 2.10+");
-					else if(CMP_TIME(dml_2_9_time))		strcat(str, " 2.9+");
-					else if(CMP_TIME(dml_2_8_time))		strcat(str, " 2.8+");
-					else if(CMP_TIME(dml_2_7_time))		strcat(str, " 2.7+");
-					else if(CMP_TIME(dml_2_6_time))		strcat(str, " 2.6+");
-					else if(CMP_TIME(dml_2_5_time))		strcat(str, " 2.5+");
-					else if(CMP_TIME(dml_2_4_time))		strcat(str, " 2.4+");
-					else if(CMP_TIME(dml_2_3_time))		strcat(str, " 2.3+");
-					else if(CMP_TIME(dml_2_3m_time))	strcat(str, " 2.3+");
-					else if(CMP_TIME(dml_2_2_1_time))	strcat(str, " 2.2.1+");
-					else if(CMP_TIME(dml_2_2_time))		strcat(str, " 2.2+");
-					else if(CMP_TIME(dml_1_5_time))		strcat(str, " 1.5+");
-					else if(CMP_TIME(dml_1_4b_time))	strcat(str, " 1.4b+");
-					else if(CMP_TIME(dml_1_4_time))		strcat(str, " 1.4+");
-					else if(CMP_TIME(dml_1_2_time))		strcat(str, " 1.2+");
-					else if (CMP_TIME(dml_r52_time))	strcat(str, " r52+");
+					else if(CMP_TIME(dml_2_9_time))		strcat(str, " 2.9");
+					else if(CMP_TIME(dml_2_8_time))		strcat(str, " 2.8");
+					else if(CMP_TIME(dml_2_7_time))		strcat(str, " 2.7");
+					else if(CMP_TIME(dml_2_6_time))		strcat(str, " 2.6");
+					else if(CMP_TIME(dml_2_5_time))		strcat(str, " 2.5");
+					else if(CMP_TIME(dml_2_4_time))		strcat(str, " 2.4");
+					else if(CMP_TIME(dml_2_3_time))		strcat(str, " 2.3");
+					else if(CMP_TIME(dml_2_3m_time))	strcat(str, " 2.3");
+					else if(CMP_TIME(dml_2_2_1_time))	strcat(str, " 2.2.1");
+					else if(CMP_TIME(dml_2_2_time))		strcat(str, " 2.2");
+					else if(CMP_TIME(dml_1_5_time))		strcat(str, " 1.5");
+					else if(CMP_TIME(dml_1_4b_time))	strcat(str, " 1.4b");
+					else if(CMP_TIME(dml_1_4_time))		strcat(str, " 1.4");
+					else if(CMP_TIME(dml_1_2_time))		strcat(str, " 1.2");
+					else if (CMP_TIME(dml_r52_time))	strcat(str, " r52");
 					else 								strcat(str, " r51-");
 
 					strcat(str, ")");
@@ -587,18 +587,18 @@ s32 get_miosinfo(char *str)
 
 					strcat(str, " (DIOS MIOS");
 					if(CMP_TIME(dm_2_10_time))			strcat(str, " 2.10+");
-					else if(CMP_TIME(dm_2_9_time))		strcat(str, " 2.9+");
-					else if(CMP_TIME(dm_2_8_time))		strcat(str, " 2.8+");
-					else if(CMP_TIME(dm_2_7_time))		strcat(str, " 2.7+");
-					else if(CMP_TIME(dm_2_6_1_time))	strcat(str, " 2.6.1+");
-					else if(CMP_TIME(dm_2_6_0_time))	strcat(str, " 2.6+");
-					else if(CMP_TIME(dm_2_5_time))		strcat(str, " 2.5+");
-					else if(CMP_TIME(dm_2_4_time))		strcat(str, " 2.4+");
-					else if(CMP_TIME(dm_2_3_time))		strcat(str, " 2.3+");
-					else if(CMP_TIME(dm_2_2_2_time))	strcat(str, " 2.2.2+");
-					else if(CMP_TIME(dm_2_2_time))		strcat(str, " 2.2+");
-					else if(CMP_TIME(dm_2_1_time))		strcat(str, " 2.1+");
-					else if(CMP_TIME(dm_2_0_time))		strcat(str, " 2.0+");
+					else if(CMP_TIME(dm_2_9_time))		strcat(str, " 2.9");
+					else if(CMP_TIME(dm_2_8_time))		strcat(str, " 2.8");
+					else if(CMP_TIME(dm_2_7_time))		strcat(str, " 2.7");
+					else if(CMP_TIME(dm_2_6_1_time))	strcat(str, " 2.6.1");
+					else if(CMP_TIME(dm_2_6_0_time))	strcat(str, " 2.6");
+					else if(CMP_TIME(dm_2_5_time))		strcat(str, " 2.5");
+					else if(CMP_TIME(dm_2_4_time))		strcat(str, " 2.4");
+					else if(CMP_TIME(dm_2_3_time))		strcat(str, " 2.3");
+					else if(CMP_TIME(dm_2_2_2_time))	strcat(str, " 2.22");
+					else if(CMP_TIME(dm_2_2_time))		strcat(str, " 2.2");
+					else if(CMP_TIME(dm_2_1_time))		strcat(str, " 2.1");
+					else if(CMP_TIME(dm_2_0_time))		strcat(str, " 2.0");
 
 					strcat(str, ")");
 					return 2;
