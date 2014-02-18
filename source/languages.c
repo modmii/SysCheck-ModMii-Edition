@@ -359,7 +359,7 @@ int initLanguages(struct tm today)
 			TXT_Hollywood = "Hollywood v0x%x";
 			TXT_ConsoleID = "Console ID: %d";
 			TXT_ConsoleType = "Console Type: %s";
-			TXT_ShopCountry =": %s (%u)";
+			TXT_ShopCountry ="Shop Channel Country: %s (%u)";
 			TXT_vBoot2 = "Boot2 v%u";
 			TXT_NrOfTitles = "Found %d titles.";
 			TXT_NrOfIOS = "Found %d IOS on this console. %d of them are stub.";
