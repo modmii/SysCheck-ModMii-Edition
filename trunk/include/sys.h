@@ -7,6 +7,7 @@
 #define HOLLYWOOD_VERSION 	(vu32*)0x80003138
 #define LOADER_STUB 		(vu32*)0x80001800
 #define IS_WII_U			((*(vu32*)(0xCd8005A0) >> 16 ) == 0xCAFE)
+#define MAX_ELEMENTS(x)		((sizeof((x))) / (sizeof((x)[0])))
 
 // Turn upper and lower into a full title ID
 #define TITLE_ID(x,y)           (((u64)(x) << 32) | (y))
@@ -65,7 +66,7 @@ typedef struct {
 	bool 	infoVersionPatch;
 	s32		baseIOS;
 	s32		mloadVersion;
-	char	info[0x10];
+	char	info[64];
 	u8		infoContent;
 	u32		titleID;
 	u8		num_contents;

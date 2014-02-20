@@ -146,9 +146,9 @@ bool getInfoFromContent(IOS *ios) {
 			ios->baseIOS = iosinfo->baseios;
 
 		if (strcmp(iosinfo->name, "nintendo") == 0)
-			sprintf(ios->info, "rev %u", iosinfo->version);
+			snprintf(ios->info, MAX_ELEMENTS(ios->info), "rev %u", iosinfo->version);
 		else
-			sprintf(ios->info, "%s-v%u%s", iosinfo->name, iosinfo->version, iosinfo->versionstring);
+			snprintf(ios->info, MAX_ELEMENTS(ios->info), "%s-v%u%s", iosinfo->name, iosinfo->version, iosinfo->versionstring);
 		gprintf("is %s\n", ios->info);
 		logfile("is %s\r\n", ios->info);
 		retValue = true;
