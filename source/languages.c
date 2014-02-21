@@ -22,7 +22,7 @@
 
 int initLanguages(struct tm today)
 {
-	TXT_AppVersion = "v2.2.0 HD Edition";
+	TXT_AppVersion = "v2.2.1 HD Edition";
 	switch (CONF_GetLanguage())
 	{
 		case CONF_LANG_GERMAN:
