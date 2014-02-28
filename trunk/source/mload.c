@@ -508,7 +508,6 @@ int wanin_mload_get_IOS_base()
        // if(mload_init()<0) return -1;
 
         ret= IOS_IoctlvFormat(hid, mload_fd, MLOAD_GET_IOS_BASE, ":d", &ios, sizeof(ios));
-        //printf("get_ios_base: %d %x\n", ret, ios.dipVersion);
         if (ret == 0) {
                 switch(ios.dipVersion) {
                         case 0x48776F72: /* DIP: 07/11/08 14:34:26 */

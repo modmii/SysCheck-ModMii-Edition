@@ -166,7 +166,7 @@ s32 read_file_from_nand(char *filepath, u8 **buffer, u32 *filesize)
 	return 0;
 }
 
-void zero_sig(signed_blob *sig)
+inline void zero_sig(signed_blob *sig)
 {
 	u8 *sig_ptr = (u8 *)sig;
 	memset(sig_ptr + 4, 0, SIGNATURE_SIZE(sig)-4);
@@ -232,7 +232,7 @@ inline s32 RemoveBogusTMD(void)
 
 
 // Check fake signatures (aka Trucha Bug)
-bool CheckFakeSignature(void)
+inline bool CheckFakeSignature(void)
 {
 	s32 ret = ES_AddTicket((signed_blob *)ticket_dat, ticket_dat_size, (signed_blob *)certs, sizeof(certs), 0, 0);
 
@@ -242,7 +242,7 @@ bool CheckFakeSignature(void)
 
 
 // Check if you can still call ES_DiVerify (aka ES_Identify) to make IOS think that you actually are a different title
-bool CheckESIdentify(void)
+inline bool CheckESIdentify(void)
 {
 	int ret = ES_Identify((signed_blob *)certs, sizeof(certs), (signed_blob *)tmd_dat, tmd_dat_size, (signed_blob *)ticket_dat, ticket_dat_size, NULL);
 	return ((ret >= 0) || (ret == -2011));
@@ -250,14 +250,14 @@ bool CheckESIdentify(void)
 
 
 // Check flash access
-bool CheckFlashAccess(void)
+inline bool CheckFlashAccess(void)
 {
 	s32 ret = IOS_Open("/dev/flash", 1);
 	if (ret >= 0) IOS_Close(ret);
 	return (ret >= 0);
 }
 
-bool CheckMload(void)
+inline bool CheckMload(void)
 {
 	int ret = IOS_Open("/dev/mload", 0);
 	if (ret >= 0) IOS_Close(ret);
@@ -266,7 +266,7 @@ bool CheckMload(void)
 
 
 // Check NAND access
-bool CheckNANDAccess(void)
+inline bool CheckNANDAccess(void)
 {
 	int ret = IOS_Open("/ticket/00000001/00000002.tik", 1);
 	if (ret >= 0) IOS_Close(ret);
@@ -275,7 +275,7 @@ bool CheckNANDAccess(void)
 
 
 // Check boot2 access
-bool CheckBoot2Access(void)
+inline bool CheckBoot2Access(void)
 {
 	int ret = IOS_Open("/dev/boot2", 1);
 	if (ret >= 0) IOS_Close(ret);

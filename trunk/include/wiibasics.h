@@ -29,7 +29,6 @@ distribution.
 #ifndef _WII_BASICS_H_
 #define _WII_BASICS_H_
 
-
 // Turn upper and lower into a full title ID
 #define TITLE_ID(x,y)		(((u64)(x) << 32) | (y))
 // Get upper or lower half of a title ID
@@ -37,38 +36,7 @@ distribution.
 // Turn upper and lower into a full title ID
 #define TITLE_LOWER(x)		((u32)(x))
 
-// be functions from segher's wii.git
-u16 be16(const u8 *p);
-u32 be32(const u8 *p);
+// be function from segher's wii.git
 u64 be64(const u8 *p);
-u64 be34(const u8 *p);
-
-// Do basic Wii init: Video, console, WPAD
-void basicInit(void);
-
-// Do our custom init: Identify and initialized ISFS driver
-void miscInit(void);
-
-void IdentSysMenu(void);
-
-// Clean up after ourselves (Deinit ISFS)
-void miscDeInit(void);
-
-// Scan the pads and return buttons
-u32 getButtons(void);
-
-u32 wait_anyKey(void);
-
-u32 wait_key(u32 button);
-
-void hex_print_array16(const u8 *array, u32 size);
-
-/* Reads a file from ISFS to an array in memory */
-s32 ISFS_ReadFileToArray (const char *filepath, u8 *filearray, u32 max_size, u32 *file_size);
-
-/* Writes from an array in memory to a file with ISFS */
-s32 ISFS_WriteFileFromArray (const char *filepath, const u8 *filearray, u32 array_size, u32 ownerID, u16 groupID, u8 attr, u8 own_perm, u8 group_perm, u8 other_perm);
-
-bool yes_or_no(void);
 
 #endif
