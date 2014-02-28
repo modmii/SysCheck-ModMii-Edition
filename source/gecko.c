@@ -24,13 +24,7 @@ void gprintf( const char *str, ... )
 	va_end(ap);
 
 	usb_sendbuffer_safe( 1, astr, strlen(astr) );
-} 
-
-void printfBoth( const char *str, ... )
-{
-	gprintf(str);
-	printf(str);
-} 
+}
 
 void gsenddata(const u8 *data, int length, const char *filename)
 {
@@ -58,29 +52,6 @@ char ascii(char s) {
   if(s > 0x7E) return '.';
   return s;
 }
-
-void ghexdump(void *d, int len) {
-  u8 *data;
-  int i, off;
-  data = (u8*)d;
-
-  gprintf("\n       0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F  0123456789ABCDEF");
-  gprintf("\n====  ===============================================  ================\n");
-
-  for (off=0; off<len; off += 16) {
-    gprintf("%04x  ",off);
-    for(i=0; i<16; i++)
-      if((i+off)>=len) gprintf("   ");
-      else gprintf("%02x ",data[off+i]);
-
-    gprintf(" ");
-    for(i=0; i<16; i++)
-      if((i+off)>=len) gprintf(" ");
-      else gprintf("%c",ascii(data[off+i]));
-    gprintf("\n");
-  }
-}
-
 
 bool InitGecko()
 {

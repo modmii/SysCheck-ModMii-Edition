@@ -55,39 +55,20 @@ int get_title_ios(u64 title) {
 			// This is a workaround added since some IOS (like 21) don't like our
 			// call to ES_GetStoredTMDSize
 
-			//printf("Error! ES_GetStoredTMDSize: %d\n", ret);
-
 			sprintf(filepath, "/title/%08x/%08x/content/title.tmd", TITLE_UPPER(title), TITLE_LOWER(title));
 
 			ret = ISFS_Open(filepath, ISFS_OPEN_READ);
-			if (ret <= 0)
-			{
-				printf("Error! ISFS_Open (ret = %d)\n", ret);
-				return 0;
-			}
+			if (ret <= 0) return 0;
 
 			fd = ret;
 
 			ret = ISFS_Seek(fd, 0x184, 0);
-			if (ret < 0)
-			{
-				printf("Error! ISFS_Seek (ret = %d)\n", ret);
-				return 0;
-			}
 
 			ret = ISFS_Read(fd,tmd_buf,8);
-			if (ret < 0)
-			{
-				printf("Error! ISFS_Read (ret = %d)\n", ret);
-				return 0;
-			}
+			if (ret < 0) return 0;
 
 			ret = ISFS_Close(fd);
-			if (ret < 0)
-			{
-				printf("Error! ISFS_Close (ret = %d)\n", ret);
-				return 0;
-			}
+			if (ret < 0) return 0;
 
 			return be64(tmd_buf);
 
@@ -97,10 +78,8 @@ int get_title_ios(u64 title) {
 			// Some of this code adapted from bushing's title_lister.c
 			signed_blob *s_tmd = (signed_blob *)tmd_buf;
 			ret = ES_GetStoredTMD(title, s_tmd, tmd_size);
-			if (ret < 0){
-				printf("Error! ES_GetStoredTMD: %d\n", ret);
-				return -1;
-			}
+			if (ret < 0) return -1;
+
 			tmd *t = SIGNATURE_PAYLOAD(s_tmd);
 			return t->sys_version;
 		}
@@ -196,12 +175,13 @@ void formatDate(u32 date, char ReportBuffer[200][100]) {
 		sprintf(ReportBuffer[DVD], TXT_NoDVD);
 }
 
-void sort(u64 *titles, u32 cnt) {
+inline void sort(u64 *titles, u32 cnt) {
 	int i, j;
+	u64 tmp;
 	for (i = 0; i < cnt -1; ++i) {
 		for (j = 0; j < cnt - i - 1; ++j) {
 			if (titles[j] > titles[j + 1]) {
-				u64 tmp = titles[j];
+				tmp = titles[j];
 				titles[j] = titles[j + 1];
 				titles[j + 1] = tmp;
 			}
@@ -518,11 +498,7 @@ int main(int argc, char **argv)
 			ios[i].isStub = true;
 		else
 		{
-			if (ios[i].titleID != 256 && ios[i].titleID != 257 && ios[i].titleID != 512 && ios[i].titleID != 513 && titleSize < 0x100000)
-				ios[i].isStub = true;
-			else
-				ios[i].isStub = false;
-
+			ios[i].isStub = (ios[i].titleID != 256 && ios[i].titleID != 257 && ios[i].titleID != 512 && ios[i].titleID != 513 && titleSize < 0x100000);
 			if (ios[i].isStub) {
 				gprintf("is stub\n");
 				logfile("is stub\r\n");
@@ -707,8 +683,7 @@ int main(int argc, char **argv)
 				printSuccess(MSG_UpdateSuccess);
 				sleep(10);
 				deinitGUI();
-				if (*(u32*)0x80001800) exit(0);
-				SYS_ResetSystem(SYS_RETURNTOMENU, 0, 0);
+				exit(0);
 			} else if (ret < 0) {
 				printError(MSG_UpdateFail);
 				sleep(5);
@@ -1158,8 +1133,7 @@ int main(int argc, char **argv)
 			// Unmount the SD Card
 			UnmountSD();
 			deinitGUI();
-			if(*LOADER_STUB) exit(0);
-			SYS_ResetSystem(SYS_RETURNTOMENU, 0, 0);
+			exit(0);
 		}
 
 		// Return to System Menu

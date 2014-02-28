@@ -49,21 +49,16 @@ s32 tcp_socket (void) {
 	s32 s, res;
 
 	s = net_socket (PF_INET, SOCK_STREAM, 0);
-	if (s < 0) {
-		printf ("net_socket failed: %d\n", s);
-		return s;
-	}
+	if (s < 0) return s;
 
 	res = net_fcntl (s, F_GETFL, 0);
 	if (res < 0) {
-		printf ("F_GETFL failed: %d\n", res);
 		net_close (s);
 		return res;
 	}
 
 	res = net_fcntl (s, F_SETFL, res | 4);
 	if (res < 0) {
-		printf ("F_SETFL failed: %d\n", res);
 		net_close (s);
 		return res;
 	}
@@ -78,10 +73,7 @@ s32 tcp_connect (char *host, const u16 port) {
 	s64 t;
 
 	hp = net_gethostbyname (host);
-	if (!hp || !(hp->h_addrtype == PF_INET)) {
-		printf ("net_gethostbyname failed: %d\n", errno);
-		return errno;
-	}
+	if (!hp || !(hp->h_addrtype == PF_INET)) return errno;
 
 	s = tcp_socket ();
 	if (s < 0)
@@ -95,11 +87,8 @@ s32 tcp_connect (char *host, const u16 port) {
 
 	t = gettime ();
 	while (true) {
-		if (ticks_to_millisecs (diff_ticks (t, gettime ())) >
-				TCP_CONNECT_TIMEOUT) {
-			printf ("tcp_connect timeout\n");
-			net_close (s);
-
+		if (ticks_to_millisecs (diff_ticks (t, gettime ())) > TCP_CONNECT_TIMEOUT) {
+			net_close(s);
 			return -ETIMEDOUT;
 		}
 
@@ -115,9 +104,7 @@ s32 tcp_connect (char *host, const u16 port) {
 
 				continue;
 			}
-
-			printf ("net_connect failed: %d\n", res);
-			net_close (s);
+			net_close(s);
 
 			return res;
 		}
@@ -150,11 +137,7 @@ char * tcp_readln (const s32 s, const u16 max_length, const u64 start_time, cons
 			continue;
 		}
 
-		if (res < 0) {
-			printf ("tcp_readln failed: %d\n", res);
-
-			break;
-		}
+		if (res < 0) break;
 
 		if ((c > 0) && (buf[c - 1] == '\r') && (buf[c] == '\n')) {
 			if (c == 1) {
@@ -191,12 +174,7 @@ bool tcp_read (const s32 s, u8 **buffer, const u32 length) {
 
 	t = gettime ();
 	while (left) {
-		if (ticks_to_millisecs (diff_ticks (t, gettime ())) >
-				TCP_BLOCK_RECV_TIMEOUT) {
-			printf ("tcp_read timeout\n");
-
-			break;
-		}
+		if (ticks_to_millisecs (diff_ticks (t, gettime ())) > TCP_BLOCK_RECV_TIMEOUT) break;
 
 		block = left;
 		if (block > 2048)
@@ -210,11 +188,7 @@ bool tcp_read (const s32 s, u8 **buffer, const u32 length) {
 			continue;
 		}
 
-		if (res < 0) {
-			printf ("net_read failed: %d\n", res);
-
-			break;
-		}
+		if (res < 0) break;
 
 		received += res;
 		left -= res;

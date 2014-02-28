@@ -62,16 +62,11 @@ s32 updateApp(void) {
 	ret = net_init();
 	if (ret < 0)
 		goto out;
-	
-	char buf[128] = {0};
 	u32 http_status;
 	u8* outbuf;
 	u32 length;
-	const char	*checkStr = "Version=";
-
-	snprintf(buf, sizeof(buf), "http://syscheck-hd.googlecode.com/svn/trunk/Version.txt");
 	
-	ret = http_request(buf, 1 << 31);
+	ret = http_request("http://syscheck-hd.googlecode.com/svn/trunk/Version.txt", 1 << 31);
 	if (!ret) 
 	{
 		gprintf("Error making http request\n");
@@ -86,9 +81,9 @@ s32 updateApp(void) {
 		goto out;
 	}
 	
-	if (!strncmp((char*)outbuf, checkStr, strlen(checkStr)))		
+	if (!strncmp((char*)outbuf, "Version=", sizeof("Version=")))		
 	{
-		int version = atoi((char*)(outbuf + strlen(checkStr)));
+		int version = atoi((char*)(outbuf + sizeof("Version=")));
 		gprintf("INT: %i\n", version);
 		
 		if (version > REVISION) {
