@@ -8,6 +8,7 @@
 #include <ogc/conf.h>
 #include <ogc/es.h>
 #include <ogc/ios.h>
+#include <ogc/pad.h>
 #include <wiiuse/wpad.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -36,9 +37,8 @@
 
 
 extern bool geckoinit;
-
 extern void __exception_setreload(int t);
-
+static u64 current_time = 0;
 
 int get_title_ios(u64 title) {
 	s32 ret, fd;
@@ -101,8 +101,7 @@ bool getInfoFromContent(IOS *ios) {
 	ret = read_file_from_nand(filepath, &buffer, &filesize);
 
 	iosinfo = (iosinfo_t *)(buffer);
-	if (ret >= 0 && ios->titleID == 252 && ios->num_contents == 1) {
-		//const char *checkStr = "bootcb2";
+	if (ret >= 0 && ios->titleID == TID_CBOOT2 && ios->num_contents == 1) {
 		int i;
 		for (i = 0; i < filesize - sizeof("bootcb2")-1; i++)
 		{
@@ -224,8 +223,9 @@ int main(int argc, char **argv)
 
 	// Get the console region
 	printLoading(MSG_GetConsoleRegion);
-	usleep(200000);
+	current_time = gettick();
 	SystemInfo.systemRegion = CONF_GetRegion();
+	CheckTime(current_time, 200000);
 	
 	SystemInfo.shopcode = 0;
 	if (!CONF_GetShopCode(&SystemInfo.shopcode)) {
@@ -236,12 +236,15 @@ int main(int argc, char **argv)
 
 	// Get the system menu version
 	printLoading(MSG_GetSysMenuVer);
-	usleep(200000);
+	current_time = gettick();
 	SystemInfo.sysMenuVer = GetSysMenuVersion();
+	CheckTime(current_time, 200000);
+	
 	sysMenu systemmenu;
 
 	printLoading(MSG_GetHBCVer);
-	usleep(200000);
+	current_time = gettick();
+	
 	homebrew_t homebrew;
 	homebrew.hbcversion = 0;
 	homebrew.hbfversion = 0;
@@ -313,26 +316,31 @@ int main(int argc, char **argv)
 
 	SystemInfo.sysNinVersion = GetSysMenuNintendoVersion(SystemInfo.sysMenuVer);
 	SystemInfo.sysMenuRegion = GetSysMenuRegion(SystemInfo.sysMenuVer);
+	CheckTime(current_time, 200000);
 
 	// Get the running IOS version and revision
+	printLoading(MSG_GetRunningIOS);
+	current_time = gettick();
 	u32 runningIOS = IOS_GetVersion();
 	u32 runningIOSRevision = IOS_GetRevision();
-	printLoading(MSG_GetRunningIOS);
-	usleep(200000);
+	
+	CheckTime(current_time, 200000);
 
 	// Get the console ID
 	printLoading(MSG_GetConsoleID);
-	usleep(200000);
+	current_time = gettick();
 	SystemInfo.deviceID = GetDeviceID();
+	CheckTime(current_time, 200000);
 
 	// Get the boot2 version
 	printLoading(MSG_GetBoot2);
-	usleep(200000);
+	current_time = gettick();
 	SystemInfo.boot2version = GetBoot2Version();
+	CheckTime(current_time, 200000);
 
 	// Get number of titles
 	printLoading(MSG_GetNrOfTitles);
-	usleep(200000);
+	current_time = gettick();
 
 	u32 tempTitles;
 	if (ES_GetNumTitles(&tempTitles) < 0) {
@@ -354,10 +362,11 @@ int main(int argc, char **argv)
 		deinitGUI();
 		exit(1);
 	}
+	CheckTime(current_time, 200000);
 
 	// Get list of titles
 	printLoading(MSG_GetTitleList);
-	usleep(200000);
+	current_time = gettick();
 	if (ES_GetTitles(titles, nbTitles) < 0) {
 		printError(ERR_GetTitleList);
 		sleep(5);
@@ -400,10 +409,11 @@ int main(int argc, char **argv)
 		}
 		SystemInfo.countIOS++;
 	}
+	CheckTime(current_time, 200000);
 
 	// Sort IOS titles
 	printLoading(MSG_SortTitles);
-	//usleep(200000);
+	current_time = gettick();
 
 	u64 *newTitles = memalign(32, SystemInfo.countIOS*sizeof(u64));
 	u32 cnt = 0;
@@ -419,7 +429,6 @@ int main(int argc, char **argv)
 
 	IOS ios[SystemInfo.countIOS];
 	// ios Liste initialisieren
-	//for (i = 0; i < countIOS; i++) {
 	for (i = SystemInfo.countIOS; i--;) { // Should be slightly faster
 		ios[i].infoContent = 0;
 		ios[i].titleID = 0;
@@ -498,44 +507,40 @@ int main(int argc, char **argv)
 			ios[i].isStub = true;
 		else
 		{
-			ios[i].isStub = (ios[i].titleID != 256 && ios[i].titleID != 257 && ios[i].titleID != 512 && ios[i].titleID != 513 && titleSize < 0x100000);
+			ios[i].isStub = (ios[i].titleID != TID_BC && ios[i].titleID != TID_MIOS && ios[i].titleID != TID_NAND && ios[i].titleID != TID_WFS && titleSize < 0x100000);
 			if (ios[i].isStub) {
 				gprintf("is stub\n");
 				logfile("is stub\r\n");
 			}
 		}
 
-		if (!ios[i].isStub || ios[i].titleID == 252) {
-			if (SystemInfo.nandAccess)
-				if (!getInfoFromContent(&ios[i])) {
-					// Hash des TMDs abrufen
-					iosTMD->title_id = ((u64)(1) << 32) | 249;
-					brute_tmd(iosTMD);
+		if ((!ios[i].isStub || ios[i].titleID == TID_CBOOT2) && (SystemInfo.nandAccess) && (!getInfoFromContent(&ios[i]))) {
+			// Hash des TMDs abrufen
+			iosTMD->title_id = ((u64)(1) << 32) | 249;
+			brute_tmd(iosTMD);
 
-					sha1 hash;
-					SHA1((u8 *)iosTMDBuffer, tmdSize, hash);
+			sha1 hash;
+			SHA1((u8 *)iosTMDBuffer, tmdSize, hash);
 
-					sprintf(HashLogBuffer[lines], "IOS%d get_ios_base: \n%x %x %x %x, %x %x %x %x, %x %x %x %x, %x %x %x %x, %x %x %x %x\n", ios[i].titleID, (char)hash[0], (char)hash[1], (char)hash[2], (char)hash[3],  (char)hash[4], (char)hash[5], (char)hash[6], (char)hash[7],  (char)hash[8], (char)hash[9], (char)hash[10], (char)hash[11], (char)hash[12], (char)hash[13], (char)hash[14], (char)hash[15], (char)hash[16], (char)hash[17], (char)hash[18], (char)hash[19]);
-					lines++;
+			sprintf(HashLogBuffer[lines], "IOS%d base hash: \r\n%x %x %x %x, %x %x %x %x, %x %x %x %x, %x %x %x %x, %x %x %x %x\r\n", ios[i].titleID, hash[0], hash[1], hash[2], hash[3], hash[4], hash[5], hash[6], hash[7], hash[8], hash[9], hash[10], hash[11], hash[12], hash[13], hash[14], hash[15], hash[16], hash[17], hash[18], hash[19]);
+			lines++;
 
-					for (j = 0;j < base_number;j++)
-					{
-						// Hashes berprfen
-						if (memcmp((void *)hash, (u32 *)&iosHash[j].hashes, sizeof(sha1)) == 0)
-						{
-							if (ios[i].titleID != iosHash[j].base)
-								ios[i].baseIOS = iosHash[j].base;
-							strcpy(ios[i].info, iosHash[j].info);
-							gprintf("is %s\n", ios[i].info);
-							logfile("is %s\r\n", ios[i].info);
-						}
-					}
+			for (j = 0;j < base_number;j++)
+			{
+				// Check hashes
+				if (memcmp((void *)hash, (u32 *)&iosHash[j].hashes, sizeof(sha1)) == 0)
+				{
+					if (ios[i].titleID != iosHash[j].base)
+						ios[i].baseIOS = iosHash[j].base;
+					strcpy(ios[i].info, iosHash[j].info);
+					gprintf("is %s\n", ios[i].info);
+					logfile("is %s\r\n", ios[i].info);
 				}
+			}
 		}
-
 		free(iosTMDBuffer);
 
-		if (ios[i].titleID == 256 || ios[i].titleID == 257) SystemInfo.countBCMIOS++;
+		if (ios[i].titleID == TID_BC || ios[i].titleID == TID_MIOS) SystemInfo.countBCMIOS++;
 
 		if (ios[i].isStub && !(iosTMD->title_version == 31338) && !(iosTMD->title_version == 65281) && !(iosTMD->title_version == 65535)) SystemInfo.countStubs++;
 	}
@@ -575,7 +580,7 @@ int main(int argc, char **argv)
 	// Try to identify the cIOS by the info put in by the installer/ModMii
 	sysMenuInfoContent = *(u8 *)((u32)iosTMDBuffer+0x1E7);
 	sprintf(filepath, "/title/%08x/%08x/content/%08x.app", 0x00000001, 2, sysMenuInfoContent);
-	gprintf("/title/%08x/%08x/content/%08x.app\n", 0x00000001, 2, sysMenuInfoContent);
+	gprintf(filepath);
 	ret = read_file_from_nand(filepath, &buffer, &filesize);
 
 	sysInfo = (iosinfo_t *)(buffer);
@@ -583,7 +588,6 @@ int main(int argc, char **argv)
 	{
 		systemmenu.realRevision = sysInfo->version;
 		systemmenu.hasInfo = true;
-		//strcpy(systemmenu.info, sysInfo->name);
 		sprintf(systemmenu.info, "%s%s", sysInfo->name, sysInfo->versionstring);
 		if (buffer != NULL) free(buffer);
 	} else {
@@ -597,10 +601,11 @@ int main(int argc, char **argv)
 
 	SystemInfo.countTitles = nbTitles;
 	nbTitles = SystemInfo.countIOS;
+	CheckTime(current_time, 200000);
 
 	// Get the certificates from the NAND
 	printLoading(MSG_GetCertificates);
-	usleep(200000);
+	CheckTime(current_time, 200000);
 	if (!GetCertificates()) {
 		printError(ERR_GetCertificates);
 		sleep(5);
@@ -610,19 +615,18 @@ int main(int argc, char **argv)
 
 	//Select an IOS to test
 	WPAD_Init();
+	PAD_Init();
 	int selectedIOS = -1;
 	u32 wpressed;
 	time_t starttime;
 	starttime = time(NULL);
-
+	
 	printSelectIOS(MSG_SelectIOS, MSG_All);
 
 	bool completeReport = true;
 
 	while (difftime (time(NULL),starttime) < 15) {
-	//while(1) {
-		WPAD_ScanPads();
-		wpressed = WPAD_ButtonsHeld(0);
+		wpressed = DetectInput(DI_BUTTONS_HELD);
 		usleep(50000);
 
 		if (wpressed & WPAD_BUTTON_RIGHT && selectedIOS < (nbTitles-1)){
@@ -633,10 +637,10 @@ int main(int argc, char **argv)
 
 			switch (titleID)
 			{
-				case 256:
+				case TID_BC:
 					sprintf(MSG_Buffer, "BC");
 					break;
-				case 257:
+				case TID_MIOS:
 					sprintf(MSG_Buffer, "MIOS");
 					break;
 				default:
@@ -655,10 +659,10 @@ int main(int argc, char **argv)
 
 				switch (titleID)
 				{
-					case 256:
+					case TID_BC:
 						sprintf(MSG_Buffer, "BC");
 						break;
-					case 257:
+					case TID_MIOS:
 						sprintf(MSG_Buffer, "MIOS");
 						break;
 					default:
@@ -706,14 +710,18 @@ int main(int argc, char **argv)
 	{
 		if (selectedIOS > -1) i = selectedIOS; //If specific IOS is selected
 
-		if (ios[i].titleID == 256) sprintf(MSG_Buffer2, "BC");
-		else if (ios[i].titleID == 257) sprintf(MSG_Buffer2, "MIOS");
+		if (ios[i].titleID == TID_BC) sprintf(MSG_Buffer2, "BC");
+		else if (ios[i].titleID == TID_MIOS) sprintf(MSG_Buffer2, "MIOS");
 		else sprintf(MSG_Buffer2, "IOS%d", ios[i].titleID);
 
 		sprintf(MSG_Buffer, MSG_TestingIOS, MSG_Buffer2);
 		printLoadingBar(MSG_Buffer, (100.0/(nbTitles-1)*(i+1)));
 
-		if (ios[i].isStub || ios[i].titleID == 256 || ios[i].titleID == 257)
+		if (ios[i].isStub || 
+			ios[i].titleID == TID_BC || 
+			ios[i].titleID == TID_MIOS || 
+			ios[i].titleID == TID_NAND || 
+			ios[i].titleID == TID_WFS)
 		{
 			ios[i].infoFakeSignature = false;
 			ios[i].infoESIdentify = false;
@@ -770,7 +778,7 @@ int main(int argc, char **argv)
 				NandStartup();
 				int k = 0;
 				for (k = 0; k < nbTitles; k++) {
-					if ((ios[i].isStub || ios[i].titleID == 256 || ios[i].titleID == 257) && ios[i].titleID != 252) continue;
+					if ((ios[i].isStub || ios[i].titleID == TID_BC || ios[i].titleID == TID_MIOS) && ios[i].titleID != TID_CBOOT2) continue;
 					getInfoFromContent(&ios[k]);
 				}
 				NandShutdown();
@@ -796,8 +804,9 @@ int main(int argc, char **argv)
 	usleep(200000);
 
 	//--Generate Report--
+	current_time=gettick();
 	printLoading(MSG_GenerateReport);
-	usleep(200000);
+	
 
 	char ReportBuffer[200][100] = {{0}};
 
@@ -975,7 +984,7 @@ int main(int argc, char **argv)
 		sprintf(ReportBuffer[PRIILOADER], TXT_PreFiix);
 
 	if (homebrew.hbc == HBC_NONE || homebrew.hbcversion == 0)
-		sprintf(ReportBuffer[HBC], "Homebrew Channel is not installed");
+		sprintf(ReportBuffer[HBC], TXT_NO_HBC);
 	else if (homebrew.hbcIOS == 0)
 		sprintf(ReportBuffer[HBC], TXT_HBC_STUB);
 	else if (homebrew.hbc == HBC_LULZ)
@@ -1004,9 +1013,9 @@ int main(int argc, char **argv)
 		lineOffset = i + LAST;
 		if (selectedIOS > -1) i = selectedIOS; //If specific IOS is selected
 
-		if (ios[i].titleID == 256) {
+		if (ios[i].titleID == TID_BC) {
 			sprintf(ReportBuffer[lineOffset], "BC v%d", ios[i].revision);
-		} else if (ios[i].titleID == 257) {
+		} else if (ios[i].titleID == TID_MIOS) {
 			sprintf(ReportBuffer[lineOffset], "MIOS v%d%s", ios[i].revision, SystemInfo.miosInfo);
 		} else if ((ios[i].titleID==222 || ios[i].titleID==224 || ios[i].titleID==223 || ios[i].titleID==202 || ios[i].titleID==225) && ios[i].baseIOS == 75) {
 			sprintf(ReportBuffer[lineOffset], "IOS%d[38+37] (rev %d, Info: %s):", ios[i].titleID, ios[i].revision, ios[i].info);
@@ -1033,9 +1042,9 @@ int main(int argc, char **argv)
 		}
 
 		// Check BootMii As IOS (BootMii As IOS is installed on IOS254 rev 31338)
-		if (ios[i].titleID == 254 && (ios[i].revision == 31338 || ios[i].revision == 65281))
+		if (ios[i].titleID == TID_BOOTMII && (ios[i].revision == 31338 || ios[i].revision == 65281))
 			strcat (ReportBuffer[lineOffset]," BootMii");
-		else if (ios[i].titleID == 253 && ios[i].revision == 65535)
+		else if (ios[i].titleID == TID_NANDEMU && ios[i].revision == 65535)
 			strcat (ReportBuffer[lineOffset]," NANDEmu");
 		else
 		{
@@ -1045,7 +1054,7 @@ int main(int argc, char **argv)
 			} else if (ios[i].isStub && strcmp(ios[i].info, "NULL") != 0) {
 				gprintf("2. titleID: %d %s\n", ios[i].titleID, ios[i].info);
 				strcat (ReportBuffer[lineOffset], ios[i].info);
-			} else if(ios[i].titleID != 256 && ios[i].titleID != 257) {
+			} else if(ios[i].titleID != TID_BC && ios[i].titleID != TID_MIOS) {
 				if(ios[i].infoFakeSignature) strcat(ReportBuffer[lineOffset], TXT_Trucha);
 				if(ios[i].infoESIdentify) strcat(ReportBuffer[lineOffset], TXT_ES);
 				if(ios[i].infoFlashAccess) strcat(ReportBuffer[lineOffset], TXT_Flash);
@@ -1062,15 +1071,17 @@ int main(int argc, char **argv)
 
 	int NumLines = lineOffset+1;
 	sprintf(ReportBuffer[NumLines], TXT_ReportDate);
-
+	CheckTime(current_time, 200000);
+	
 	// Mount the SD Card
+	current_time=gettick();
 	printLoading(MSG_MountSD);
-	usleep(200000);
 	MountSD();
+	CheckTime(current_time, 200000);
 
 	// Initialise the FAT file system
+	current_time=gettick();
 	printLoading(MSG_InitFAT);
-	usleep(200000);
 	if (!fatInitDefault())
 	{
 		sprintf(MSG_Buffer, ERR_InitFAT);
@@ -1080,6 +1091,7 @@ int main(int argc, char **argv)
 	} else {
 		//chdir("/");
 		// Create the report
+		CheckTime(current_time, 200000);
 		FILE *file = fopen(REPORT, "w");
 
 		if(!file)
@@ -1097,6 +1109,7 @@ int main(int argc, char **argv)
 			fclose(file);
 
 			printEndSuccess(MSG_ReportSuccess);
+			CheckTime(current_time, 200000);
 		}
 
 		// Create hash log
@@ -1115,8 +1128,9 @@ int main(int argc, char **argv)
 			}
 			// Close the report
 			fclose(file);
-
+			current_time=gettick();
 			printEndSuccess(MSG_ReportSuccess);
+			CheckTime(current_time, 200000);
 		}
 	}
 
@@ -1125,8 +1139,7 @@ int main(int argc, char **argv)
 	WPAD_Init();
 	bool reportIsDisplayed = false;
 	while (1) {
-		WPAD_ScanPads();
-		wpressed = WPAD_ButtonsHeld(0);
+		wpressed = DetectInput(DI_BUTTONS_HELD);
 
 		// Return to the loader
 		if (wpressed & WPAD_BUTTON_HOME) {

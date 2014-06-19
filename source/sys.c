@@ -10,7 +10,6 @@
 #include <network.h>
 #include <ogc/machine/processor.h>
 #include <ogc/conf.h>
-#include <wiiuse/wpad.h>
 #include <ctype.h>
 
 #include "sys.h"

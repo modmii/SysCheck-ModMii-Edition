@@ -1,13 +1,16 @@
 #ifndef _TOOLS_H_
 #define _TOOLS_H_
 
-#define AHB_ACCESS			((*(vu32*)0xcd800064 == 0xFFFFFFFF) ? 1 : 0)
+#include <ogc\lwp_watchdog.h>
+
+#define AHB_ACCESS			(*(vu32*)0xcd800064 == 0xFFFFFFFF)
 #define MEM_REG_BASE 		0xd8b4000
 #define MEM_PROT 			(MEM_REG_BASE + 0x20a)
 #define HOLLYWOOD_VERSION 	(vu32*)0x80003138
 #define LOADER_STUB 		(vu32*)0x80001800
 #define IS_WII_U			((*(vu32*)(0xCd8005A0) >> 16 ) == 0xCAFE)
 #define MAX_ELEMENTS(x)		((sizeof((x))) / (sizeof((x)[0])))
+#define CheckTime(X,Y)		while(!(ticks_to_millisecs(diff_ticks((X), gettick())) > (Y)))
 
 // Turn upper and lower into a full title ID
 #define TITLE_ID(x,y)           (((u64)(x) << 32) | (y))
@@ -18,6 +21,10 @@
 
 #define FULL_TITLE_ID(titleId) ((u32)(titleId))
 #define TITLE_ID2(titleId) ((u32)((titleId) >> 32))
+
+// Values for DetectInput
+#define DI_BUTTONS_HELD		0
+#define DI_BUTTONS_DOWN		1
 
 enum {
 	APP_TITLE = 0,
@@ -52,6 +59,16 @@ enum {
 	HBF_NONE = 0,
 	HBF_HBF0,
 	HBF_THBF
+};
+
+enum {
+	TID_CBOOT2 = 252, // cBoot252
+	TID_NANDEMU,
+	TID_BOOTMII,
+	TID_BC = 256,
+	TID_MIOS,
+	TID_NAND = 512,
+	TID_WFS
 };
 
 typedef struct {
@@ -112,6 +129,7 @@ extern "C"
 #endif
 
 // Prototypes
+u32 DetectInput(u8 DownOrHeld);
 char GetSysMenuRegion(u32 sysVersion);
 bool GetCertificates(void);
 u32 GetSysMenuVersion(void);

@@ -17,9 +17,9 @@ include $(DEVKITPPC)/wii_rules
 #---------------------------------------------------------------------------------
 TARGET		:=	boot
 BUILD		:=	build
-SOURCES		:=	source source/gfx
+SOURCES		:=	source
 DATA		:=	data  
-INCLUDES	:=  include source/gfx
+INCLUDES	:=  include
 
 #---------------------------------------------------------------------------------
 # options for code generation
@@ -134,28 +134,7 @@ $(OUTPUT).elf: $(OFILES)
 #---------------------------------------------------------------------------------
 # This rule links in binary data with the .jpg extension
 #---------------------------------------------------------------------------------
-%.jpg.o	:	%.jpg
-#---------------------------------------------------------------------------------
-	@echo $(notdir $<)
-	$(bin2o)
-
-#---------------------------------------------------------------------------------
-# This rule links in binary data with the .png extension
-#---------------------------------------------------------------------------------
-%.png.o	:	%.png
-#---------------------------------------------------------------------------------
-	@echo $(notdir $<)
-	$(bin2o)
-	
-#---------------------------------------------------------------------------------
-# This rule links in binary data with the .ttf extension
-#---------------------------------------------------------------------------------
 %.ttf.o	:	%.ttf
-#---------------------------------------------------------------------------------
-	@echo $(notdir $<)
-	$(bin2o)
-
-%.wad.o	:	%.wad
 	@echo $(notdir $<)
 	$(bin2o)
 
@@ -163,37 +142,9 @@ $(OUTPUT).elf: $(OFILES)
 	@echo $(notdir $<)
 	$(bin2o)
 
-%.certs.o : %.certs
-	@echo $(notdir $<)
-	$(bin2o)
-	
-%.sys.o : %.sys
-	@echo $(notdir $<)
-	$(bin2o)
-	
 %.dat.o : %.dat
 	@echo $(notdir $<)
 	$(bin2o)
-
-%.tmd.o : %.tmd
-	@echo $(notdir $<)
-	$(bin2o)
-
-%.tik.o : %.tik
-	@echo $(notdir $<)
-	$(bin2o)
-	
-%.bin.o : %.bin
-	@echo $(notdir $<)
-	$(bin2o)
-	
-%.cert.o : %.cert
-	@echo $(notdir $<)
-	$(bin2o)
-
-%.app.o : %.app
-	@echo $(notdir $<)
-	$(bin2o)	
 
 -include $(DEPENDS)
 
