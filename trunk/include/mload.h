@@ -1,18 +1,18 @@
 /* mload.c (for PPC) (c) 2009, Hermes
 
   This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation; either version 2 of the License, or
+	(at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+	You should have received a copy of the GNU General Public License
+	along with this program; if not, write to the Free Software
+	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 #ifndef __MLOAD_H__
@@ -26,31 +26,31 @@
 #include <gccore.h>
 #include "unistd.h"
 
-#define MLOAD_MLOAD_THREAD_ID   0x4D4C4400
-#define MLOAD_GET_IOS_BASE          0x4D4C4401
+#define MLOAD_MLOAD_THREAD_ID	0x4D4C4400
+#define MLOAD_GET_IOS_BASE		0x4D4C4401
 #define MLOAD_GET_MLOAD_VERSION 0x4D4C4402
 
-#define MLOAD_LOAD_MODULE               0x4D4C4480
-#define MLOAD_RUN_MODULE                0x4D4C4481
-#define MLOAD_RUN_THREAD        0x4D4C4482
+#define MLOAD_LOAD_MODULE		0x4D4C4480
+#define MLOAD_RUN_MODULE		0x4D4C4481
+#define MLOAD_RUN_THREAD		0x4D4C4482
 
-#define MLOAD_STOP_THREAD               0x4D4C4484
-#define MLOAD_CONTINUE_THREAD   0x4D4C4485
+#define MLOAD_STOP_THREAD		0x4D4C4484
+#define MLOAD_CONTINUE_THREAD	0x4D4C4485
 
-#define MLOAD_GET_LOAD_BASE     0x4D4C4490
-#define MLOAD_MEMSET                    0x4D4C4491
+#define MLOAD_GET_LOAD_BASE		0x4D4C4490
+#define MLOAD_MEMSET			0x4D4C4491
 
-#define MLOAD_GET_EHCI_DATA             0x4D4C44A0
-#define MLOAD_GET_LOG                   0x4D4C44A1
+#define MLOAD_GET_EHCI_DATA		0x4D4C44A0
+#define MLOAD_GET_LOG			0x4D4C44A1
 
-#define MLOAD_SET_ES_IOCTLV             0x4D4C44B0
+#define MLOAD_SET_ES_IOCTLV		0x4D4C44B0
 
-#define MLOAD_GETW                              0x4D4C44C0
-#define MLOAD_GETH                              0x4D4C44C1
-#define MLOAD_GETB                              0x4D4C44C2
-#define MLOAD_SETW                              0x4D4C44C3
-#define MLOAD_SETH                              0x4D4C44C4
-#define MLOAD_SETB                              0x4D4C44C5
+#define MLOAD_GETW				0x4D4C44C0
+#define MLOAD_GETH				0x4D4C44C1
+#define MLOAD_GETB				0x4D4C44C2
+#define MLOAD_SETW				0x4D4C44C3
+#define MLOAD_SETH				0x4D4C44C4
+#define MLOAD_SETB				0x4D4C44C5
 
 #ifdef __cplusplus
 extern "C" {
@@ -63,42 +63,42 @@ extern "C" {
 
 typedef struct
 {
-        u32             ident0;
-                u32             ident1;
-                u32             ident2;
-                u32             ident3;
-        u32             machinetype;
-        u32             version;
-        u32             entry;
-        u32     phoff;
-        u32     shoff;
-        u32             flags;
-        u16     ehsize;
-        u16     phentsize;
-        u16     phnum;
-        u16     shentsize;
-        u16     shnum;
-        u16     shtrndx;
+		u32		ident0;
+		u32		ident1;
+		u32		ident2;
+		u32		ident3;
+		u32		machinetype;
+		u32		version;
+		u32		entry;
+		u32		phoff;
+		u32		shoff;
+		u32		flags;
+		u16		ehsize;
+		u16		phentsize;
+		u16		phnum;
+		u16		shentsize;
+		u16		shnum;
+		u16		shtrndx;
 } elfheader;
 
 typedef struct
 {
-       u32      type;
-       u32      offset;
-       u32      vaddr;
-       u32      paddr;
-       u32      filesz;
-       u32      memsz;
-       u32      flags;
-       u32      align;
+	   u32	  type;
+	   u32	  offset;
+	   u32	  vaddr;
+	   u32	  paddr;
+	   u32	  filesz;
+	   u32	  memsz;
+	   u32	  flags;
+	   u32	  align;
 } elfphentry;
 
 typedef struct
 {
-        void *start;
-        int prio;
-        void *stack;
-        int size_stack;
+		void *start;
+		int prio;
+		void *stack;
+		int size_stack;
 } data_elf;
 
 /*--------------------------------------------------------------------------------------------------------------*/

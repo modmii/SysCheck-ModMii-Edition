@@ -53,7 +53,7 @@ char *url_encode(char *str) {
 
 void transmitSyscheck(char ReportBuffer[200][100], int *lines) {
 	printLoadingBar(TXT_Upload, 0);
-	gprintf("TempReport bauen\n");
+	gprintf("TempReport built\n");
 
 	int i = 0;
 	int strl = 0;
@@ -62,7 +62,7 @@ void transmitSyscheck(char ReportBuffer[200][100], int *lines) {
 		strl += strlen(ReportBuffer[i]);
 		strl += strlen("\n");
 	}
-	printLoadingBar(TXT_Upload, 5);
+	printLoadingBar(TXT_Upload, 20);
 	char tempReport[strl];
 	memset(tempReport, 0, strl);
 	for (i = 0; i <= *lines; i++) {
@@ -70,25 +70,24 @@ void transmitSyscheck(char ReportBuffer[200][100], int *lines) {
 		strcat(tempReport, ReportBuffer[i]);
 		strcat(tempReport, "\n");
 	}
-	printLoadingBar(TXT_Upload, 30);
+	printLoadingBar(TXT_Upload, 40);
 
 	net_init();
 	printLoadingBar(TXT_Upload, 60);
 	gprintf("OK\n");
 	char *encodedReport = url_encode(tempReport);
 	char bufTransmit[18+strlen(encodedReport)];
-	char password[12] = {0};
+	//char password[12] = {0};
 	gprintf("OK2\n");
-	sprintf(bufTransmit, "password=%s&syscheck=%s", password, encodedReport);
+	//sprintf(bufTransmit, "password=%s&syscheck=%s", password, encodedReport);
+	sprintf(bufTransmit, "password=B277eNGp789a&syscheck=%s", encodedReport);
 	gprintf("bufTransmit: %s ENDE len:%u\n", bufTransmit, strlen(bufTransmit));
 	gprintf("OK3\n");
-	char host[48] = {"\0"};
+	char host[48];
 	sprintf(host, "http://syscheck.softwii.de/syscheck_receiver.php");
 	http_post(host, 1024, bufTransmit);
 	printLoadingBar(TXT_Upload, 80);
-	gprintf("OK4\n");
-
-	gprintf("\n");
+	gprintf("OK4\n\n");
 
 	u32 http_status;
 	u8* outbuf;
@@ -106,35 +105,21 @@ void transmitSyscheck(char ReportBuffer[200][100], int *lines) {
 	free(outbuf);
 	gprintf("len: %d, String: %s\n", lenght, ReportBuffer[*lines]);
 
-	u32 wpressed;
+	//u32 wpressed;
 
 	if (!strncmp(ReportBuffer[*lines], "ERROR: ", 7)) {
-		char temp[100];
-		strncpy(temp, ReportBuffer[*lines]+7, 100);
+		char temp[100] = {0};
+		strncpy(temp, ReportBuffer[*lines]+7, sizeof(temp));
 		printUploadError(temp);
 		memset(ReportBuffer[*lines], 0, 100);
 		(*lines)--;
 		(*lines)--;
-		while (1) {
-			WPAD_ScanPads();
-			wpressed = WPAD_ButtonsHeld(0);
-
-			if (wpressed & WPAD_BUTTON_A) {
-				break;
-			}
-		}
 	} else {
 		printUploadSuccess(ReportBuffer[*lines]);
-		while (1) {
-			WPAD_ScanPads();
-			wpressed = WPAD_ButtonsHeld(0);
-
-			if (wpressed & WPAD_BUTTON_A) {
-				break;
-			}
-		}
 	}
-
+	while (1) {
+		if (DetectInput(DI_BUTTONS_HELD) & WPAD_BUTTON_A) break;
+	}
 	free(encodedReport);
 	net_deinit();
 }

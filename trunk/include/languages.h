@@ -31,6 +31,7 @@ const char* TXT_SysMenu;
 const char* TXT_SysMenu2;
 const char* TXT_SysMenu3;
 const char* TXT_HBF;
+const char* TXT_NO_HBC;
 const char* TXT_HBC;
 const char* TXT_HBC_NEW;
 const char* TXT_HBC_112;

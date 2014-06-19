@@ -5,7 +5,6 @@
 #include <malloc.h>
 #include <network.h>
 
-
 #include "update.h"
 #include "gecko.h"
 #include "http.h"
@@ -18,7 +17,7 @@ s32 downloadSyscheckFile(const char* fileName)  {
 	u32 length;
 	
 	snprintf(buf, sizeof(buf), "http://syscheck-hd.googlecode.com/svn/trunk/SysCheckHDE/%s", fileName);
-		
+	
 	ret = http_request(buf, 1 << 31);
 	if (!ret) 
 	{
@@ -32,16 +31,16 @@ s32 downloadSyscheckFile(const char* fileName)  {
 			}
 		}
 	}
-				
+
 	ret = http_get_result(&http_status, &outbuf, &length); 
 		
 	if (((int)*outbuf & 0xF0000000) == 0xF0000000) 
 	{
 		return -2;
 	}
-				
+	
 	sprintf(buf, "%s%s", PATH, fileName);
-				
+	
 	FILE *file = fopen(buf, "w");
 
 	if(!file)
@@ -100,7 +99,7 @@ s32 updateApp(void) {
 			ret = 2;
 			goto out;
 		}
-		
+	
 	} else {
 		ret = -3;
 		goto out;
