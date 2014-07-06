@@ -16,19 +16,19 @@
 #include <CheckRegion.h>
 #include <runtimeiospatch/runtimeiospatch.h>
 
-#include "tmd_dat.h"
-#include "sys.h"
-#include "fatMounter.h"
-#include "languages.h"
-#include "gui.h"
-#include "mload.h"
-#include "title.h"
-#include "sha1.h"
-#include "wiibasics.h"
 #include "SysMenuInfo.h"
-#include "tmdIdentification.h"
+#include "fatMounter.h"
 #include "gecko.h"
+#include "gui.h"
+#include "languages.h"
+#include "mload.h"
+#include "sha1.h"
+#include "sys.h"
+#include "title.h"
+#include "tmdIdentification.h"
+#include "tmd_dat.h"
 #include "update.h"
+#include "wiibasics.h"
 
 // Filename
 #define REPORT "sd:/sysCheck.csv"
@@ -38,103 +38,7 @@
 
 extern bool geckoinit;
 extern void __exception_setreload(int t);
-static u64 current_time = 0;
-
-int get_title_ios(u64 title) {
-	s32 ret, fd;
-	static char filepath[256] ATTRIBUTE_ALIGN(32);
-
-	// Check to see if title exists
-	if (ES_GetDataDir(title, filepath) >= 0 ) {
-		u32 tmd_size;
-		static u8 tmd_buf[MAX_SIGNED_TMD_SIZE] ATTRIBUTE_ALIGN(32);
-
-		ret = ES_GetStoredTMDSize(title, &tmd_size);
-		if (ret < 0) {
-			// If we fail to use the ES function, try reading manually
-			// This is a workaround added since some IOS (like 21) don't like our
-			// call to ES_GetStoredTMDSize
-
-			sprintf(filepath, "/title/%08x/%08x/content/title.tmd", TITLE_UPPER(title), TITLE_LOWER(title));
-
-			ret = ISFS_Open(filepath, ISFS_OPEN_READ);
-			if (ret <= 0) return 0;
-
-			fd = ret;
-
-			ret = ISFS_Seek(fd, 0x184, 0);
-
-			ret = ISFS_Read(fd,tmd_buf,8);
-			if (ret < 0) return 0;
-
-			ret = ISFS_Close(fd);
-			if (ret < 0) return 0;
-
-			return be64(tmd_buf);
-
-		} else {
-			// Normal versions of IOS won't have a problem, so we do things the "right" way.
-
-			// Some of this code adapted from bushing's title_lister.c
-			signed_blob *s_tmd = (signed_blob *)tmd_buf;
-			ret = ES_GetStoredTMD(title, s_tmd, tmd_size);
-			if (ret < 0) return -1;
-
-			tmd *t = SIGNATURE_PAYLOAD(s_tmd);
-			return t->sys_version;
-		}
-
-	}
-	return 0;
-}
-
-bool getInfoFromContent(IOS *ios) {
-	bool retValue = false;
-	iosinfo_t *iosinfo = NULL;
-	char filepath[ISFS_MAXPATH] ATTRIBUTE_ALIGN(0x20);
-	u8 *buffer = 0;
-	u32 filesize = 0;
-	s32 ret = 0;
-
-	// Try to identify the cIOS by the info put in by the installer/ModMii
-	sprintf(filepath, "/title/%08x/%08x/content/%08x.app", 0x00000001, ios->titleID, ios->infoContent);
-	ret = read_file_from_nand(filepath, &buffer, &filesize);
-
-	iosinfo = (iosinfo_t *)(buffer);
-	if (ret >= 0 && ios->titleID == TID_CBOOT2 && ios->num_contents == 1) {
-		int i;
-		for (i = 0; i < filesize - sizeof("bootcb2")-1; i++)
-		{
-			if (!strncmp((char*)buffer + i, "bootcb2", sizeof("bootcb2")-1))
-			{
-				sprintf(ios->info, " cBoot252");
-				gprintf("is cBoot252\n");
-				logfile("is cBoot252\r\n");
-				retValue = true;
-				ios->isStub = true;
-				break;
-			}
-		}
-		if (buffer != 0)
-		{
-			free(buffer);
-		}
-	} else if (ret >= 0 && iosinfo != NULL && iosinfo->magicword == 0x1ee7c105 && iosinfo->magicversion == 1) {
-		if (ios->titleID != iosinfo->baseios)
-			ios->baseIOS = iosinfo->baseios;
-
-		if (strcmp(iosinfo->name, "nintendo") == 0)
-			snprintf(ios->info, MAX_ELEMENTS(ios->info), "rev %u", iosinfo->version);
-		else
-			snprintf(ios->info, MAX_ELEMENTS(ios->info), "%s-v%u%s", iosinfo->name, iosinfo->version, iosinfo->versionstring);
-		gprintf("is %s\n", ios->info);
-		logfile("is %s\r\n", ios->info);
-		retValue = true;
-		if (buffer) free(buffer);
-	}
-
-	return retValue;
-}
+static u32 current_time = 0;
 
 void formatDate(u32 date, char ReportBuffer[200][100]) {
 	char temp[8] = {0};

@@ -154,6 +154,8 @@ s32 brute_tmd(tmd *p_tmd);
 void *allocate_memory(u32 size);
 void logfile(const char *format, ...);
 s32 get_miosinfo(char *str);
+int get_title_ios(u64 title);
+bool getInfoFromContent(IOS *ios);
 
 #ifdef __cplusplus
 }

@@ -18,14 +18,16 @@
 #include "ticket_dat.h"
 #include "tmd_dat.h"
 
-#include "mload.h"
-#include "title.h"
-#include "sha1.h"
-#include "gecko.h"
-#include "http.h"
-#include "gui.h"
-#include "languages.h"
 #include "fatMounter.h"
+#include "gecko.h"
+#include "gui.h"
+#include "http.h"
+#include "languages.h"
+#include "mload.h"
+#include "sha1.h"
+#include "title.h"
+#include "tmdIdentification.h"
+#include "wiibasics.h"
 
 #define DM_INSTALLED 	((*(vu32*)(appfile+i)) == 0x44494F53 && (*(vu32*)(appfile+i+5)) == 0x4D494F53) // true = DM or DML installed
 #define DML_OR_DM		(*(vu32*)(appfile+i+10) == 0x4C697465) // true = DML
@@ -33,6 +35,99 @@
 
 u8 sysMenuInfoContent = 0;
 const char *Regions[] = {"NTSC-J", "NTSC-U", "PAL", "", "KOR", "NTSC-J"}; //Last is actually China
+
+int get_title_ios(u64 title) {
+	s32 ret, fd;
+	static char filepath[256] ATTRIBUTE_ALIGN(32);
+
+	// Check to see if title exists
+	if (ES_GetDataDir(title, filepath) >= 0 ) {
+		u32 tmd_size;
+		static u8 tmd_buf[MAX_SIGNED_TMD_SIZE] ATTRIBUTE_ALIGN(32);
+
+		ret = ES_GetStoredTMDSize(title, &tmd_size);
+		if (ret < 0) {
+			// If we fail to use the ES function, try reading manually
+			// This is a workaround added since some IOS (like 21) don't like our
+			// call to ES_GetStoredTMDSize
+
+			sprintf(filepath, "/title/%08x/%08x/content/title.tmd", TITLE_UPPER(title), TITLE_LOWER(title));
+
+			ret = ISFS_Open(filepath, ISFS_OPEN_READ);
+			if (ret <= 0) return 0;
+
+			fd = ret;
+
+			ret = ISFS_Seek(fd, 0x184, 0);
+
+			ret = ISFS_Read(fd,tmd_buf,8);
+			if (ret < 0) return 0;
+
+			ret = ISFS_Close(fd);
+			if (ret < 0) return 0;
+
+			return be64(tmd_buf);
+
+		} else {
+			// Normal versions of IOS won't have a problem, so we do things the "right" way.
+
+			// Some of this code adapted from bushing's title_lister.c
+			signed_blob *s_tmd = (signed_blob *)tmd_buf;
+			ret = ES_GetStoredTMD(title, s_tmd, tmd_size);
+			if (ret < 0) return -1;
+
+			tmd *t = SIGNATURE_PAYLOAD(s_tmd);
+			return t->sys_version;
+		}
+
+	}
+	return 0;
+}
+
+bool getInfoFromContent(IOS *ios) {
+	bool retValue = false;
+	iosinfo_t *iosinfo = NULL;
+	char filepath[ISFS_MAXPATH] ATTRIBUTE_ALIGN(0x20);
+	u8 *buffer = NULL;
+	u32 filesize = 0;
+	s32 ret = 0;
+
+	// Try to identify the cIOS by the info put in by the installer/ModMii
+	sprintf(filepath, "/title/%08x/%08x/content/%08x.app", 0x00000001, ios->titleID, ios->infoContent);
+	ret = read_file_from_nand(filepath, &buffer, &filesize);
+
+	iosinfo = (iosinfo_t *)(buffer);
+	if (ret >= 0 && ios->titleID == TID_CBOOT2 && ios->num_contents == 1) {
+		int i;
+		for (i = 0; i < filesize - sizeof("bootcb2")-1; i++)
+		{
+			if (!strncmp((char*)buffer + i, "bootcb2", sizeof("bootcb2")-1))
+			{
+				sprintf(ios->info, " cBoot252");
+				gprintf("is cBoot252\n");
+				logfile("is cBoot252\r\n");
+				retValue = true;
+				ios->isStub = true;
+				break;
+			}
+		}
+		if (buffer) free(buffer);
+	} else if (ret >= 0 && iosinfo != NULL && iosinfo->magicword == 0x1ee7c105 && iosinfo->magicversion == 1) {
+		if (ios->titleID != iosinfo->baseios)
+			ios->baseIOS = iosinfo->baseios;
+
+		if (strcmp(iosinfo->name, "nintendo") == 0)
+			snprintf(ios->info, MAX_ELEMENTS(ios->info), "rev %u", iosinfo->version);
+		else
+			snprintf(ios->info, MAX_ELEMENTS(ios->info), "%s-v%u%s", iosinfo->name, iosinfo->version, iosinfo->versionstring);
+		gprintf("is %s\n", ios->info);
+		logfile("is %s\r\n", ios->info);
+		retValue = true;
+		if (buffer != NULL) free(buffer);
+	}
+
+	return retValue;
+}
 
 s32 brute_tmd(tmd *p_tmd)
 {
@@ -404,9 +499,9 @@ int checkSysLoader(void) {
 	}
 
 end:
-	free(buffer);
+	if (buffer != NULL) free(buffer);
 
-	free(stmd);
+	if (stmd != NULL) free(stmd);
 	ptmd = NULL;
 
 	return retValue;
@@ -534,8 +629,15 @@ s32 get_miosinfo(char *str)
 	// Timestamp of DML 2.10
 	strptime("May 24 2013 18:51:58", "%b %d %Y %H:%M:%S", &time);
 	const time_t dml_2_10_time = mktime(&time);
+	
+	// Timestamp of DM 2.11
+	strptime("Jul  2 2014 10:31:15", "%b %d %Y %H:%M:%S", &time);
+	const time_t dm_2_11_time = mktime(&time);
 
-
+	// Timestamp of DML 2.11
+	strptime("Jul  2 2014 10:31:06", "%b %d %Y %H:%M:%S", &time);
+	const time_t dml_2_11_time = mktime(&time);
+	
 	u32 size = 0;
 	u32 i = 0;
 	s32 ret = 0;
@@ -558,7 +660,8 @@ s32 get_miosinfo(char *str)
 
 					strcat(str, " (DIOS MIOS Lite");
 
-					if(CMP_TIME(dml_2_10_time))			strcat(str, " 2.10+");
+					if(CMP_TIME(dml_2_11_time))			strcat(str, " 2.11+");
+					else if(CMP_TIME(dml_2_10_time))	strcat(str, " 2.10");
 					else if(CMP_TIME(dml_2_9_time))		strcat(str, " 2.9");
 					else if(CMP_TIME(dml_2_8_time))		strcat(str, " 2.8");
 					else if(CMP_TIME(dml_2_7_time))		strcat(str, " 2.7");
@@ -585,7 +688,8 @@ s32 get_miosinfo(char *str)
 					time_t unixTime = mktime(&time);
 
 					strcat(str, " (DIOS MIOS");
-					if(CMP_TIME(dm_2_10_time))			strcat(str, " 2.10+");
+					if(CMP_TIME(dm_2_11_time))			strcat(str, " 2.11+");
+					else if(CMP_TIME(dm_2_10_time))		strcat(str, " 2.10");
 					else if(CMP_TIME(dm_2_9_time))		strcat(str, " 2.9");
 					else if(CMP_TIME(dm_2_8_time))		strcat(str, " 2.8");
 					else if(CMP_TIME(dm_2_7_time))		strcat(str, " 2.7");
@@ -604,9 +708,7 @@ s32 get_miosinfo(char *str)
 				}
 			}
 		}
-		memset(appfile, 0, size);
-		free(appfile);
+		if (appfile) free(appfile);
 	}
-
 	return 0;
 }
