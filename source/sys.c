@@ -702,6 +702,7 @@ s32 get_miosinfo(char *str)
 					else if(CMP_TIME(dm_2_2_time))		strcat(str, " 2.2");
 					else if(CMP_TIME(dm_2_1_time))		strcat(str, " 2.1");
 					else if(CMP_TIME(dm_2_0_time))		strcat(str, " 2.0");
+					else 								strcat(str, " 1.0");
 
 					strcat(str, ")");
 					return 2;

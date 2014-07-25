@@ -9,22 +9,6 @@
 #define CopyBuf() 	GRRLIB_Screen2Texture(0, 0, tex_ScreenBuf, GX_FALSE)
 #define DrawBuf()	GRRLIB_DrawImg(0, 0, tex_ScreenBuf, 0, 1, 1, HEX_WHITE)
 
-extern GRRLIB_ttfFont *myFont;
-extern GRRLIB_texImg *tex_background_png;
-extern GRRLIB_texImg *tex_Checkicon_png;
-extern GRRLIB_texImg *tex_Deleteicon_png;
-extern GRRLIB_texImg *tex_Refreshicon_png;
-extern GRRLIB_texImg *tex_WiiButtonA_png;
-extern GRRLIB_texImg *tex_WiiButtonHome_png;
-extern GRRLIB_texImg *tex_WiiButtonMinus_png;
-extern GRRLIB_texImg *tex_WiiButtonPlus_png;
-extern GRRLIB_texImg *tex_WiiDpadLeft_png;
-extern GRRLIB_texImg *tex_WiiDpadRight_png;
-extern GRRLIB_texImg *tex_loadingbargrey_png;
-extern GRRLIB_texImg *tex_loadingbarblue_png;
-extern GRRLIB_texImg *tex_window_png;
-extern GRRLIB_texImg *tex_ScreenBuf;
-
 int initGUI(void);
 void deinitGUI(void);
 int printError(const char* msg);
