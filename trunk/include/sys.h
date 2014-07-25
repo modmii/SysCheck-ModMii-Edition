@@ -1,7 +1,8 @@
-#ifndef _TOOLS_H_
-#define _TOOLS_H_
+#ifndef __SYS_H__
+#define __SYS_H__
 
 #include <ogc\lwp_watchdog.h>
+#include "tools.h"
 
 #define AHB_ACCESS			(*(vu32*)0xcd800064 == 0xFFFFFFFF)
 #define MEM_REG_BASE 		0xd8b4000
@@ -11,6 +12,7 @@
 #define IS_WII_U			((*(vu32*)(0xCd8005A0) >> 16 ) == 0xCAFE)
 #define MAX_ELEMENTS(x)		((sizeof((x))) / (sizeof((x)[0])))
 #define CheckTime(X,Y)		while(!(ticks_to_millisecs(diff_ticks((X), gettick())) > (Y)))
+#define UpdateTime()		current_time = gettick();
 
 // Turn upper and lower into a full title ID
 #define TITLE_ID(x,y)           (((u64)(x) << 32) | (y))
@@ -21,10 +23,6 @@
 
 #define FULL_TITLE_ID(titleId) ((u32)(titleId))
 #define TITLE_ID2(titleId) ((u32)((titleId) >> 32))
-
-// Values for DetectInput
-#define DI_BUTTONS_HELD		0
-#define DI_BUTTONS_DOWN		1
 
 enum {
 	APP_TITLE = 0,
@@ -87,6 +85,7 @@ typedef struct {
 	u8		infoContent;
 	u32		titleID;
 	u8		num_contents;
+	u32		titleSize;
 } IOS;
 
 typedef struct {
@@ -129,7 +128,7 @@ extern "C"
 #endif
 
 // Prototypes
-u32 DetectInput(u8 DownOrHeld);
+
 char GetSysMenuRegion(u32 sysVersion);
 bool GetCertificates(void);
 u32 GetSysMenuVersion(void);
@@ -146,13 +145,9 @@ bool CheckUSB2(u32 titleID);
 bool IsKnownStub(u32 noIOS, s32 noRevision);
 s32 GetTMD(u64 TicketID, signed_blob **Output, u32 *Length);
 s32 read_file_from_nand(char *filepath, u8 **buffer, u32 *filesize);
-int NandStartup(void);
-void NandShutdown(void);
 int checkSysLoader(void);
 void transmitSyscheck(char ReportBuffer[200][100], int *lines);
 s32 brute_tmd(tmd *p_tmd);
-void *allocate_memory(u32 size);
-void logfile(const char *format, ...);
 s32 get_miosinfo(char *str);
 int get_title_ios(u64 title);
 bool getInfoFromContent(IOS *ios);

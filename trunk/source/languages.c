@@ -59,7 +59,7 @@ int initLanguages(struct tm today)
 			TXT_vBoot2 = "Boot2 v%u";
 			TXT_NrOfTitles = "Es wurden %d Titel gefunden.";
 			TXT_NrOfIOS = "Es wurden %d IOS gefunden, von denen %d funktionslos (Stub) sind.";
-			TXT_AppTitle = "SysCheck %s von Double_A und R2-D2199, JoostinOnline, Nano";
+			TXT_AppTitle = "SysCheck %s von JoostinOnline, Double_A, R2-D2199, und Nano";
 			TXT_AppIOS = "...laeuft auf dem IOS%d (rev %d).";
 			ERR_AllocateMemory = "Speicher fuer %d Titel konnte nicht zugewiesen werden.";
 			ERR_OpenFile = "Zugriff auf die Speicherdatei des Berichts fehlgeschlagen!";
@@ -106,7 +106,7 @@ int initLanguages(struct tm today)
 			MSG_GetConsoleID = "Obtention de l'identifiant de la console...";
 			MSG_GetBoot2 = "Obtention de la version du boot2...";
 			TXT_Region = "Region";
-			TXT_Unknown = "inconnue";
+			TXT_Unknown = "Inconnue";
 			MSG_GetNrOfTitles = "Obtention du nombre de titres...";
 			ERR_GetNrOfTitles = "Impossible d'obtenir le nombre de titres.";
 			MSG_GetTitleList = "Obtention de la liste des titres...";
@@ -135,7 +135,7 @@ int initLanguages(struct tm today)
 			TXT_vBoot2 = "Boot2 v%u";
 			TXT_NrOfTitles = "%d titres trouves.";
 			TXT_NrOfIOS = "%d IOS trouves sur cette console. %d sont des stubs.";
-			TXT_AppTitle = "SysCheck %s par Double_A et R2-D2199, JoostinOnline, Nano";
+			TXT_AppTitle = "SysCheck %s par JoostinOnline, Double_A, R2-D2199, et Nano";
 			TXT_AppIOS = "...tourne sous l'IOS%d (rev %d).";
 			ERR_AllocateMemory = "Imposible d'allouer la memoire pour %d titres.";
 			ERR_OpenFile = "Impossible d'ouvrir le fichier.";
@@ -182,7 +182,7 @@ int initLanguages(struct tm today)
 			MSG_GetConsoleID = "Controllo ID della console...";
 			MSG_GetBoot2 = "Controllo versione Boot2...";
 			TXT_Region = "Regione";
-			TXT_Unknown = "sconosciuto";
+			TXT_Unknown = "Sconosciuto";
 			MSG_GetNrOfTitles = "Controllo numero giochi...";
 			ERR_GetNrOfTitles = "Errore nel controllo numero giochi.";
 			MSG_GetTitleList = "Controllo elenco giochi...";
@@ -211,7 +211,7 @@ int initLanguages(struct tm today)
 			TXT_vBoot2 = "Boot2 v%u";
 			TXT_NrOfTitles = "Trovati %d giochi.";
 			TXT_NrOfIOS = "Trovati %d IOS in questa console. %d di questi sono stub.";
-			TXT_AppTitle = "SysCheck %s by Double_A and R2-D2199, JoostinOnline, Nano";
+			TXT_AppTitle = "SysCheck %s by JoostinOnline, Double_A, R2-D2199, and Nano";
 			TXT_AppIOS = "...appoggiato all'IOS%d (v. %d).";
 			ERR_AllocateMemory = "Impossibile allocare la memoria per %d giochi.";
 			ERR_OpenFile = "Impossibile aprire il file!";
@@ -258,7 +258,7 @@ int initLanguages(struct tm today)
 			MSG_GetConsoleID = "Obteniendo ID de la consola...";
 			MSG_GetBoot2 = "Obteniendo la version de boot2...";
 			TXT_Region = "Region";
-			TXT_Unknown = "desconocido";
+			TXT_Unknown = "Desconocido";
 			MSG_GetNrOfTitles = "Obteniendo numero de titulos...";
 			ERR_GetNrOfTitles = "No se pudo obtener numero de titulos.";
 			MSG_GetTitleList = "Obteniendo lista de titulos...";
@@ -287,7 +287,7 @@ int initLanguages(struct tm today)
 			TXT_vBoot2 = "Boot2 v%u";
 			TXT_NrOfTitles = "Encontrados %d titulos.";
 			TXT_NrOfIOS = "Se encontraron %d IOS en esta consola. %d de ellos son stubs.";
-			TXT_AppTitle = "SysCheck %s por Double_A y R2-D2199, JoostinOnline, Nano";
+			TXT_AppTitle = "SysCheck %s por JoostinOnline, Double_A, R2-D2199, y Nano";
 			TXT_AppIOS = "...corre en IOS%d (rev %d).";
 			ERR_AllocateMemory = "Imposible asignar memoria para %d titulos.";
 			ERR_OpenFile = "Imposible abrir el archivo!";
@@ -334,7 +334,7 @@ int initLanguages(struct tm today)
 			MSG_GetConsoleID = "Getting the console ID...";
 			MSG_GetBoot2 = "Getting the boot2 version...";
 			TXT_Region = "Region";
-			TXT_Unknown = "unknown";
+			TXT_Unknown = "Unknown";
 			MSG_GetNrOfTitles = "Getting number of titles...";
 			ERR_GetNrOfTitles = "Failed getting number of titles.";
 			MSG_GetTitleList = "Getting list of titles...";
@@ -363,7 +363,7 @@ int initLanguages(struct tm today)
 			TXT_vBoot2 = "Boot2 v%u";
 			TXT_NrOfTitles = "Found %d titles.";
 			TXT_NrOfIOS = "Found %d IOS on this console. %d of them are stub.";
-			TXT_AppTitle = "SysCheck %s by Double_A and R2-D2199, JoostinOnline, Nano";
+			TXT_AppTitle = "SysCheck %s by JoostinOnline, Double_A, R2-D2199, and Nano";
 			TXT_AppIOS = "...runs on IOS%d (rev %d).";
 			ERR_AllocateMemory = "Unable to allocate the memory for %d titles.";
 			ERR_OpenFile = "Unable to open the file!";

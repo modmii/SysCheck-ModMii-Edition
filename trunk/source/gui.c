@@ -43,9 +43,6 @@ int initGUI(void) {
 	// Initialise the Graphics & Video subsystem
     GRRLIB_Init();
 
-    // Initialise the Wiimotes
-    WPAD_Init();
-	
 	//Load Images
 	myFont = GRRLIB_LoadTTF(tahoma_ttf, tahoma_ttf_size);
 	tex_background_png = GRRLIB_LoadTexturePNG(background_png);
