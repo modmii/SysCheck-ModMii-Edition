@@ -40,72 +40,32 @@ extern bool geckoinit;
 extern void __exception_setreload(int t);
 static u32 current_time = 0;
 
-void formatDate(u32 date, char ReportBuffer[200][100]) {
-	char temp[8] = {0};
-	char day[2] = {0};
-	char month[2] = {0};
-	char year[4] = {0};
-
-	sprintf(temp, "%08x", date);
-	sprintf(year, "%c%c%c%c", temp[0], temp[1], temp[2], temp[3]);
-	sprintf(month, "%c%c", temp[4], temp[5]);
-	sprintf(day, "%c%c", temp[6], temp[7]);
-
-	gprintf("MONTH: %s\n", month);
-	gprintf("DAY: %s\n", day);
-	gprintf("YEAR: %s\n", year);
-	logfile("MONTH: %s\r\n", month);
-	logfile("DAY: %s\r\n", day);
-	logfile("YEAR: %s\r\n", year);
-
-	char result[10] = {0};
-
-	switch (CONF_GetLanguage()) {
-		case CONF_LANG_GERMAN:
-		case CONF_LANG_ITALIAN:
-		case CONF_LANG_SPANISH:
-			sprintf(result, "%s.%s.%s", day, month, year);
-			break;
-		default:
-			sprintf(result, "%s.%s.%s", month, day, year); // You don't say "I was born 1990 January 1"  The year comes last
-			break;
-	}
-	gprintf("String: %s\n", result);
-	logfile("String: %s\r\n", result);
-	if (strlen(result) > 1)
-		sprintf(ReportBuffer[DVD], TXT_DVD, result);
-	else
-		sprintf(ReportBuffer[DVD], TXT_NoDVD);
-}
-
-inline void sort(u64 *titles, u32 cnt) {
-	int i, j;
-	u64 tmp;
-	for (i = 0; i < cnt -1; ++i) {
-		for (j = 0; j < cnt - i - 1; ++j) {
-			if (titles[j] > titles[j + 1]) {
-				tmp = titles[j];
-				titles[j] = titles[j + 1];
-				titles[j + 1] = tmp;
-			}
-		}
-	}
-}
 // Main 
 int main(int argc, char **argv)
 {
 	__exception_setreload(2);
-	bool forceNoAHBPROT = false;
+	arguments.forceNoAHBPROT = false;
+	memset(arguments.skipIOSlist, 0, sizeof(arguments.skipIOSlist));
+	arguments.skipIOScnt = 0;
+	arguments.debug = false;
+	
 	geckoinit = InitGecko();
 	if(argc>=1){
 		int i;
 		for(i=0; i<argc; i++){
-			if(strncmp("--debug=true", argv[i], sizeof("--debug=true"))==0){
-				debug = true;
+			if(CHECK_ARG("--debug=true")) {
+				arguments.debug = true;
 				gprintf("--debug=true\n");
-			} else if(strncmp("--forceNoAHBPROT=true", argv[i], sizeof("--forceNoAHBPROT=true"))==0){
-				forceNoAHBPROT = true;
+				logfile("--debug=true\r\n");
+			} else if(CHECK_ARG("--forceNoAHBPROT=true")) {
+				arguments.forceNoAHBPROT = true;
 				gprintf("--forceNoAHBPROT=true\n");
+				logfile("--forceNoAHBPROT=true\r\n");
+			} else if(CHECK_ARG("--skipIOS=")) {
+				arguments.skipIOSlist[arguments.skipIOScnt] = atoi(CHECK_ARG_VAL("--skipIOS="));
+				gprintf("skipIOS[%i] = %i\r\n", arguments.skipIOScnt, arguments.skipIOSlist[arguments.skipIOScnt]);
+				logfile("skipIOS[%i] = %i\r\n", arguments.skipIOScnt, arguments.skipIOSlist[arguments.skipIOScnt]);
+				arguments.skipIOScnt++;
 			}
 		}
 	}
@@ -113,7 +73,7 @@ int main(int argc, char **argv)
 	SystemInfo.deviceType = IS_WII_U;
 	memset(SystemInfo.miosInfo, 0, sizeof(SystemInfo.miosInfo));
 
-	if (AHB_ACCESS && !forceNoAHBPROT) IosPatch_RUNTIME(true, false, false, false);
+	if (AHB_ACCESS && !arguments.forceNoAHBPROT) IosPatch_RUNTIME(true, false, false, false);
 	SystemInfo.nandAccess = CheckNANDAccess();
 
 	// Get and display the current date and time
@@ -156,14 +116,14 @@ int main(int argc, char **argv)
 	homebrew.hbf = HBF_NONE;
 	homebrew.hbcIOS = 0;
 	SystemInfo.dvdSupport = 0;
-	s32 ret = Title_GetVersionNObuf(0x000100014C554C5All);
+	s32 ret = Title_GetVersionNObuf(TITLE_ID(0x00010001, 0x4C554C5A));
 	if (ret<0) {
-		ret = Title_GetVersionNObuf(0x00010001AF1BF516ll);
+		ret = Title_GetVersionNObuf(TITLE_ID(0x00010001, 0xAF1BF516));
 		if (ret<0) {
-			ret = Title_GetVersionNObuf(0x000100014A4F4449ll);
+			ret = Title_GetVersionNObuf(TITLE_ID(0x00010001, 0x4A4F4449));
 			if (ret<0) {
 				homebrew.hbc = HBC_HAXX;
-				ret = Title_GetVersionNObuf(0x0001000148415858ll);
+				ret = Title_GetVersionNObuf(TITLE_ID(0x00010001, 0x48415858));
 				if (ret<0) {
 					homebrew.hbc = HBC_NONE;
 				} else {
@@ -185,18 +145,18 @@ int main(int argc, char **argv)
 		homebrew.hbcversion = (ret != 257) + 1;
 	}
 	if (homebrew.hbc == HBC_LULZ) {
-		homebrew.hbcIOS =  get_title_ios(TITLE_ID(0x10001, 0x4C554C5A)); // LULZ
+		homebrew.hbcIOS =  get_title_ios(TITLE_ID(0x00010001, 0x4C554C5A)); // LULZ
 	} else if (homebrew.hbc == HBC_1_0_7) {
-		homebrew.hbcIOS =  get_title_ios(TITLE_ID(0x10001, 0xAF1BF516)); // ????
+		homebrew.hbcIOS =  get_title_ios(TITLE_ID(0x00010001, 0xAF1BF516)); // ????
 	} else if (homebrew.hbc == HBC_JODI) {
-		homebrew.hbcIOS =  get_title_ios(TITLE_ID(0x10001, 0x4A4F4449)); // JODI
+		homebrew.hbcIOS =  get_title_ios(TITLE_ID(0x00010001, 0x4A4F4449)); // JODI
 	} else if (homebrew.hbc == HBC_HAXX) {
-		homebrew.hbcIOS = get_title_ios(TITLE_ID(0x10001, 0x48415858)); // HAXX
+		homebrew.hbcIOS = get_title_ios(TITLE_ID(0x00010001, 0x48415858)); // HAXX
 	}
 
-	ret = Title_GetVersionNObuf(0x0001000148424630LL); //HBF0
+	ret = Title_GetVersionNObuf(TITLE_ID(0x00010001, 0x48424630)); //HBF0
 	if (ret<0) {
-		ret = Title_GetVersionNObuf(0x0001000154484246LL); //THBF
+		ret = Title_GetVersionNObuf(TITLE_ID(0x00010001, 0x54484246)); //THBF
 		if (ret<0) {
 			homebrew.hbf = HBF_NONE;
 		} else {
@@ -208,7 +168,7 @@ int main(int argc, char **argv)
 		homebrew.hbfversion = ret;
 	}
 
-	if (AHB_ACCESS && !forceNoAHBPROT) {
+	if (AHB_ACCESS && !arguments.forceNoAHBPROT) {
 		DI_Init();
 		DI_DriveID id;
 
@@ -252,7 +212,6 @@ int main(int argc, char **argv)
 		sleep(5);
 		deinitGUI();
 		exit(1);
-		//return false;
 	}
 
 	s32 nbTitles = tempTitles;
@@ -313,13 +272,27 @@ int main(int argc, char **argv)
 		}
 		SystemInfo.countIOS++;
 	}
+	
+	while (arguments.skipIOScnt > 0) {
+		for (i = nbTitles; i--;) {
+			titleID = titles[i] & 0xFFFFFFFF;
+			if(titleID == arguments.skipIOSlist[arguments.skipIOScnt - 1]) {
+				logfile("Skipped IOS %i, titles[%i] = %i\r\n", arguments.skipIOSlist[arguments.skipIOScnt - 1], i, titles[i]);
+				titles[i] = 0;
+				SystemInfo.countIOS--;
+				arguments.skipIOScnt--;
+				break;
+			}
+		}
+	}
+	
 	CheckTime(current_time, 600);
 
 	// Sort IOS titles
 	printLoading(MSG_SortTitles);
 	UpdateTime();
-
-	u64 *newTitles = memalign(32, SystemInfo.countIOS*sizeof(u64));
+	
+	u64 *newTitles = memalign(32, (SystemInfo.countIOS)*sizeof(u64));
 	u32 cnt = 0;
 	for (i = 0; i < nbTitles; i++) {
 		if (titles[i] > 0) {
