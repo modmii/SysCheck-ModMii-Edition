@@ -30,11 +30,11 @@
 
 // Variables
 bool NandInitialized = false;
-bool debug = false;
+arguments_t arguments;
 
 void logfile(const char *format, ...)
 {
-	if (!debug) return;
+	if (!arguments.debug) return;
 	MountSD();
 	FILE *f;
 	f= fopen("SD:/sysCheckDebug.log", "a");
@@ -90,7 +90,6 @@ void NandShutdown(void)
 u32 DetectInput(u8 DownOrHeld) {
 	u32 pressed = 0;
 	u16 gcpressed = 0;
-	VIDEO_WaitVSync();
 	// Wii Remote (and Classic Controller) take precedence over GC to save time
 	if (WPAD_ScanPads() > WPAD_ERR_NONE) // Scan the Wii remotes.  If there any problems, skip checking buttons
 	{
@@ -148,4 +147,56 @@ u32 DetectInput(u8 DownOrHeld) {
 		}
 	}
 	return pressed;
+}
+
+void formatDate(u32 date, char ReportBuffer[200][100]) {
+	char temp[8] = {0};
+	char day[2] = {0};
+	char month[2] = {0};
+	char year[4] = {0};
+
+	sprintf(temp, "%08x", date);
+	sprintf(year, "%c%c%c%c", temp[0], temp[1], temp[2], temp[3]);
+	sprintf(month, "%c%c", temp[4], temp[5]);
+	sprintf(day, "%c%c", temp[6], temp[7]);
+
+	gprintf("MONTH: %s\n", month);
+	gprintf("DAY: %s\n", day);
+	gprintf("YEAR: %s\n", year);
+	logfile("MONTH: %s\r\n", month);
+	logfile("DAY: %s\r\n", day);
+	logfile("YEAR: %s\r\n", year);
+
+	char result[10] = {0};
+
+	switch (CONF_GetLanguage()) {
+		case CONF_LANG_GERMAN:
+		case CONF_LANG_ITALIAN:
+		case CONF_LANG_SPANISH:
+			sprintf(result, "%s.%s.%s", day, month, year);
+			break;
+		default:
+			sprintf(result, "%s.%s.%s", month, day, year); // You don't say "I was born 1990 January 1"  The year comes last
+			break;
+	}
+	gprintf("String: %s\n", result);
+	logfile("String: %s\r\n", result);
+	if (strlen(result) > 1)
+		sprintf(ReportBuffer[DVD], TXT_DVD, result);
+	else
+		sprintf(ReportBuffer[DVD], TXT_NoDVD);
+}
+
+inline void sort(u64 *titles, u32 cnt) {
+	int i, j;
+	u64 tmp;
+	for (i = 0; i < cnt -1; ++i) {
+		for (j = 0; j < cnt - i - 1; ++j) {
+			if (titles[j] > titles[j + 1]) {
+				tmp = titles[j];
+				titles[j] = titles[j + 1];
+				titles[j + 1] = tmp;
+			}
+		}
+	}
 }

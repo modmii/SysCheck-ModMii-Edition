@@ -120,7 +120,6 @@ typedef struct _U8Entry
 
 extern const char *Regions[];
 extern u8 sysMenuInfoContent;
-extern bool debug;
 
 #ifdef __cplusplus
 extern "C"
