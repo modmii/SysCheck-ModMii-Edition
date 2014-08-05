@@ -220,7 +220,7 @@ int printReport(char report[200][100], int firstLine, bool completeReport) {
 	GRRLIB_DrawImg(0, 0, tex_background_png, 0, 1, 1, HEX_WHITE);
 	GRRLIB_DrawImg(36, 40, tex_window_png, 0, 1, 1, HEX_WHITE);
 	
-	for (j = 0; j < BLANK + 1; j++) {
+	for (j = 0; j < 15; j++) {
 		GRRLIB_PrintfTTF(80, 98+j*17, myFont, report[firstLine+j], 12, HEX_BLACK);
 	}
 	if (completeReport) {

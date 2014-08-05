@@ -273,17 +273,18 @@ int main(int argc, char **argv)
 		SystemInfo.countIOS++;
 	}
 	
+	// Not the most efficient way to remove argument-skipped IOS's, but it works.
 	while (arguments.skipIOScnt > 0) {
 		for (i = nbTitles; i--;) {
 			titleID = titles[i] & 0xFFFFFFFF;
-			if(titleID == arguments.skipIOSlist[arguments.skipIOScnt - 1]) {
+			if(arguments.skipIOSlist[arguments.skipIOScnt - 1] > 0 && titleID == arguments.skipIOSlist[arguments.skipIOScnt - 1]) {
 				logfile("Skipped IOS %i, titles[%i] = %i\r\n", arguments.skipIOSlist[arguments.skipIOScnt - 1], i, titles[i]);
 				titles[i] = 0;
 				SystemInfo.countIOS--;
-				arguments.skipIOScnt--;
 				break;
 			}
 		}
+		arguments.skipIOScnt--;
 	}
 	
 	CheckTime(current_time, 600);
@@ -456,7 +457,7 @@ int main(int argc, char **argv)
 
 	// Try to identify the cIOS by the info put in by the installer/ModMii
 	sysMenuInfoContent = *(u8 *)((u32)iosTMDBuffer+0x1E7);
-	sprintf(filepath, "/title/%08x/%08x/content/%08x.app", 0x00000001, 2, sysMenuInfoContent);
+	sprintf(filepath, "/title/00000001/00000002/content/%08x.app", sysMenuInfoContent);
 	gprintf(filepath);
 	ret = read_file_from_nand(filepath, &buffer, &filesize);
 
@@ -481,8 +482,8 @@ int main(int argc, char **argv)
 	CheckTime(current_time, 600);
 
 	// Get the certificates from the NAND
-	UpdateTime();
 	printLoading(MSG_GetCertificates);
+	UpdateTime();
 	if (!GetCertificates()) {
 		printError(ERR_GetCertificates);
 		sleep(5);
@@ -502,6 +503,7 @@ int main(int argc, char **argv)
 	bool completeReport = true;
 
 	while (difftime (time(NULL),starttime) < 15) {
+
 		wpressed = DetectInput(DI_BUTTONS_HELD);
 		usleep(50000);
 
