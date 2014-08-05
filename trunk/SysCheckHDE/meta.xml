@@ -56,7 +56,7 @@ Version 2.1.0 HacksDen Edition
 See SysCheck at Wiibrew.com for changes in other versions.</long_description>
 <arguments>
 	<arg>--debug=false</arg>
-	<arg>--forceNoAHBPROT==false</arg>
+	<arg>--forceNoAHBPROT=false</arg>
 </arguments>
 
 <no_ios_reload/>
