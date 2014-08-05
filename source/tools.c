@@ -91,7 +91,7 @@ u32 DetectInput(u8 DownOrHeld) {
 	u32 pressed = 0;
 	u16 gcpressed = 0;
 	// Wii Remote (and Classic Controller) take precedence over GC to save time
-	if (WPAD_ScanPads() > WPAD_ERR_NONE) // Scan the Wii remotes.  If there any problems, skip checking buttons
+	if (WPAD_ScanPads() >= WPAD_ERR_NONE) // Scan the Wii remotes.  If there any problems, skip checking buttons
 	{
 		if (DownOrHeld == DI_BUTTONS_DOWN) {
 			pressed = WPAD_ButtonsDown(0) | WPAD_ButtonsDown(1) | WPAD_ButtonsDown(2) | WPAD_ButtonsDown(3); //Store pressed buttons
@@ -122,7 +122,7 @@ u32 DetectInput(u8 DownOrHeld) {
 	if (pressed) return pressed;
 
 	// No buttons on the Wii remote or Classic Controller were pressed
-	if (PAD_ScanPads() > PAD_ERR_NONE)
+	if (PAD_ScanPads() >= PAD_ERR_NONE)
 	{
 		if (DownOrHeld == DI_BUTTONS_HELD) {
 			gcpressed = PAD_ButtonsHeld(0) | PAD_ButtonsHeld(1) | PAD_ButtonsHeld(2) | PAD_ButtonsHeld(3); //Store pressed buttons

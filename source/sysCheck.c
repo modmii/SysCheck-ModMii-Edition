@@ -505,7 +505,7 @@ int main(int argc, char **argv)
 	while (difftime (time(NULL),starttime) < 15) {
 
 		wpressed = DetectInput(DI_BUTTONS_HELD);
-		usleep(50000);
+		usleep(80000);
 
 		if (wpressed & WPAD_BUTTON_RIGHT && selectedIOS < (nbTitles-1)){
 			selectedIOS++;
