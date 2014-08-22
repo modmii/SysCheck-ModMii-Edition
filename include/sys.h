@@ -79,6 +79,7 @@ typedef struct {
 	bool 	infoBoot2Access;
 	bool 	infoUSB2;
 	bool 	infoVersionPatch;
+	bool 	infovIOS;
 	s32		baseIOS;
 	s32		mloadVersion;
 	char	info[64];
@@ -134,6 +135,7 @@ u32 GetSysMenuVersion(void);
 float GetSysMenuNintendoVersion(u32 sysVersion);
 u32 GetBoot2Version(void);
 u32 GetDeviceID(void);
+bool CheckIOSType(u32 start_address);
 bool CheckFakeSignature(void);
 bool CheckESIdentify(void);
 bool CheckFlashAccess(void);
