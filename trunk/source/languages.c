@@ -60,7 +60,7 @@ int initLanguages(struct tm today)
 			TXT_NrOfTitles = "Es wurden %d Titel gefunden.";
 			TXT_NrOfIOS = "Es wurden %d IOS gefunden, von denen %d funktionslos (Stub) sind.";
 			TXT_AppTitle = "SysCheck %s von JoostinOnline, Double_A, R2-D2199, und Nano";
-			TXT_AppIOS = "...laeuft auf dem IOS%d (rev %d).";
+			TXT_AppIOS = "...laeuft auf dem %sIOS%d (rev %d).";
 			ERR_AllocateMemory = "Speicher fuer %d Titel konnte nicht zugewiesen werden.";
 			ERR_OpenFile = "Zugriff auf die Speicherdatei des Berichts fehlgeschlagen!";
 			MSG_SelectIOS = "Diese IOS werden getestet (Bitte waehlen):";
@@ -136,7 +136,7 @@ int initLanguages(struct tm today)
 			TXT_NrOfTitles = "%d titres trouves.";
 			TXT_NrOfIOS = "%d IOS trouves sur cette console. %d sont des stubs.";
 			TXT_AppTitle = "SysCheck %s par JoostinOnline, Double_A, R2-D2199, et Nano";
-			TXT_AppIOS = "...tourne sous l'IOS%d (rev %d).";
+			TXT_AppIOS = "...tourne sous l'%sIOS%d (rev %d).";
 			ERR_AllocateMemory = "Imposible d'allouer la memoire pour %d titres.";
 			ERR_OpenFile = "Impossible d'ouvrir le fichier.";
 			MSG_SelectIOS = "Cet IOS sera teste (Choisissez):";
@@ -212,7 +212,7 @@ int initLanguages(struct tm today)
 			TXT_NrOfTitles = "Trovati %d giochi.";
 			TXT_NrOfIOS = "Trovati %d IOS in questa console. %d di questi sono stub.";
 			TXT_AppTitle = "SysCheck %s by JoostinOnline, Double_A, R2-D2199, and Nano";
-			TXT_AppIOS = "...appoggiato all'IOS%d (v. %d).";
+			TXT_AppIOS = "...appoggiato all'%sIOS%d (v. %d).";
 			ERR_AllocateMemory = "Impossibile allocare la memoria per %d giochi.";
 			ERR_OpenFile = "Impossibile aprire il file!";
 			MSG_SelectIOS = "Verranno testati questi IOS:";
@@ -288,7 +288,7 @@ int initLanguages(struct tm today)
 			TXT_NrOfTitles = "Encontrados %d titulos.";
 			TXT_NrOfIOS = "Se encontraron %d IOS en esta consola. %d de ellos son stubs.";
 			TXT_AppTitle = "SysCheck %s por JoostinOnline, Double_A, R2-D2199, y Nano";
-			TXT_AppIOS = "...corre en IOS%d (rev %d).";
+			TXT_AppIOS = "...corre en %sIOS%d (rev %d).";
 			ERR_AllocateMemory = "Imposible asignar memoria para %d titulos.";
 			ERR_OpenFile = "Imposible abrir el archivo!";
 			MSG_SelectIOS = "Este IOS sera analizado (Selecciona):";
@@ -364,7 +364,7 @@ int initLanguages(struct tm today)
 			TXT_NrOfTitles = "Found %d titles.";
 			TXT_NrOfIOS = "Found %d IOS on this console. %d of them are stub.";
 			TXT_AppTitle = "SysCheck %s by JoostinOnline, Double_A, R2-D2199, and Nano";
-			TXT_AppIOS = "...runs on IOS%d (rev %d).";
+			TXT_AppIOS = "...runs on %sIOS%d (rev %d).";
 			ERR_AllocateMemory = "Unable to allocate the memory for %d titles.";
 			ERR_OpenFile = "Unable to open the file!";
 			MSG_SelectIOS = "This IOS will be tested (Please select):";

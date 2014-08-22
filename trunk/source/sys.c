@@ -325,6 +325,15 @@ inline s32 RemoveBogusTMD(void)
 }
 
 
+inline bool CheckIOSType(u32 start_address) {
+	const char WL_String[] = {0x57, 0x4C, 0x3A, 0x20, 0x30, 0x32, 0x2F, 0x30, 0x32, 0x2F, 0x31, 0x32};
+	u32 i;
+	for(i = start_address; i < 0x94000000 - sizeof(WL_String); i++) {
+		if (memcmp((char*)i, WL_String, sizeof(WL_String)) == 0) return true;
+	}
+	return false;
+}
+
 // Check fake signatures (aka Trucha Bug)
 inline bool CheckFakeSignature(void)
 {

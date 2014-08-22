@@ -322,6 +322,7 @@ int main(int argc, char **argv)
 		ios[i].infoBoot2Access = false;
 		ios[i].infoUSB2 = false;
 		ios[i].infoVersionPatch = false;
+		ios[i].infovIOS = false;
 	}
 
 	//MountSD();
@@ -607,13 +608,20 @@ int main(int argc, char **argv)
 			ios[i].infoNANDAccess = false;
 			ios[i].infoBoot2Access = false;
 			ios[i].infoUSB2 = false;
+			if (ios[i].titleID == TID_NAND || ios[i].titleID == TID_WFS) ios[i].infovIOS = true;
 		}
 		else
 		{
 			// Reload IOS
 			gprintf("// IOS_ReloadIOS(%d)\n", ios[i].titleID);
 			logfile("// IOS_ReloadIOS(%d)\r\n", ios[i].titleID);
-			IOS_ReloadIOS(ios[i].titleID);
+			
+			IosPatch_FULL(false, false, false, false, ios[i].titleID);
+			
+			// Test IOS type
+			gprintf("// Test IOS type\n");
+			logfile("// Test IOS type\r\n");
+			ios[i].infovIOS = CheckIOSType(*((vu32*)0x80003134));
 
 			// Test fake signature
 			gprintf("// Test fake signature\n");
@@ -676,10 +684,11 @@ int main(int argc, char **argv)
 
 
 	// Reload the running IOS
-	IOS_ReloadIOS(runningIOS);
 	sprintf(MSG_Buffer, MSG_ReloadIOS, runningIOS, runningIOSRevision);
 	printLoading(MSG_Buffer);
-	usleep(1000);
+	IosPatch_FULL(false, false, false, false, runningIOS);
+	ios[runningIOS].infovIOS = CheckIOSType(*((vu32*)0x80003134));
+	CheckTime(current_time, 500);
 
 	//--Generate Report--
 	UpdateTime();
@@ -695,7 +704,7 @@ int main(int argc, char **argv)
 
 	// Display Title
 	sprintf(ReportBuffer[APP_TITLE], TXT_AppTitle, TXT_AppVersion);
-	sprintf(ReportBuffer[APP_IOS], TXT_AppIOS, runningIOS, IOS_GetRevision());
+	sprintf(ReportBuffer[APP_IOS], TXT_AppIOS, ios[runningIOS].infovIOS ? "v" : "", runningIOS, runningIOSRevision);
 	SystemInfo.validregion = SystemInfo.systemRegion >= CONF_REGION_JP && SystemInfo.systemRegion <= CONF_REGION_CN;
 
 	// Display the console region
@@ -907,15 +916,15 @@ int main(int argc, char **argv)
 					v = 4;
 					s = 0;
 				}
-				sprintf(ReportBuffer[lineOffset], "IOS%d[%d] (rev %d, Info: hermes-v%d.%d):", ios[i].titleID, ios[i].baseIOS, ios[i].revision, v, s);
+				sprintf(ReportBuffer[lineOffset], "%sIOS%d[%d] (rev %d, Info: hermes-v%d.%d):", ios[i].infovIOS ? "v" : "", ios[i].titleID, ios[i].baseIOS, ios[i].revision, v, s);
 			} else if(ios[i].baseIOS > 0) {
-				sprintf(ReportBuffer[lineOffset], "IOS%d[%d] (rev %d, Info: %s):", ios[i].titleID, ios[i].baseIOS, ios[i].revision, ios[i].info);
+				sprintf(ReportBuffer[lineOffset], "%sIOS%d[%d] (rev %d, Info: %s):", ios[i].infovIOS ? "v" : "", ios[i].titleID, ios[i].baseIOS, ios[i].revision, ios[i].info);
 			} else if (strcmp(ios[i].info, "NULL") != 0 && !ios[i].isStub) {
-				sprintf(ReportBuffer[lineOffset], "IOS%d (rev %d, Info: %s):", ios[i].titleID, ios[i].revision, ios[i].info);
+				sprintf(ReportBuffer[lineOffset], "%sIOS%d (rev %d, Info: %s):", ios[i].infovIOS ? "v" : "", ios[i].titleID, ios[i].revision, ios[i].info);
 			} else if (ios[i].titleID == 249 && ios[i].revision > 11 && ios[i].revision < 18)  {
-				sprintf(ReportBuffer[lineOffset], "IOS%d[38] (rev %d):", ios[i].titleID, ios[i].revision);
+				sprintf(ReportBuffer[lineOffset], "%sIOS%d[38] (rev %d):", ios[i].infovIOS ? "v" : "", ios[i].titleID, ios[i].revision);
 			} else {
-				sprintf(ReportBuffer[lineOffset], "IOS%d (rev %d):", ios[i].titleID, ios[i].revision);
+				sprintf(ReportBuffer[lineOffset], "%sIOS%d (rev %d):", ios[i].infovIOS ? "v" : "", ios[i].titleID, ios[i].revision);
 			}
 		}
 
