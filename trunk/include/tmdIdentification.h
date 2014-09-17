@@ -3,7 +3,7 @@
 
 #include <gctypes.h>
 
-#define base_number 122
+#define base_number 125
 
 typedef struct {
 	u32 hashes[5];

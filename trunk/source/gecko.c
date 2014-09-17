@@ -13,17 +13,17 @@ bool textVideoInit = false;
 void gprintf( const char *str, ... )
 {
 	if (!(geckoinit))return;
-
-	char astr[4096];
+	char astr[1024];
 
 	va_list ap;
 	va_start(ap,str);
 
-	vsprintf( astr, str, ap );
+	vsnprintf(astr, sizeof(astr), str, ap);
+	usb_sendbuffer_safe(1, astr, strlen(astr));
 
 	va_end(ap);
-
-	usb_sendbuffer_safe( 1, astr, strlen(astr) );
+	return;
+	
 }
 
 void gsenddata(const u8 *data, int length, const char *filename)

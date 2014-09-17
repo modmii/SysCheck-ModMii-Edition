@@ -400,7 +400,7 @@ int main(int argc, char **argv)
 			sha1 hash;
 			SHA1((u8 *)iosTMDBuffer, tmdSize, hash);
 
-			sprintf(HashLogBuffer[lines], "IOS%d base hash: \r\n%x %x %x %x, %x %x %x %x, %x %x %x %x, %x %x %x %x, %x %x %x %x\r\n", \
+			sprintf(HashLogBuffer[lines], "IOS%d base hash: \r\n%02x %02x %02x %02x, %02x %02x %02x %02x, %02x %02x %02x %02x, %02x %02x %02x %02x, %02x %02x %02x %02x\r\n", \
 			ios[i].titleID, hash[0], hash[1], hash[2], hash[3], hash[4], hash[5], hash[6], hash[7], hash[8], hash[9], hash[10], hash[11], hash[12], hash[13], hash[14], hash[15], hash[16], hash[17], hash[18], hash[19]);
 			lines++;
 
@@ -621,7 +621,7 @@ int main(int argc, char **argv)
 			// Test IOS type
 			gprintf("// Test IOS type\n");
 			logfile("// Test IOS type\r\n");
-			ios[i].infovIOS = CheckIOSType(*((vu32*)0x80003134));
+			ios[i].infovIOS = CheckIOSType(IOS_TOP);
 
 			// Test fake signature
 			gprintf("// Test fake signature\n");
@@ -687,7 +687,7 @@ int main(int argc, char **argv)
 	sprintf(MSG_Buffer, MSG_ReloadIOS, runningIOS, runningIOSRevision);
 	printLoading(MSG_Buffer);
 	IosPatch_FULL(false, false, false, false, runningIOS);
-	ios[runningIOS].infovIOS = CheckIOSType(*((vu32*)0x80003134));
+	ios[runningIOS].infovIOS = CheckIOSType(IOS_TOP);
 	CheckTime(current_time, 500);
 
 	//--Generate Report--
@@ -904,8 +904,10 @@ int main(int argc, char **argv)
 			sprintf(ReportBuffer[lineOffset], "BC v%d", ios[i].revision);
 		} else if (ios[i].titleID == TID_MIOS) {
 			sprintf(ReportBuffer[lineOffset], "MIOS v%d%s", ios[i].revision, SystemInfo.miosInfo);
-		} else if ((ios[i].titleID==222 || ios[i].titleID==224 || ios[i].titleID==223 || ios[i].titleID==202 || ios[i].titleID==225) && ios[i].baseIOS == 75) {
-			sprintf(ReportBuffer[lineOffset], "IOS%d[38+37] (rev %d, Info: %s):", ios[i].titleID, ios[i].revision, ios[i].info);
+		} else if (ios[i].baseIOS == 75 && (ios[i].titleID==222 || ios[i].titleID==224 || ios[i].titleID==223 || ios[i].titleID==202 || ios[i].titleID==225)) {
+			sprintf(ReportBuffer[lineOffset], "%sIOS%d[38+37] (rev %d, Info: %s):", ios[i].infovIOS ? "v" : "", ios[i].titleID, ios[i].revision, ios[i].info);
+		} else if (ios[i].baseIOS == 98 && (ios[i].titleID==222 || ios[i].titleID==224 || ios[i].titleID==223 || ios[i].titleID==202 || ios[i].titleID==225)) {
+			sprintf(ReportBuffer[lineOffset], "%sIOS%d[38+60] (rev %d, Info: %s):", ios[i].infovIOS ? "v" : "", ios[i].titleID, ios[i].revision, ios[i].info);
 		} else {
 			if(ios[i].mloadVersion > 0 && ios[i].baseIOS > 0) {
 				int v, s;

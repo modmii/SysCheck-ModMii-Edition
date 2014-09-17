@@ -9,6 +9,7 @@
 #define MEM_PROT 			(MEM_REG_BASE + 0x20a)
 #define HOLLYWOOD_VERSION 	(vu32*)0x80003138
 #define LOADER_STUB 		(vu32*)0x80001800
+#define IOS_TOP		 		(*((vu32*)0x80003134))
 #define IS_WII_U			((*(vu32*)(0xCd8005A0) >> 16 ) == 0xCAFE)
 #define MAX_ELEMENTS(x)		((sizeof((x))) / (sizeof((x)[0])))
 #define CheckTime(X,Y)		while(!(ticks_to_millisecs(diff_ticks((X), gettick())) > (Y)))
