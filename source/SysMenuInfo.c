@@ -263,6 +263,9 @@ float GetSysMenuNintendoVersion(u32 sysVersion)
 		case 544:
 		case 545:
 		case 546:
+		case 608:
+		case 609:
+		case 610:
 			ninVersion = 4.3f;
 			break;
 	}
@@ -288,6 +291,7 @@ char GetSysMenuRegion(u32 sysVersion) {
 		case 481: //4.2U
 		case 513: //4.3U
 		case 545:
+		case 609:
 			SysMenuRegion = 'U';
 			break;
 		case 130: //2.0E
@@ -304,6 +308,7 @@ char GetSysMenuRegion(u32 sysVersion) {
 		case 482: //4.2E
 		case 514: //4.3E
 		case 546:
+		case 610:
 			SysMenuRegion = 'E';
 			break;
 		case 128: //2.0J
@@ -319,6 +324,7 @@ char GetSysMenuRegion(u32 sysVersion) {
 		case 480: //4.2J
 		case 512: //4.3J
 		case 544:
+		case 608:
 			SysMenuRegion = 'J';
 			break;
 		case 326: //3.3K

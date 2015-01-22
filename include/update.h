@@ -2,7 +2,7 @@
 #define _UPDATE_H_
 
 /* Constants */
-#define REVISION 36
+#define REVISION 39
 #define PATH "sd:/apps/SysCheckHDE/"
 
 s32 updateApp(void);
