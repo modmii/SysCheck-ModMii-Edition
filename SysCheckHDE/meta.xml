@@ -2,11 +2,12 @@
 	<app version="1">
 		<name>SysCheck HacksDen Edition</name>
 		<coder>Double_A, R2-D2199, JoostinOnline, Nano</coder>
-		<version>2.3.1 HD Edition</version>
-		<release_date>20150121000000</release_date>
+		<version>2.3.2 HD Edition</version>
+		<release_date>20150128000000</release_date>
 		<short_description>System Checker HacksDen Edition</short_description>
 		<long_description>Homebrew application which does several checks on installed IOS and custom IOS:
     - Base IOS Detection
+    - vIOS Detection
     - IOS Stub
     - Fake signature (aka Trucha Bug)
     - ES_DiVerify (aka ES_Identify)
@@ -21,6 +22,12 @@ The author can not be held responsible for any damage sysCheck might cause!
 
 ------------------
 Changelog
+Version 2.3.2 HacksDen Edition
+* Disabled vIOS check on a real Wii because it was causing problems
+* Fixed the drive date bug (for real this time)
+* Fixed possible crash when there is no AHB access
+* Fixed crash when unknown System Menu version is installed
+
 Version 2.3.1 HacksDen Edition
 * Added hashes for hermes cIOS 2XX[38+60]v4, 2XX[38+37]v4, and 2XX[57]v5.1 (thanks Cyan)
 * Now reports if you have a vIOS installed

@@ -47,6 +47,11 @@ enum {
 };
 
 enum {
+	CONSOLE_WII = 0,
+	CONSOLE_WII_U
+};
+
+enum {
 	HBC_NONE = 0,
 	HBC_HAXX,
 	HBC_JODI,
