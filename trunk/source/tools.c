@@ -153,12 +153,12 @@ void formatDate(u32 date, char ReportBuffer[200][100]) {
 	char temp[8] = {0};
 	char day[2] = {0};
 	char month[2] = {0};
-	char year[4] = {0};
+	char year[5] = {0};
 
-	snprintf(temp, sizeof(temp), "%08x", date);
+	sprintf(temp, "%08x", date);
 	snprintf(year, sizeof(year), "%c%c%c%c", temp[0], temp[1], temp[2], temp[3]);
-	snprintf(month, sizeof(month), "%c%c", temp[4], temp[5]);
-	snprintf(day, sizeof(day), "%c%c", temp[6], temp[7]);
+	sprintf(month, "%c%c", temp[4], temp[5]);
+	sprintf(day, "%c%c", temp[6], temp[7]);
 
 	gprintf("MONTH: %s\n", month);
 	gprintf("DAY: %s\n", day);
@@ -173,10 +173,10 @@ void formatDate(u32 date, char ReportBuffer[200][100]) {
 		case CONF_LANG_GERMAN:
 		case CONF_LANG_ITALIAN:
 		case CONF_LANG_SPANISH:
-			snprintf(result, sizeof(result), "%s.%s.%s", day, month, year);
+			sprintf(result, "%s.%s.%s", day, month, year);
 			break;
 		default:
-			snprintf(result, sizeof(result), "%s.%s.%s", month, day, year); // You don't say "I was born 1990 January 1"  The year comes last
+			sprintf(result, "%s.%s.%s", month, day, year); // You don't say "I was born 1990 January 1"  The year comes last
 			break;
 	}
 	gprintf("String: %s\n", result);

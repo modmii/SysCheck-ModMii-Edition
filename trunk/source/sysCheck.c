@@ -616,12 +616,15 @@ int main(int argc, char **argv)
 			gprintf("// IOS_ReloadIOS(%d)\n", ios[i].titleID);
 			logfile("// IOS_ReloadIOS(%d)\r\n", ios[i].titleID);
 			
-			IosPatch_FULL(false, false, false, false, ios[i].titleID);
+			if (SystemInfo.deviceType == CONSOLE_WII_U)
+				IosPatch_FULL(false, false, false, false, ios[i].titleID);
+			else
+				IOS_ReloadIOS(ios[i].titleID);
 			
 			// Test IOS type
 			gprintf("// Test IOS type\n");
 			logfile("// Test IOS type\r\n");
-			ios[i].infovIOS = CheckIOSType(IOS_TOP);
+			if(SystemInfo.deviceType == CONSOLE_WII_U) ios[i].infovIOS = CheckIOSType(IOS_TOP);
 
 			// Test fake signature
 			gprintf("// Test fake signature\n");
@@ -687,7 +690,12 @@ int main(int argc, char **argv)
 	sprintf(MSG_Buffer, MSG_ReloadIOS, runningIOS, runningIOSRevision);
 	printLoading(MSG_Buffer);
 	IosPatch_FULL(false, false, false, false, runningIOS);
-	ios[runningIOS].infovIOS = CheckIOSType(IOS_TOP);
+	if (SystemInfo.deviceType == CONSOLE_WII_U) {
+		IosPatch_FULL(false, false, false, false, runningIOS);
+		ios[runningIOS].infovIOS = CheckIOSType(IOS_TOP);
+	} else {
+		IOS_ReloadIOS(ios[i].titleID);
+	}
 	CheckTime(current_time, 500);
 
 	//--Generate Report--
