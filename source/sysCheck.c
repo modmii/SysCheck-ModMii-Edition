@@ -89,7 +89,7 @@ int main(int argc, char **argv)
 	printLoading(MSG_GetConsoleRegion);
 	UpdateTime();
 	SystemInfo.systemRegion = CONF_GetRegion();
-	CheckTime(current_time, 600);
+	CheckTime();
 	
 	SystemInfo.shopcode = 0;
 	if (!CONF_GetShopCode(&SystemInfo.shopcode)) {
@@ -102,7 +102,7 @@ int main(int argc, char **argv)
 	printLoading(MSG_GetSysMenuVer);
 	UpdateTime();
 	SystemInfo.sysMenuVer = GetSysMenuVersion();
-	CheckTime(current_time, 600);
+	CheckTime();
 	
 	sysMenu systemmenu;
 
@@ -180,27 +180,27 @@ int main(int argc, char **argv)
 
 	SystemInfo.sysNinVersion = GetSysMenuNintendoVersion(SystemInfo.sysMenuVer);
 	SystemInfo.sysMenuRegion = GetSysMenuRegion(SystemInfo.sysMenuVer);
-	CheckTime(current_time, 600);
+	CheckTime();
 
 	// Get the running IOS version and revision
 	printLoading(MSG_GetRunningIOS);
 	UpdateTime();
-	u32 runningIOS = IOS_GetVersion();
-	u32 runningIOSRevision = IOS_GetRevision();
+	SystemInfo.runningIOS = IOS_GetVersion();
+	SystemInfo.runningIOSRevision = IOS_GetRevision();
 	
-	CheckTime(current_time, 600);
+	CheckTime();
 
 	// Get the console ID
 	printLoading(MSG_GetConsoleID);
 	UpdateTime();
 	SystemInfo.deviceID = GetDeviceID();
-	CheckTime(current_time, 600);
+	CheckTime();
 
 	// Get the boot2 version
 	printLoading(MSG_GetBoot2);
 	UpdateTime();
 	SystemInfo.boot2version = GetBoot2Version();
-	CheckTime(current_time, 600);
+	CheckTime();
 
 	// Get number of titles
 	printLoading(MSG_GetNrOfTitles);
@@ -225,7 +225,7 @@ int main(int argc, char **argv)
 		deinitGUI();
 		exit(1);
 	}
-	CheckTime(current_time, 600);
+	CheckTime();
 
 	// Get list of titles
 	printLoading(MSG_GetTitleList);
@@ -287,7 +287,7 @@ int main(int argc, char **argv)
 		arguments.skipIOScnt--;
 	}
 	
-	CheckTime(current_time, 600);
+	CheckTime();
 
 	// Sort IOS titles
 	printLoading(MSG_SortTitles);
@@ -407,7 +407,7 @@ int main(int argc, char **argv)
 			for (j = 0;j < base_number;j++)
 			{
 				// Check hashes
-				if (memcmp((void *)hash, (u32 *)&iosHash[j].hashes, sizeof(sha1)) == 0)
+				if (memcmp((void*)hash, (u32*)&iosHash[j].hashes, sizeof(sha1)) == 0)
 				{
 					if (ios[i].titleID != iosHash[j].base)
 						ios[i].baseIOS = iosHash[j].base;
@@ -480,7 +480,7 @@ int main(int argc, char **argv)
 
 	SystemInfo.countTitles = nbTitles;
 	nbTitles = SystemInfo.countIOS;
-	CheckTime(current_time, 600);
+	CheckTime();
 
 	// Get the certificates from the NAND
 	printLoading(MSG_GetCertificates);
@@ -491,7 +491,7 @@ int main(int argc, char **argv)
 		deinitGUI();
 		exit(1);
 	}
-	CheckTime(current_time, 600);
+	CheckTime();
 	//Select an IOS to test
 	WPAD_Init();
 	PAD_Init();
@@ -562,15 +562,17 @@ int main(int argc, char **argv)
 				printSuccess(MSG_NoUpdate);
 				sleep(5);
 				starttime = time(NULL);
+				printSelectIOS(MSG_SelectIOS, MSG_Buffer);
 			} else if (ret >= 0) {
 				printSuccess(MSG_UpdateSuccess);
-				sleep(10);
+				sleep(5);
 				deinitGUI();
 				exit(0);
 			} else if (ret < 0) {
 				printError(MSG_UpdateFail);
 				sleep(5);
 				starttime = time(NULL);
+				printSelectIOS(MSG_SelectIOS, MSG_Buffer);
 			}
 		}
 
@@ -624,7 +626,7 @@ int main(int argc, char **argv)
 			// Test IOS type
 			gprintf("// Test IOS type\n");
 			logfile("// Test IOS type\r\n");
-			if(SystemInfo.deviceType == CONSOLE_WII_U) ios[i].infovIOS = CheckIOSType(IOS_TOP);
+			if(SystemInfo.deviceType == CONSOLE_WII_U) ios[i].infovIOS = CheckIOSType();
 
 			// Test fake signature
 			gprintf("// Test fake signature\n");
@@ -687,16 +689,16 @@ int main(int argc, char **argv)
 
 
 	// Reload the running IOS
-	sprintf(MSG_Buffer, MSG_ReloadIOS, runningIOS, runningIOSRevision);
+	/*sprintf(MSG_Buffer, MSG_ReloadIOS, SystemInfo.runningIOS, SystemInfo.runningIOSRevision);
 	printLoading(MSG_Buffer);
-	IosPatch_FULL(false, false, false, false, runningIOS);
+	IosPatch_FULL(false, false, false, false, SystemInfo.runningIOS);
 	if (SystemInfo.deviceType == CONSOLE_WII_U) {
-		IosPatch_FULL(false, false, false, false, runningIOS);
-		ios[runningIOS].infovIOS = CheckIOSType(IOS_TOP);
+		IosPatch_FULL(false, false, false, false, SystemInfo.runningIOS);
+		ios[SystemInfo.runningIOS].infovIOS = CheckIOSType();
 	} else {
 		IOS_ReloadIOS(ios[i].titleID);
 	}
-	CheckTime(current_time, 500);
+	CheckTime(500);*/
 
 	//--Generate Report--
 	UpdateTime();
@@ -712,7 +714,7 @@ int main(int argc, char **argv)
 
 	// Display Title
 	sprintf(ReportBuffer[APP_TITLE], TXT_AppTitle, TXT_AppVersion);
-	sprintf(ReportBuffer[APP_IOS], TXT_AppIOS, ios[runningIOS].infovIOS ? "v" : "", runningIOS, runningIOSRevision);
+	sprintf(ReportBuffer[APP_IOS], TXT_AppIOS, ios[SystemInfo.runningIOS].infovIOS ? "v" : "", SystemInfo.runningIOS, SystemInfo.runningIOSRevision);
 	SystemInfo.validregion = SystemInfo.systemRegion >= CONF_REGION_JP && SystemInfo.systemRegion <= CONF_REGION_CN;
 
 	// Display the console region
@@ -892,7 +894,7 @@ int main(int argc, char **argv)
 	if (homebrew.hbf > HBF_NONE)
 		sprintf(ReportBuffer[HBF], TXT_HBF, homebrew.hbfversion);
 
-	sprintf(ReportBuffer[HOLLYWOOD], TXT_Hollywood, *HOLLYWOOD_VERSION);
+	sprintf(ReportBuffer[HOLLYWOOD], TXT_Hollywood, HOLLYWOOD_VERSION);
 	sprintf(ReportBuffer[CONSOLE_ID], TXT_ConsoleID, SystemInfo.deviceID);
 	sprintf(ReportBuffer[CONSOLE_TYPE], TXT_ConsoleType, SystemInfo.deviceType ? "vWii" : "Wii");
 	sprintf(ReportBuffer[COUNTRY], TXT_ShopCountry, (strlen(SystemInfo.country)) ? SystemInfo.country : TXT_Unknown, SystemInfo.shopcode);
@@ -968,13 +970,13 @@ int main(int argc, char **argv)
 
 	int NumLines = lineOffset+1;
 	sprintf(ReportBuffer[NumLines], TXT_ReportDate);
-	CheckTime(current_time, 600);
+	CheckTime();
 	
 	// Mount the SD Card
 	UpdateTime();
 	printLoading(MSG_MountSD);
 	MountSD();
-	CheckTime(current_time, 600);
+	CheckTime();
 
 	// Initialise the FAT file system
 	UpdateTime();
@@ -988,7 +990,7 @@ int main(int argc, char **argv)
 	} else {
 		//chdir("/");
 		// Create the report
-		CheckTime(current_time, 600);
+		CheckTime();
 		FILE *file = fopen(REPORT, "w");
 
 		if(!file)
@@ -1006,7 +1008,7 @@ int main(int argc, char **argv)
 			fclose(file);
 
 			printEndSuccess(MSG_ReportSuccess);
-			CheckTime(current_time, 600);
+			CheckTime();
 		}
 
 		// Create hash log
@@ -1027,7 +1029,7 @@ int main(int argc, char **argv)
 			fclose(file);
 			UpdateTime();
 			printEndSuccess(MSG_ReportSuccess);
-			CheckTime(current_time, 600);
+			CheckTime();
 		}
 	}
 

@@ -47,6 +47,7 @@ LIBS	+= -lruntimeiospatch
 # include and lib
 #---------------------------------------------------------------------------------
 LIBDIRS	:= $(PORTLIBS)
+LIBDIRS	+= LIBDIRS	:= $(CURDIR)/libs
 
 #---------------------------------------------------------------------------------
 # no real need to edit anything past this point unless you need to add additional

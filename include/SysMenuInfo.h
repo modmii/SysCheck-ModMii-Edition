@@ -54,6 +54,8 @@ typedef struct {
 	u8 shopcode;
 	u8 priiloader;
 	bool nandAccess;
+	u32 runningIOS;
+	u32 runningIOSRevision;
 } SYSSETTINGS;
 
 typedef struct {
@@ -68,7 +70,5 @@ typedef struct {
 	s32 hbf;
 	u32 hbcIOS;
 } homebrew_t;
-
-char getSystemMenuRegionFromContent();
 
 #endif
