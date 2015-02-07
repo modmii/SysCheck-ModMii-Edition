@@ -7,13 +7,11 @@
 #define AHB_ACCESS			(*(vu32*)0xcd800064 == 0xFFFFFFFF)
 #define MEM_REG_BASE 		0xd8b4000
 #define MEM_PROT 			(MEM_REG_BASE + 0x20a)
-#define HOLLYWOOD_VERSION 	(vu32*)0x80003138
+#define HOLLYWOOD_VERSION 	(*(vu32*)0x80003138)
 #define LOADER_STUB 		(vu32*)0x80001800
 #define IOS_TOP		 		(*((vu32*)0x80003134))
 #define IS_WII_U			((*(vu32*)(0xCd8005A0) >> 16 ) == 0xCAFE)
 #define MAX_ELEMENTS(x)		((sizeof((x))) / (sizeof((x)[0])))
-#define CheckTime(X,Y)		while(!(ticks_to_millisecs(diff_ticks((X), gettick())) > (Y)))
-#define UpdateTime()		current_time = gettick();
 
 // Turn upper and lower into a full title ID
 #define TITLE_ID(x,y)           (((u64)(x) << 32) | (y))
@@ -141,7 +139,7 @@ u32 GetSysMenuVersion(void);
 float GetSysMenuNintendoVersion(u32 sysVersion);
 u32 GetBoot2Version(void);
 u32 GetDeviceID(void);
-bool CheckIOSType(u32 start_address);
+bool CheckIOSType(void);
 bool CheckFakeSignature(void);
 bool CheckESIdentify(void);
 bool CheckFlashAccess(void);

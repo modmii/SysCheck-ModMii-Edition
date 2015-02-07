@@ -10,13 +10,16 @@ extern "C"
 #define DI_BUTTONS_HELD		0
 #define DI_BUTTONS_DOWN		1
 
-#define CHECK_ARG(X) (!strncmp((X), argv[i], sizeof((X))-1))
-#define CHECK_ARG_VAL(X) (argv[i] + sizeof((X))-1)
+#define CHECK_ARG(X)		(!strncmp((X), argv[i], sizeof((X))-1))
+#define CHECK_ARG_VAL(X)	(argv[i] + sizeof((X))-1)
+
+#define CheckTime()			while(!(ticks_to_millisecs(diff_ticks(current_time, gettime())) > 750000))
+#define UpdateTime()		current_time = gettime();
 
 typedef struct {
 	bool	forceNoAHBPROT;
 	bool	debug;
-	int		skipIOSlist[513];
+	int		skipIOSlist[512];
 	int		skipIOScnt;
 } arguments_t;
 

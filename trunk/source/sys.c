@@ -325,9 +325,10 @@ inline s32 RemoveBogusTMD(void)
 }
 
 
-inline bool CheckIOSType(u32 start_address) {
+inline bool CheckIOSType(void) {
 	if (AHB_ACCESS == false) return false;
-	const char WL_String[] = {0x57, 0x4C, 0x3A, 0x20, 0x30, 0x32, 0x2F, 0x30, 0x32, 0x2F, 0x31, 0x32};
+	u32 start_address = IOS_TOP;
+	const char WL_String[] = {0x57, 0x4C, 0x3A, 0x20, 0x30, 0x32, 0x2F, 0x30, 0x32, 0x2F, 0x31, 0x32}; // "WL: 02/02/12"
 	u32 i;
 	for(i = start_address; i < 0x94000000 - sizeof(WL_String); i++) {
 		if (memcmp((char*)i, WL_String, sizeof(WL_String)) == 0) return true;
