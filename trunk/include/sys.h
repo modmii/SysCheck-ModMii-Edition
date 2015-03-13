@@ -9,8 +9,10 @@
 #define MEM_PROT 			(MEM_REG_BASE + 0x20a)
 #define HOLLYWOOD_VERSION 	(*(vu32*)0x80003138)
 #define LOADER_STUB 		(vu32*)0x80001800
-#define IOS_TOP		 		(*((vu32*)0x80003134))
-#define IS_WII_U			((*(vu32*)(0xCd8005A0) >> 16 ) == 0xCAFE)
+#define IOS_START	 		(*((vu32*)0x80003130))
+#define IOS_END				(*((vu32*)0x80003134))
+//#define IS_WII_U			((*(vu32*)(0xCd8005A0) >> 16 ) == 0xCAFE)
+#define IS_WII_U			((*(vu16*)(0xCd8005A2)) == 0xCAFE)
 #define MAX_ELEMENTS(x)		((sizeof((x))) / (sizeof((x)[0])))
 
 // Turn upper and lower into a full title ID
@@ -19,9 +21,6 @@
 #define TITLE_UPPER(x)          ((u32)((x) >> 32))
 // Turn upper and lower into a full title ID
 #define TITLE_LOWER(x)          ((u32)(x))
-
-#define FULL_TITLE_ID(titleId) ((u32)(titleId))
-#define TITLE_ID2(titleId) ((u32)((titleId) >> 32))
 
 enum {
 	APP_TITLE = 0,
@@ -91,13 +90,13 @@ typedef struct {
 	u32		titleID;
 	u8		num_contents;
 	u32		titleSize;
-} IOS;
+} IOS_t;
 
 typedef struct {
 	bool 	hasInfo;
 	u32   	realRevision;
 	char	info[0x10];
-} sysMenu;
+} sysMenu_t;
 
 typedef struct _U8Header
 {
@@ -155,7 +154,7 @@ void transmitSyscheck(char ReportBuffer[200][100], int *lines);
 s32 brute_tmd(tmd *p_tmd);
 s32 get_miosinfo(char *str);
 int get_title_ios(u64 title);
-bool getInfoFromContent(IOS *ios);
+bool getInfoFromContent(IOS_t *ios);
 
 #ifdef __cplusplus
 }

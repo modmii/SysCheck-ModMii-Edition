@@ -84,7 +84,7 @@ int get_title_ios(u64 title) {
 	return 0;
 }
 
-bool getInfoFromContent(IOS *ios) {
+bool getInfoFromContent(IOS_t *ios) {
 	bool retValue = false;
 	iosinfo_t *iosinfo = NULL;
 	char filepath[ISFS_MAXPATH] ATTRIBUTE_ALIGN(0x20);
@@ -327,11 +327,14 @@ inline s32 RemoveBogusTMD(void)
 
 inline bool CheckIOSType(void) {
 	if (AHB_ACCESS == false) return false;
-	u32 start_address = IOS_TOP;
-	const char WL_String[] = {0x57, 0x4C, 0x3A, 0x20, 0x30, 0x32, 0x2F, 0x30, 0x32, 0x2F, 0x31, 0x32}; // "WL: 02/02/12"
+	//u32 start_address = IOS_START;
+	//u32 end_address = IOS_END;
+	const u32 start_address = 0x90000000;
+	const u32 end_address = 0x94000000;
+	const u8 WL_String[] = {0x57, 0x4C, 0x3A, 0x20, 0x30, 0x32, 0x2F, 0x30, 0x32, 0x2F, 0x31, 0x32}; // "WL: 02/02/12"
 	u32 i;
-	for(i = start_address; i < 0x94000000 - sizeof(WL_String); i++) {
-		if (memcmp((char*)i, WL_String, sizeof(WL_String)) == 0) return true;
+	for(i = start_address; i < end_address - sizeof(WL_String); i++) {
+		if (memcmp((u8*)i, WL_String, sizeof(WL_String)) == 0) return true;
 	}
 	return false;
 }

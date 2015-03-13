@@ -55,14 +55,14 @@ char ascii(char s) {
 
 bool InitGecko()
 {
-	u32 geckoattached = usb_isgeckoalive(EXI_CHANNEL_1);
-	if (geckoattached)
+	if(usb_isgeckoalive(EXI_CHANNEL_1))
 	{
 		usb_flush(EXI_CHANNEL_1);
-		return true;
+		geckoinit = true;
+	} else {
+		geckoinit = false;
 	}
-	else return false;
+	return geckoinit;
 }
-
 
 #endif /* NO_DEBUG */
