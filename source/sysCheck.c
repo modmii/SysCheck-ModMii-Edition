@@ -36,9 +36,8 @@
 #define VERSION_1_1_0	65536
 
 
-extern bool geckoinit;
 extern void __exception_setreload(int t);
-static u32 current_time = 0;
+static u64 current_time = 0;
 
 // Main 
 int main(int argc, char **argv)
@@ -49,7 +48,7 @@ int main(int argc, char **argv)
 	arguments.skipIOScnt = 0;
 	arguments.debug = false;
 	
-	geckoinit = InitGecko();
+	InitGecko();
 	if(argc>=1){
 		int i;
 		for(i=0; i<argc; i++){
@@ -69,7 +68,7 @@ int main(int argc, char **argv)
 			}
 		}
 	}
-	SYSSETTINGS SystemInfo;
+	SysSettings_t SystemInfo;
 	SystemInfo.deviceType = IS_WII_U;
 	memset(SystemInfo.miosInfo, 0, sizeof(SystemInfo.miosInfo));
 
@@ -104,7 +103,7 @@ int main(int argc, char **argv)
 	SystemInfo.sysMenuVer = GetSysMenuVersion();
 	CheckTime();
 	
-	sysMenu systemmenu;
+	sysMenu_t systemmenu;
 
 	printLoading(MSG_GetHBCVer);
 	UpdateTime();
@@ -305,7 +304,7 @@ int main(int argc, char **argv)
 	sort(newTitles, SystemInfo.countIOS);
 	free(titles);
 
-	IOS ios[SystemInfo.countIOS];
+	IOS_t ios[SystemInfo.countIOS];
 	// IOS List Initialization
 	for (i = SystemInfo.countIOS; i--;) {
 		ios[i].infoContent = 0;
@@ -333,6 +332,9 @@ int main(int argc, char **argv)
 
 	// Check MIOS
 	if (SystemInfo.nandAccess) get_miosinfo(SystemInfo.miosInfo);
+	
+	// Check running IOS type so we don't have to reload it later
+	if(SystemInfo.deviceType == CONSOLE_WII_U) ios[SystemInfo.runningIOS].infovIOS = CheckIOSType();
 
 	// For each titles found
 	for (i = SystemInfo.countIOS; i--;)
@@ -393,7 +395,7 @@ int main(int argc, char **argv)
 		}
 
 		if ((!ios[i].isStub || ios[i].titleID == TID_CBOOT2) && (SystemInfo.nandAccess) && (!getInfoFromContent(&ios[i]))) {
-			// Hash des TMDs abrufen
+			// Get the TMD hash
 			iosTMD->title_id = ((u64)(1) << 32) | 249;
 			brute_tmd(iosTMD);
 
@@ -687,25 +689,12 @@ int main(int argc, char **argv)
 		}
 	}
 
-
-	// Reload the running IOS
-	/*sprintf(MSG_Buffer, MSG_ReloadIOS, SystemInfo.runningIOS, SystemInfo.runningIOSRevision);
-	printLoading(MSG_Buffer);
-	IosPatch_FULL(false, false, false, false, SystemInfo.runningIOS);
-	if (SystemInfo.deviceType == CONSOLE_WII_U) {
-		IosPatch_FULL(false, false, false, false, SystemInfo.runningIOS);
-		ios[SystemInfo.runningIOS].infovIOS = CheckIOSType();
-	} else {
-		IOS_ReloadIOS(ios[i].titleID);
-	}
-	CheckTime(500);*/
-
 	//--Generate Report--
 	UpdateTime();
 	printLoading(MSG_GenerateReport);
 	
 
-	char ReportBuffer[200][100] = {{0}};
+	char ReportBuffer[200][100] = {{0}}; // The maximum display length is actually 73
 
 	if (SystemInfo.dvdSupport > 0)
 		formatDate(SystemInfo.dvdSupport, ReportBuffer);
@@ -930,13 +919,13 @@ int main(int argc, char **argv)
 				}
 				sprintf(ReportBuffer[lineOffset], "%sIOS%d[%d] (rev %d, Info: hermes-v%d.%d):", ios[i].infovIOS ? "v" : "", ios[i].titleID, ios[i].baseIOS, ios[i].revision, v, s);
 			} else if(ios[i].baseIOS > 0) {
-				sprintf(ReportBuffer[lineOffset], "%sIOS%d[%d] (rev %d, Info: %s):", ios[i].infovIOS ? "v" : "", ios[i].titleID, ios[i].baseIOS, ios[i].revision, ios[i].info);
+				snprintf(ReportBuffer[lineOffset], MAX_ELEMENTS(ReportBuffer[0]), "%sIOS%d[%d] (rev %d, Info: %s):", ios[i].infovIOS ? "v" : "", ios[i].titleID, ios[i].baseIOS, ios[i].revision, ios[i].info);
 			} else if (strcmp(ios[i].info, "NULL") != 0 && !ios[i].isStub) {
-				sprintf(ReportBuffer[lineOffset], "%sIOS%d (rev %d, Info: %s):", ios[i].infovIOS ? "v" : "", ios[i].titleID, ios[i].revision, ios[i].info);
+				snprintf(ReportBuffer[lineOffset], MAX_ELEMENTS(ReportBuffer[0]), "%sIOS%d (rev %d, Info: %s):", ios[i].infovIOS ? "v" : "", ios[i].titleID, ios[i].revision, ios[i].info);
 			} else if (ios[i].titleID == 249 && ios[i].revision > 11 && ios[i].revision < 18)  {
 				sprintf(ReportBuffer[lineOffset], "%sIOS%d[38] (rev %d):", ios[i].infovIOS ? "v" : "", ios[i].titleID, ios[i].revision);
 			} else {
-				sprintf(ReportBuffer[lineOffset], "%sIOS%d (rev %d):", ios[i].infovIOS ? "v" : "", ios[i].titleID, ios[i].revision);
+				snprintf(ReportBuffer[lineOffset], MAX_ELEMENTS(ReportBuffer[0]), "%sIOS%d (rev %d):", ios[i].infovIOS ? "v" : "", ios[i].titleID, ios[i].revision);
 			}
 		}
 
@@ -1089,22 +1078,26 @@ int main(int argc, char **argv)
 			if (wpressed & WPAD_BUTTON_UP) {
 				if (LineNr > 0) LineNr--;
 				printReport(ReportBuffer, LineNr, completeReport);
+				usleep(50000);
 			}
 
 			if (wpressed & WPAD_BUTTON_DOWN) {
 				if (LineNr < NumLines-14) LineNr++;
 				printReport(ReportBuffer, LineNr, completeReport);
+				usleep(50000);
 			}
 			if (wpressed & WPAD_BUTTON_LEFT) {
 				if (LineNr > 0) LineNr = LineNr - 15;
 				if (LineNr < 0) LineNr = 0;
 				printReport(ReportBuffer, LineNr, completeReport);
+				usleep(100000);
 			}
 
 			if (wpressed & WPAD_BUTTON_RIGHT) {
 				if (LineNr < NumLines-14) LineNr = LineNr + 15;
 				if (LineNr + 14 > NumLines) LineNr = NumLines-14;
 				printReport(ReportBuffer, LineNr, completeReport);
+				usleep(100000);
 			}
 		}
 	}

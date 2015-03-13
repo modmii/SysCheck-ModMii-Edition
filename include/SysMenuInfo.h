@@ -56,7 +56,7 @@ typedef struct {
 	bool nandAccess;
 	u32 runningIOS;
 	u32 runningIOSRevision;
-} SYSSETTINGS;
+} SysSettings_t;
 
 typedef struct {
     char name[ISFS_MAXPATH + 1];
