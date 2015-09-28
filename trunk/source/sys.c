@@ -326,15 +326,12 @@ inline s32 RemoveBogusTMD(void)
 
 
 inline bool CheckIOSType(void) {
-	if (AHB_ACCESS == false) return false;
-	//u32 start_address = IOS_START;
-	//u32 end_address = IOS_END;
-	const u32 start_address = 0x90000000;
-	const u32 end_address = 0x94000000;
-	const u8 WL_String[] = {0x57, 0x4C, 0x3A, 0x20, 0x30, 0x32, 0x2F, 0x30, 0x32, 0x2F, 0x31, 0x32}; // "WL: 02/02/12"
+	//if (AHB_ACCESS == false) return false;
+	u32 start_address = IOS_TOP;
+	const char WL_String[] = {0x57, 0x4C, 0x3A, 0x20, 0x30, 0x32, 0x2F, 0x30, 0x32, 0x2F, 0x31, 0x32}; // "WL: 02/02/12"
 	u32 i;
-	for(i = start_address; i < end_address - sizeof(WL_String); i++) {
-		if (memcmp((u8*)i, WL_String, sizeof(WL_String)) == 0) return true;
+	for(i = start_address; i < 0x94000000 - sizeof(WL_String); i++) {
+		if (memcmp((char*)i, WL_String, sizeof(WL_String)) == 0) return true;
 	}
 	return false;
 }
@@ -727,3 +724,36 @@ s32 get_miosinfo(char *str)
 	}
 	return 0;
 }
+
+// Minimum vIOS versions
+const vIOSdb_t vIOSdb[] = {
+	{9, 1290},
+	{12, 782},
+	{13, 1288},
+	{14, 1288},
+	{15, 1288},
+	{17, 1288},
+	{21, 1295},
+	{22, 1550},
+	{28, 2063},
+	{31, 3864},
+	{33, 3864},
+	{34, 3864},
+	{35, 3864},
+	{36, 3864},
+	{37, 5919},
+	{38, 4380},
+	{41, 3863},
+	{43, 3863},
+	{45, 3863},
+	{46, 3863},
+	{48, 4380},
+	{53, 5919},
+	{55, 5919},
+	{56, 5918},
+	{57, 6175},
+	{58, 6432},
+	{59, 7201},
+	{62, 6430},
+	{80, 6430}
+};

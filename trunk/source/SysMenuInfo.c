@@ -142,7 +142,6 @@ float GetSysMenuNintendoVersion(u32 sysVersion)
 }
 
 char GetSysMenuRegion(u32 sysVersion) {
-	char SysMenuRegion = 'X';
 	switch(sysVersion)
 	{
 		case 1:  //Pre-launch
@@ -160,7 +159,7 @@ char GetSysMenuRegion(u32 sysVersion) {
 		case 513: //4.3U
 		case 545:
 		case 609:
-			SysMenuRegion = 'U';
+			return 'U';
 			break;
 		case 130: //2.0E
 		case 162: //2.1E
@@ -177,7 +176,7 @@ char GetSysMenuRegion(u32 sysVersion) {
 		case 514: //4.3E
 		case 546:
 		case 610:
-			SysMenuRegion = 'E';
+			return 'E';
 			break;
 		case 128: //2.0J
 		case 192: //2.2J
@@ -193,7 +192,7 @@ char GetSysMenuRegion(u32 sysVersion) {
 		case 512: //4.3J
 		case 544:
 		case 608:
-			SysMenuRegion = 'J';
+			return 'J';
 			break;
 		case 326: //3.3K
 		case 390: //3.5K
@@ -201,10 +200,10 @@ char GetSysMenuRegion(u32 sysVersion) {
 		case 54454: // mauifrog 4.1K
 		case 486: //4.2K
 		case 518: //4.3K
-			SysMenuRegion = 'K';
+			return 'K';
 			break;
 	}
-	return SysMenuRegion;
+	return 'X';
 }
 
 // Get the system menu version from TMD

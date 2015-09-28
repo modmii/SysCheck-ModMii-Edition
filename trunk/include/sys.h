@@ -9,10 +9,8 @@
 #define MEM_PROT 			(MEM_REG_BASE + 0x20a)
 #define HOLLYWOOD_VERSION 	(*(vu32*)0x80003138)
 #define LOADER_STUB 		(vu32*)0x80001800
-#define IOS_START	 		(*((vu32*)0x80003130))
-#define IOS_END				(*((vu32*)0x80003134))
-//#define IS_WII_U			((*(vu32*)(0xCd8005A0) >> 16 ) == 0xCAFE)
-#define IS_WII_U			((*(vu16*)(0xCd8005A2)) == 0xCAFE)
+#define IOS_TOP		 		(*((vu32*)0x80003130))
+#define IS_WII_U			((*(vu32*)(0xCd8005A0) >> 16 ) == 0xCAFE)
 #define MAX_ELEMENTS(x)		((sizeof((x))) / (sizeof((x)[0])))
 
 // Turn upper and lower into a full title ID
@@ -122,8 +120,14 @@ typedef struct _U8Entry
 	};
 } __attribute__( ( packed ) ) U8Entry;
 
+typedef struct {
+	const u32 titleID;
+	const s32 revision;
+} vIOSdb_t;
+
 extern const char *Regions[];
 extern u8 sysMenuInfoContent;
+extern const vIOSdb_t vIOSdb[];
 
 #ifdef __cplusplus
 extern "C"

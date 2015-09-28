@@ -21,6 +21,7 @@ typedef struct {
 	bool	debug;
 	int		skipIOSlist[512];
 	int		skipIOScnt;
+	bool	USB;
 } arguments_t;
 
 extern arguments_t arguments;

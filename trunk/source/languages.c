@@ -4,12 +4,11 @@
 #include "fatMounter.h"
 #include "languages.h"
 
-
-// 		CONF_LANG_ENGLISH
 // 		CONF_LANG_GERMAN
 // 		CONF_LANG_FRENCH
-// 		CONF_LANG_SPANISH
 // 		CONF_LANG_ITALIAN
+// 		CONF_LANG_SPANISH
+// 		CONF_LANG_ENGLISH
 
 // !!! Doesn't support special chars... !!!
 // !!! Don't change the order of the parameters !!!
@@ -96,6 +95,7 @@ int initLanguages(struct tm today)
 			TXT_Upload = "Bericht wird hochgeladen...";
 			BUT_OK = "OK";
 			TXT_OriginalRegion = " (urspruengliche Region: ";
+			TXT_IOSSkipped = "Ubersprungenen";
 			break;
 
 		case CONF_LANG_FRENCH:
@@ -123,7 +123,7 @@ int initLanguages(struct tm today)
 			TXT_SysMenu = "Menu Systeme %1.1f%c (v%d)";
 			TXT_SysMenu2 = "Menu Systeme %s%s (v%d)";
 			TXT_SysMenu3 = "Menu Systeme %1.1f%c (v%d, Info: v%d %s)";
-			TXT_NO_HBC = "Chaine Homebrew n'est pas installé";
+			TXT_NO_HBC = "Chaine Homebrew n'est pas installe'";
 			TXT_HBC = "Chaine Homebrew 1.0.%d utilise IOS%d";
 			TXT_HBC_NEW = "Chaine Homebrew 1.1.0 utilise IOS%d";
 			TXT_HBC_112 = "Chaine Channel 1.1.%d utilise IOS%d";
@@ -131,7 +131,7 @@ int initLanguages(struct tm today)
 			TXT_Hollywood = "Hollywood v0x%x";
 			TXT_ConsoleID = "Identifiant de la console: %d";
 			TXT_ConsoleType = "Type de Console: %s";
-			TXT_ShopCountry ="Pays de la chaîne boutique: %s (%u)";
+			TXT_ShopCountry ="Pays de la chaine boutique: %s (%u)";
 			TXT_vBoot2 = "Boot2 v%u";
 			TXT_NrOfTitles = "%d titres trouves.";
 			TXT_NrOfIOS = "%d IOS trouves sur cette console. %d sont des stubs.";
@@ -172,6 +172,7 @@ int initLanguages(struct tm today)
 			TXT_Upload = "Telechargement du rapport...";
 			BUT_OK = "OK";
 			TXT_OriginalRegion = " (region d'origine: ";
+			TXT_IOSSkipped = "Ignore'";
 			break;
 
 		case CONF_LANG_ITALIAN:
@@ -210,7 +211,7 @@ int initLanguages(struct tm today)
 			TXT_ShopCountry ="Paese canale Shop: %s (%u)";
 			TXT_vBoot2 = "Boot2 v%u";
 			TXT_NrOfTitles = "Trovati %d giochi.";
-			TXT_NrOfIOS = "Trovati %d IOS in questa console. %d di questi sono stub.";
+			TXT_NrOfIOS = "Trovati %d IOS in questa console. %d di questi sono stubs.";
 			TXT_AppTitle = "SysCheck HDE %s by JoostinOnline, Double_A, R2-D2199, and Nano";
 			TXT_AppIOS = "...appoggiato all'%sIOS%d (v. %d).";
 			ERR_AllocateMemory = "Impossibile allocare la memoria per %d giochi.";
@@ -248,6 +249,7 @@ int initLanguages(struct tm today)
 			TXT_Upload = "Invio rapporto...";
 			BUT_OK = "OK";
 			TXT_OriginalRegion = " (regione originale: ";
+			TXT_IOSSkipped = "Ignorato";
 		    break;
 
 		case CONF_LANG_SPANISH:
@@ -324,6 +326,7 @@ int initLanguages(struct tm today)
 			TXT_Upload = "Cargar el informe...";
 			BUT_OK = "OK";
 			TXT_OriginalRegion = " (region de origen: ";
+			TXT_IOSSkipped = "Omitido";
 			break;
 
 		default:
@@ -362,7 +365,7 @@ int initLanguages(struct tm today)
 			TXT_ShopCountry ="Shop Channel Country: %s (%u)";
 			TXT_vBoot2 = "Boot2 v%u";
 			TXT_NrOfTitles = "Found %d titles.";
-			TXT_NrOfIOS = "Found %d IOS on this console. %d of them are stub.";
+			TXT_NrOfIOS = "Found %d IOS on this console. %d of them are stubs.";
 			TXT_AppTitle = "SysCheck HDE %s by JoostinOnline, Double_A, R2-D2199, and Nano";
 			TXT_AppIOS = "...runs on %sIOS%d (rev %d).";
 			ERR_AllocateMemory = "Unable to allocate the memory for %d titles.";
@@ -400,6 +403,7 @@ int initLanguages(struct tm today)
 			TXT_Upload = "Uploading report...";
 			BUT_OK = "OK";
 			TXT_OriginalRegion = " (original region: ";
+			TXT_IOSSkipped = "Skipped";
 		}
 
 	return 0;

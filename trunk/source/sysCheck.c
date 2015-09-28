@@ -31,15 +31,15 @@
 #include "wiibasics.h"
 
 // Filename
-#define REPORT			"sd:/sysCheck.csv"
-#define HASHLOG			"sd:/IOSsyscheck.log"
+#define REPORT			"/sysCheck.csv"
+#define HASHLOG			"/IOSsyscheck.log"
 #define VERSION_1_1_0	65536
 
 
 extern void __exception_setreload(int t);
 static u64 current_time = 0;
 
-// Main 
+// Main
 int main(int argc, char **argv)
 {
 	__exception_setreload(2);
@@ -47,7 +47,8 @@ int main(int argc, char **argv)
 	memset(arguments.skipIOSlist, 0, sizeof(arguments.skipIOSlist));
 	arguments.skipIOScnt = 0;
 	arguments.debug = false;
-	
+	arguments.USB = strlen(argv[0]) && (argv[0][0] == 'U' || argv[0][0] == 'u');
+
 	InitGecko();
 	if(argc>=1){
 		int i;
@@ -89,7 +90,7 @@ int main(int argc, char **argv)
 	UpdateTime();
 	SystemInfo.systemRegion = CONF_GetRegion();
 	CheckTime();
-	
+
 	SystemInfo.shopcode = 0;
 	if (!CONF_GetShopCode(&SystemInfo.shopcode)) {
 		strcpy(SystemInfo.country, CONF_CountryCodes[SystemInfo.shopcode]);
@@ -102,12 +103,12 @@ int main(int argc, char **argv)
 	UpdateTime();
 	SystemInfo.sysMenuVer = GetSysMenuVersion();
 	CheckTime();
-	
+
 	sysMenu_t systemmenu;
 
 	printLoading(MSG_GetHBCVer);
 	UpdateTime();
-	
+
 	homebrew_t homebrew;
 	homebrew.hbcversion = 0;
 	homebrew.hbfversion = 0;
@@ -186,7 +187,7 @@ int main(int argc, char **argv)
 	UpdateTime();
 	SystemInfo.runningIOS = IOS_GetVersion();
 	SystemInfo.runningIOSRevision = IOS_GetRevision();
-	
+
 	CheckTime();
 
 	// Get the console ID
@@ -271,27 +272,28 @@ int main(int argc, char **argv)
 		}
 		SystemInfo.countIOS++;
 	}
-	
+
 	// Not the most efficient way to remove argument-skipped IOS's, but it works.
-	while (arguments.skipIOScnt > 0) {
+	int tempSkipIOScnt = arguments.skipIOScnt;
+	while (tempSkipIOScnt > 0) {
 		for (i = nbTitles; i--;) {
 			titleID = titles[i] & 0xFFFFFFFF;
-			if(arguments.skipIOSlist[arguments.skipIOScnt - 1] > 0 && titleID == arguments.skipIOSlist[arguments.skipIOScnt - 1]) {
-				logfile("Skipped IOS %i, titles[%i] = %i\r\n", arguments.skipIOSlist[arguments.skipIOScnt - 1], i, titles[i]);
+			if(arguments.skipIOSlist[tempSkipIOScnt - 1] > 0 && titleID == arguments.skipIOSlist[tempSkipIOScnt - 1]) {
+				logfile("Skipped IOS %i, titles[%i] = %i\r\n", arguments.skipIOSlist[tempSkipIOScnt - 1], i, titles[i]);
 				titles[i] = 0;
 				SystemInfo.countIOS--;
 				break;
 			}
 		}
-		arguments.skipIOScnt--;
+		tempSkipIOScnt--;
 	}
-	
+
 	CheckTime();
 
 	// Sort IOS titles
 	printLoading(MSG_SortTitles);
 	UpdateTime();
-	
+
 	u64 *newTitles = memalign(32, (SystemInfo.countIOS)*sizeof(u64));
 	u32 cnt = 0;
 	for (i = 0; i < nbTitles; i++) {
@@ -311,7 +313,7 @@ int main(int argc, char **argv)
 		ios[i].titleID = 0;
 		ios[i].mloadVersion = 0;
 		ios[i].baseIOS = -1;
-		sprintf(ios[i].info, "NULL");
+		strcpy(ios[i].info, "NULL");
 		ios[i].isStub = false;
 		ios[i].revision = 0;
 		ios[i].infoFakeSignature = false;
@@ -332,7 +334,7 @@ int main(int argc, char **argv)
 
 	// Check MIOS
 	if (SystemInfo.nandAccess) get_miosinfo(SystemInfo.miosInfo);
-	
+
 	// Check running IOS type so we don't have to reload it later
 	if(SystemInfo.deviceType == CONSOLE_WII_U) ios[SystemInfo.runningIOS].infovIOS = CheckIOSType();
 
@@ -391,6 +393,7 @@ int main(int argc, char **argv)
 			if (ios[i].isStub) {
 				gprintf("is stub\n");
 				logfile("is stub\r\n");
+				usleep(100000); // A little delay so you can see what stubs were scanned
 			}
 		}
 
@@ -500,7 +503,7 @@ int main(int argc, char **argv)
 	int selectedIOS = -1;
 	u32 wpressed;
 	time_t starttime = time(NULL);
-	
+
 	printSelectIOS(MSG_SelectIOS, MSG_All);
 
 	bool completeReport = true;
@@ -600,10 +603,10 @@ int main(int argc, char **argv)
 		sprintf(MSG_Buffer, MSG_TestingIOS, MSG_Buffer2);
 		printLoadingBar(MSG_Buffer, (100.0/(nbTitles-1)*(i+1)));
 
-		if (ios[i].isStub || 
-			ios[i].titleID == TID_BC || 
-			ios[i].titleID == TID_MIOS || 
-			ios[i].titleID == TID_NAND || 
+		if (ios[i].isStub ||
+			ios[i].titleID == TID_BC ||
+			ios[i].titleID == TID_MIOS ||
+			ios[i].titleID == TID_NAND ||
 			ios[i].titleID == TID_WFS)
 		{
 			ios[i].infoFakeSignature = false;
@@ -619,12 +622,12 @@ int main(int argc, char **argv)
 			// Reload IOS
 			gprintf("// IOS_ReloadIOS(%d)\n", ios[i].titleID);
 			logfile("// IOS_ReloadIOS(%d)\r\n", ios[i].titleID);
-			
+
 			if (SystemInfo.deviceType == CONSOLE_WII_U)
 				IosPatch_FULL(false, false, false, false, ios[i].titleID);
 			else
 				IOS_ReloadIOS(ios[i].titleID);
-			
+
 			// Test IOS type
 			gprintf("// Test IOS type\n");
 			logfile("// Test IOS type\r\n");
@@ -692,7 +695,7 @@ int main(int argc, char **argv)
 	//--Generate Report--
 	UpdateTime();
 	printLoading(MSG_GenerateReport);
-	
+
 
 	char ReportBuffer[200][100] = {{0}}; // The maximum display length is actually 73
 
@@ -713,7 +716,7 @@ int main(int argc, char **argv)
 			sprintf(ReportBuffer[SYSMENU], TXT_SysMenu, SystemInfo.sysNinVersion, SystemInfo.sysMenuRegion, SystemInfo.sysMenuVer);
 		else
 			strcat(ReportBuffer[SYSMENU], TXT_Unknown);
-		
+
 	} else if (systemmenu.hasInfo) {
 		SystemInfo.sysNinVersion = GetSysMenuNintendoVersion(systemmenu.realRevision);
 		SystemInfo.sysMenuRegion = GetSysMenuRegion(SystemInfo.sysMenuVer);
@@ -894,19 +897,32 @@ int main(int argc, char **argv)
 
 	// Display IOS vulnerabilities
 	int lineOffset = 0;
+	int skippedOffset = 0;
+	int lastIOS = 0;
 	for (i = 0; i < nbTitles; i++)
 	{
 		lineOffset = i + LAST;
+		// TODO: Fix hiding the next IOS
+		if (arguments.skipIOScnt > 0) {
+			for(j = 0; j < arguments.skipIOScnt; j++) {
+				if (arguments.skipIOSlist[j] > lastIOS && arguments.skipIOSlist[j] < ios[i].titleID) {
+					snprintf(ReportBuffer[skippedOffset + lineOffset], MAX_ELEMENTS(ReportBuffer[0]), "%sIOS%d: %s", (SystemInfo.deviceType == CONSOLE_WII_U) ? "v" : "", arguments.skipIOSlist[j], TXT_IOSSkipped);
+					skippedOffset++;
+					break;
+				}
+			}
+		}
+		
 		if (selectedIOS > -1) i = selectedIOS; //If specific IOS is selected
 
 		if (ios[i].titleID == TID_BC) {
-			sprintf(ReportBuffer[lineOffset], "BC v%d", ios[i].revision);
+			sprintf(ReportBuffer[skippedOffset + lineOffset], "BC v%d", ios[i].revision);
 		} else if (ios[i].titleID == TID_MIOS) {
-			sprintf(ReportBuffer[lineOffset], "MIOS v%d%s", ios[i].revision, SystemInfo.miosInfo);
+			sprintf(ReportBuffer[skippedOffset + lineOffset], "MIOS v%d%s", ios[i].revision, SystemInfo.miosInfo);
 		} else if (ios[i].baseIOS == 75 && (ios[i].titleID==222 || ios[i].titleID==224 || ios[i].titleID==223 || ios[i].titleID==202 || ios[i].titleID==225)) {
-			sprintf(ReportBuffer[lineOffset], "%sIOS%d[38+37] (rev %d, Info: %s):", ios[i].infovIOS ? "v" : "", ios[i].titleID, ios[i].revision, ios[i].info);
+			sprintf(ReportBuffer[skippedOffset + lineOffset], "%sIOS%d[38+37] (rev %d, Info: %s):", ios[i].infovIOS ? "v" : "", ios[i].titleID, ios[i].revision, ios[i].info);
 		} else if (ios[i].baseIOS == 98 && (ios[i].titleID==222 || ios[i].titleID==224 || ios[i].titleID==223 || ios[i].titleID==202 || ios[i].titleID==225)) {
-			sprintf(ReportBuffer[lineOffset], "%sIOS%d[38+60] (rev %d, Info: %s):", ios[i].infovIOS ? "v" : "", ios[i].titleID, ios[i].revision, ios[i].info);
+			sprintf(ReportBuffer[skippedOffset + lineOffset], "%sIOS%d[38+60] (rev %d, Info: %s):", ios[i].infovIOS ? "v" : "", ios[i].titleID, ios[i].revision, ios[i].info);
 		} else {
 			if(ios[i].mloadVersion > 0 && ios[i].baseIOS > 0) {
 				int v, s;
@@ -917,54 +933,59 @@ int main(int argc, char **argv)
 					v = 4;
 					s = 0;
 				}
-				sprintf(ReportBuffer[lineOffset], "%sIOS%d[%d] (rev %d, Info: hermes-v%d.%d):", ios[i].infovIOS ? "v" : "", ios[i].titleID, ios[i].baseIOS, ios[i].revision, v, s);
+				sprintf(ReportBuffer[skippedOffset + lineOffset], "%sIOS%d[%d] (rev %d, Info: hermes-v%d.%d):", ios[i].infovIOS ? "v" : "", ios[i].titleID, ios[i].baseIOS, ios[i].revision, v, s);
 			} else if(ios[i].baseIOS > 0) {
-				snprintf(ReportBuffer[lineOffset], MAX_ELEMENTS(ReportBuffer[0]), "%sIOS%d[%d] (rev %d, Info: %s):", ios[i].infovIOS ? "v" : "", ios[i].titleID, ios[i].baseIOS, ios[i].revision, ios[i].info);
+				snprintf(ReportBuffer[skippedOffset + lineOffset], MAX_ELEMENTS(ReportBuffer[0]), "%sIOS%d[%d] (rev %d, Info: %s):", ios[i].infovIOS ? "v" : "", ios[i].titleID, ios[i].baseIOS, ios[i].revision, ios[i].info);
 			} else if (strcmp(ios[i].info, "NULL") != 0 && !ios[i].isStub) {
-				snprintf(ReportBuffer[lineOffset], MAX_ELEMENTS(ReportBuffer[0]), "%sIOS%d (rev %d, Info: %s):", ios[i].infovIOS ? "v" : "", ios[i].titleID, ios[i].revision, ios[i].info);
+				snprintf(ReportBuffer[skippedOffset + lineOffset], MAX_ELEMENTS(ReportBuffer[0]), "%sIOS%d (rev %d, Info: %s):", ios[i].infovIOS ? "v" : "", ios[i].titleID, ios[i].revision, ios[i].info);
 			} else if (ios[i].titleID == 249 && ios[i].revision > 11 && ios[i].revision < 18)  {
-				sprintf(ReportBuffer[lineOffset], "%sIOS%d[38] (rev %d):", ios[i].infovIOS ? "v" : "", ios[i].titleID, ios[i].revision);
+				sprintf(ReportBuffer[skippedOffset + lineOffset], "%sIOS%d[38] (rev %d):", ios[i].infovIOS ? "v" : "", ios[i].titleID, ios[i].revision);
 			} else {
-				snprintf(ReportBuffer[lineOffset], MAX_ELEMENTS(ReportBuffer[0]), "%sIOS%d (rev %d):", ios[i].infovIOS ? "v" : "", ios[i].titleID, ios[i].revision);
+				snprintf(ReportBuffer[skippedOffset + lineOffset], MAX_ELEMENTS(ReportBuffer[0]), "%sIOS%d (rev %d):", ios[i].infovIOS ? "v" : "", ios[i].titleID, ios[i].revision);
 			}
 		}
 
 		// Check BootMii As IOS (BootMii As IOS is installed on IOS254 rev 31338)
 		if (ios[i].titleID == TID_BOOTMII && (ios[i].revision == 31338 || ios[i].revision == 65281))
-			strcat (ReportBuffer[lineOffset]," BootMii");
+			strcat (ReportBuffer[skippedOffset + lineOffset]," BootMii");
 		else if (ios[i].titleID == TID_NANDEMU && ios[i].revision == 65535)
-			strcat (ReportBuffer[lineOffset]," NANDEmu");
+			strcat (ReportBuffer[skippedOffset + lineOffset]," NANDEmu");
 		else
 		{
 			if (ios[i].isStub && strcmp(ios[i].info, "NULL") == 0) {
 				gprintf("1. titleID: %d %s\n", ios[i].titleID, ios[i].info);
-				strcat (ReportBuffer[lineOffset], TXT_Stub);
+				strcat (ReportBuffer[skippedOffset + lineOffset], TXT_Stub);
 			} else if (ios[i].isStub && strcmp(ios[i].info, "NULL") != 0) {
 				gprintf("2. titleID: %d %s\n", ios[i].titleID, ios[i].info);
-				strcat (ReportBuffer[lineOffset], ios[i].info);
+				strcat (ReportBuffer[skippedOffset + lineOffset], ios[i].info);
 			} else if(ios[i].titleID != TID_BC && ios[i].titleID != TID_MIOS) {
-				if(ios[i].infoFakeSignature) strcat(ReportBuffer[lineOffset], TXT_Trucha);
-				if(ios[i].infoESIdentify) strcat(ReportBuffer[lineOffset], TXT_ES);
-				if(ios[i].infoFlashAccess) strcat(ReportBuffer[lineOffset], TXT_Flash);
-				if(ios[i].infoNANDAccess) strcat(ReportBuffer[lineOffset], TXT_NAND);
-				if(ios[i].infoVersionPatch) strcat(ReportBuffer[lineOffset], TXT_VersionP);
-				if(ios[i].infoBoot2Access) strcat(ReportBuffer[lineOffset], TXT_Boot2);
-				if(ios[i].infoUSB2) strcat(ReportBuffer[lineOffset], TXT_USB);
-				if(!ios[i].infoFakeSignature && !ios[i].infoESIdentify && !ios[i].infoFlashAccess && !ios[i].infoNANDAccess && !ios[i].infoUSB2 && !ios[i].infoVersionPatch) strcat(ReportBuffer[lineOffset], TXT_NoPatch);
+				if(ios[i].infoFakeSignature) strcat(ReportBuffer[skippedOffset + lineOffset], TXT_Trucha);
+				if(ios[i].infoESIdentify) strcat(ReportBuffer[skippedOffset + lineOffset], TXT_ES);
+				if(ios[i].infoFlashAccess) strcat(ReportBuffer[skippedOffset + lineOffset], TXT_Flash);
+				if(ios[i].infoNANDAccess) strcat(ReportBuffer[skippedOffset + lineOffset], TXT_NAND);
+				if(ios[i].infoVersionPatch) strcat(ReportBuffer[skippedOffset + lineOffset], TXT_VersionP);
+				if(ios[i].infoBoot2Access) strcat(ReportBuffer[skippedOffset + lineOffset], TXT_Boot2);
+				if(ios[i].infoUSB2) strcat(ReportBuffer[skippedOffset + lineOffset], TXT_USB);
+				if(!ios[i].infoFakeSignature && !ios[i].infoESIdentify && !ios[i].infoFlashAccess && !ios[i].infoNANDAccess && !ios[i].infoUSB2 && !ios[i].infoVersionPatch) strcat(ReportBuffer[skippedOffset + lineOffset], TXT_NoPatch);
 
-				ReportBuffer[lineOffset][strlen(ReportBuffer[lineOffset])-1]='\0';
+				ReportBuffer[skippedOffset + lineOffset][strlen(ReportBuffer[skippedOffset + lineOffset])-1]='\0';
 			}
 		}
+		lastIOS = ios[i].titleID;
 	}
 
-	int NumLines = lineOffset+1;
+	int NumLines = lineOffset + skippedOffset + 1;
 	sprintf(ReportBuffer[NumLines], TXT_ReportDate);
 	CheckTime();
-	
+
 	// Mount the SD Card
 	UpdateTime();
 	printLoading(MSG_MountSD);
-	MountSD();
+	//if(arguments.USB)
+	//	MountUSB();
+	//else
+	//	MountSD();
+	fatInitDefault();
 	CheckTime();
 
 	// Initialise the FAT file system
@@ -1032,7 +1053,8 @@ int main(int argc, char **argv)
 		// Return to the loader
 		if (wpressed & WPAD_BUTTON_HOME) {
 			// Unmount the SD Card
-			UnmountSD();
+			//UnmountSD();
+			//UnmountUSB();
 			deinitGUI();
 			exit(0);
 		}
@@ -1040,7 +1062,8 @@ int main(int argc, char **argv)
 		// Return to System Menu
 		if (wpressed & WPAD_BUTTON_PLUS) {
 			// Unmount the SD Card
-			UnmountSD();
+			//UnmountSD();
+			//UnmountUSB();
 			deinitGUI();
 			SYS_ResetSystem(SYS_RETURNTOMENU, 0, 0);
 		}
@@ -1048,7 +1071,8 @@ int main(int argc, char **argv)
 		// Shutdown Wii
 		if (wpressed & WPAD_BUTTON_MINUS) {
 			// Unmount the SD Card
-			UnmountSD();
+			//UnmountSD();
+			//UnmountUSB();
 			deinitGUI();
 			SYS_ResetSystem(SYS_POWEROFF, 0, 0);
 		}
