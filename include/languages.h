@@ -75,6 +75,7 @@ const char* BUT_ConfirmUpload;
 const char* TXT_Upload;
 const char* BUT_OK;
 const char* TXT_OriginalRegion;
+const char* TXT_IOSSkipped;
 char TXT_ReportDate[100];
 char MSG_Buffer[1024];
 char MSG_Buffer2[1024];

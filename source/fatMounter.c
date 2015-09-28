@@ -69,6 +69,8 @@ enum BPB
 };
 
 static const char FAT_SIG[3] = {'F', 'A', 'T'};
+static bool sd_mounted = false;
+static bool usb_mounted = false;
 
 static bool _FAT_partition_isFAT(const DISC_INTERFACE* disc, sec_t startSector)
 {
@@ -150,20 +152,22 @@ int MountSD(void)
 	fatUnmount("SD:/");
 	
 	// Mount first FAT partition
-	if (fatMount("SD", &__io_wiisd, GetFATPartition(&__io_wiisd), CACHE, SECTORS)) return 1;
-
+	if (fatMount("SD", &__io_wiisd, GetFATPartition(&__io_wiisd), CACHE, SECTORS)) {
+		sd_mounted = true;
+		return 1;
+	}
 	return -1;
 }
 
 void UnmountSD(void)
 {
+	if (!sd_mounted) return;
 	// Close all open files write back the cache and then shutdown them
 	fatUnmount("SD:/");
 }
 
 int MountUSB(void)
 {
-	char dirpath[256];
 	s32  ret;
 
 	/* Initialize interface */
@@ -177,8 +181,8 @@ int MountUSB(void)
 		return -2;
 
 	/* Set root directory */
-	sprintf(dirpath, "usb:/");
-	chdir(dirpath);
+	chdir("usb:/");
+	usb_mounted = true;
 
 	return 0;
 }
@@ -186,6 +190,7 @@ int MountUSB(void)
 void UnmountUSB(void)
 {
 
+	if(!usb_mounted) return;
 	/* Unmount device */
 	fatUnmount("usb");
 
