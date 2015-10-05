@@ -81,6 +81,7 @@ typedef struct {
 	bool 	infoUSB2;
 	bool 	infoVersionPatch;
 	bool 	infovIOS;
+	bool	infoBeerTicket;
 	s32		baseIOS;
 	s32		mloadVersion;
 	char	info[64];
@@ -150,6 +151,7 @@ bool CheckNANDAccess(void);
 bool CheckBoot2Access(void);
 bool CheckMload(void);
 bool CheckUSB2(u32 titleID);
+bool CheckBeerTicket(u32 titleID);
 bool IsKnownStub(u32 noIOS, s32 noRevision);
 s32 GetTMD(u64 TicketID, signed_blob **Output, u32 *Length);
 s32 read_file_from_nand(char *filepath, u8 **buffer, u32 *filesize);

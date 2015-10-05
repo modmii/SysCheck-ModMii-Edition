@@ -357,6 +357,7 @@ int main(int argc, char **argv)
 			deinitGUI();
 			exit(1);
 		}
+		ios[i].infoBeerTicket = CheckBeerTicket(ios[i].titleID);
 
 		iosTMDBuffer = (signed_blob*)memalign(32, (tmdSize+31)&(~31));
 		memset(iosTMDBuffer, 0, tmdSize);
@@ -902,7 +903,6 @@ int main(int argc, char **argv)
 	for (i = 0; i < nbTitles; i++)
 	{
 		lineOffset = i + LAST;
-		// TODO: Fix hiding the next IOS
 		if (arguments.skipIOScnt > 0) {
 			for(j = 0; j < arguments.skipIOScnt; j++) {
 				if (arguments.skipIOSlist[j] > lastIOS && arguments.skipIOSlist[j] < ios[i].titleID) {
@@ -966,7 +966,8 @@ int main(int argc, char **argv)
 				if(ios[i].infoVersionPatch) strcat(ReportBuffer[skippedOffset + lineOffset], TXT_VersionP);
 				if(ios[i].infoBoot2Access) strcat(ReportBuffer[skippedOffset + lineOffset], TXT_Boot2);
 				if(ios[i].infoUSB2) strcat(ReportBuffer[skippedOffset + lineOffset], TXT_USB);
-				if(!ios[i].infoFakeSignature && !ios[i].infoESIdentify && !ios[i].infoFlashAccess && !ios[i].infoNANDAccess && !ios[i].infoUSB2 && !ios[i].infoVersionPatch) strcat(ReportBuffer[skippedOffset + lineOffset], TXT_NoPatch);
+				if(ios[i].infoBeerTicket) strcat(ReportBuffer[skippedOffset + lineOffset], TXT_BeerTicket);
+				if(!ios[i].infoFakeSignature && !ios[i].infoESIdentify && !ios[i].infoFlashAccess && !ios[i].infoNANDAccess && !ios[i].infoUSB2 && !ios[i].infoVersionPatch && !ios[i].infoBeerTicket) strcat(ReportBuffer[skippedOffset + lineOffset], TXT_NoPatch);
 
 				ReportBuffer[skippedOffset + lineOffset][strlen(ReportBuffer[skippedOffset + lineOffset])-1]='\0';
 			}
@@ -984,8 +985,8 @@ int main(int argc, char **argv)
 	//if(arguments.USB)
 	//	MountUSB();
 	//else
-	//	MountSD();
-	fatInitDefault();
+		MountSD();
+	//fatInitDefault();
 	CheckTime();
 
 	// Initialise the FAT file system
@@ -1053,7 +1054,7 @@ int main(int argc, char **argv)
 		// Return to the loader
 		if (wpressed & WPAD_BUTTON_HOME) {
 			// Unmount the SD Card
-			//UnmountSD();
+			UnmountSD();
 			//UnmountUSB();
 			deinitGUI();
 			exit(0);
@@ -1062,7 +1063,7 @@ int main(int argc, char **argv)
 		// Return to System Menu
 		if (wpressed & WPAD_BUTTON_PLUS) {
 			// Unmount the SD Card
-			//UnmountSD();
+			UnmountSD();
 			//UnmountUSB();
 			deinitGUI();
 			SYS_ResetSystem(SYS_RETURNTOMENU, 0, 0);
@@ -1071,7 +1072,7 @@ int main(int argc, char **argv)
 		// Shutdown Wii
 		if (wpressed & WPAD_BUTTON_MINUS) {
 			// Unmount the SD Card
-			//UnmountSD();
+			UnmountSD();
 			//UnmountUSB();
 			deinitGUI();
 			SYS_ResetSystem(SYS_POWEROFF, 0, 0);

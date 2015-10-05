@@ -105,7 +105,7 @@ bool getInfoFromContent(IOS_t *ios) {
 			{
 				sprintf(ios->info, " cBoot252");
 				gprintf("is cBoot252\n");
-				logfile("is cBoot252\r\n");
+				gprintf("is cBoot252\r\n");
 				retValue = true;
 				ios->isStub = true;
 				break;
@@ -121,12 +121,77 @@ bool getInfoFromContent(IOS_t *ios) {
 		else
 			snprintf(ios->info, MAX_ELEMENTS(ios->info), "%s-v%u%s", iosinfo->name, iosinfo->version, iosinfo->versionstring);
 		gprintf("is %s\n", ios->info);
-		logfile("is %s\r\n", ios->info);
+		gprintf("is %s\r\n", ios->info);
 		retValue = true;
 		if (buffer != NULL) free(buffer);
 	}
 
 	return retValue;
+}
+
+s32 read_isfs(char *path, u8 **out, u32 *size)
+{
+	s32 ret, fd;
+	static fstats status ATTRIBUTE_ALIGN(32);
+	
+	fd = ISFS_Open(path, ISFS_OPEN_READ);
+	if (fd < 0)
+	{
+		gprintf("ISFS_Open for '%s' returned %d.\r\n", path, fd);
+		return -1;
+	}
+	
+	ret = ISFS_GetFileStats(fd, &status);
+	if (ret < 0)
+	{
+		gprintf("ISFS_GetFileStats(fd) returned %d.\r\n", ret);
+		ISFS_Close(fd);
+		return -1;
+	}
+	
+	if (status.file_length == 0)
+	{
+		ISFS_Close(fd);
+		return -1;
+	}
+	
+	*size = status.file_length;
+	gprintf("Size = %u bytes.\r\n", *size);
+	
+	*out = allocate_memory(*size);
+	if (*out == NULL) 
+	{ 
+		gprintf("\r\nError allocating memory for out.\r\n");
+		ISFS_Close(fd);
+		return -2;
+	}
+	
+	u32 blksize, writeindex = 0, restsize = *size;
+	
+	while (restsize > 0)
+	{
+		if (restsize >= 0x4000)
+		{
+			blksize = 0x4000;
+		} else {
+			blksize = restsize;
+		}
+		
+		ret = ISFS_Read(fd, *out + writeindex, blksize);
+		if (ret < 0) 
+		{
+			gprintf("\r\nISFS_Read(%d, %d) returned %d.\r\n", fd, blksize, ret);
+			free(*out);
+			ISFS_Close(fd);
+			return -1;
+		}
+		
+		writeindex += blksize;
+		restsize -= blksize;
+	}
+	
+	ISFS_Close(fd);
+	return 0;
 }
 
 s32 brute_tmd(tmd *p_tmd)
@@ -324,6 +389,32 @@ inline s32 RemoveBogusTMD(void)
 	return ES_DeleteTitle(0x100000000LL);
 }
 
+/* Probably doesn't work */
+inline bool CheckBeerTicket(u32 titleID) {
+	char filepath[ISFS_MAXPATH] ATTRIBUTE_ALIGN(0x20);
+	u8 *buffer = NULL;
+	u32 tik_size = 0;
+	//tik *ticket;
+
+	sprintf(filepath, "/ticket/00000001/%08x.tik", titleID);
+	if (read_isfs(filepath, &buffer, &tik_size)) {
+		gprintf("Failed to read IOS%u ticket\n", titleID);
+		return false;
+	}
+	//ticket = (tik*)(buffer);
+	//gprintf("Key in IOS%08x ticket is %s.\n", titleID, ticket->cipher_title_key);
+	int i;
+	for (i = 0; i < tik_size - sizeof("GottaGetSomeBeer")-1; i++)
+	{
+		if (!strncmp((char*)buffer + i, "GottaGetSomeBeer", sizeof("GottaGetSomeBeer")-1)) {
+			free(buffer);
+			return true;
+		}
+	}
+	free(buffer);
+	return false;
+	//return !strcmp((char*)ticket->cipher_title_key, "GottaGetSomeBeer");
+}
 
 inline bool CheckIOSType(void) {
 	//if (AHB_ACCESS == false) return false;
