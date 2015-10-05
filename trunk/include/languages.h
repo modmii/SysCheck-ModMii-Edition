@@ -61,6 +61,7 @@ const char* TXT_Flash;
 const char* TXT_NAND;
 const char* TXT_Boot2;
 const char* TXT_USB;
+const char* TXT_BeerTicket;
 const char* TXT_NoPatch;
 const char* TXT_Priiloader;
 const char* TXT_PreFiix;

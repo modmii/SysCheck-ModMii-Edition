@@ -10,6 +10,7 @@
 #include "update.h"
 #include "gecko.h"
 #include "http.h"
+#include "ssl.h"
 #include "tools.h"
 
 s32 downloadSyscheckFile(const char* update_dir, const char* fileName)  {
@@ -18,8 +19,8 @@ s32 downloadSyscheckFile(const char* update_dir, const char* fileName)  {
 	u32 http_status;
 	u8* outbuf;
 	u32 length;
-
-	snprintf(buf, sizeof(buf), "http://sourceforge.net/p/syscheck-hde/code/HEAD/tree/trunk/SysCheckHDE/%s?format=raw", fileName);
+	
+	snprintf(buf, sizeof(buf), "https://sourceforge.net/p/syscheck-hde/code/HEAD/tree/trunk/SysCheckHDE/%s?format=raw", fileName);
 
 	ret = http_request(buf, 1 << 31);
 	if (!ret)
@@ -60,10 +61,11 @@ s32 downloadSyscheckFile(const char* update_dir, const char* fileName)  {
 
 s32 updateApp(void) {
 	int ret = net_init();
-	
+	ssl_init();
 	char update_dir[21];
 	sprintf(update_dir, "%s:/apps/SysCheckHDE", arguments.USB ? "usb" : "sd");
-	mkdir(update_dir,S_IWRITE|S_IREAD); // attempt to make dir
+	mkdir("/apps",S_IWRITE|S_IREAD); // attempt to make dir
+	mkdir("/apps/SysCheckHDE",S_IWRITE|S_IREAD); // attempt to make dir
 	chdir(update_dir);
 	
 	if (ret < 0) {
@@ -74,7 +76,7 @@ s32 updateApp(void) {
 	u8* outbuf;
 	u32 length;
 
-	ret = http_request("http://sourceforge.net/p/syscheck-hde/code/HEAD/tree/trunk/Version.txt?format=raw", 1 << 31);
+	ret = http_request("https://sourceforge.net/p/syscheck-hde/code/HEAD/tree/trunk/Version.txt?format=raw", 1 << 31);
 	if (!ret)
 	{
 		gprintf("Error making http request\n");
@@ -106,7 +108,7 @@ s32 updateApp(void) {
 			}
 		} else {
 			net_deinit();
-			return -2;
+			return 2;
 		}
 
 	} else {

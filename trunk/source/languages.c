@@ -77,6 +77,7 @@ int initLanguages(struct tm today)
             TXT_Boot2 = " Boot2 Zugriff,";
             TXT_USB = " USB 2.0,";
 			TXT_VersionP = " ES_Version,";
+			TXT_BeerTicket = " Beer Ticket,";
 			TXT_NoPatch = " Keine Patches,";
             sprintf(TXT_ReportDate, "Bericht wurde am %2.2d.%2.2d.%4.4d generiert.", today.tm_mday, today.tm_mon + 1, today.tm_year + 1900);
 			BUT_HBC = "Homebrew Channel";
@@ -154,6 +155,7 @@ int initLanguages(struct tm today)
             TXT_Boot2 = " Acces Boot2,";
             TXT_USB = " USB 2.0,";
 			TXT_VersionP = " ES_Version,";
+			TXT_BeerTicket = " Beer Ticket,";
 			TXT_NoPatch = " Pas de patches,";
 			sprintf(TXT_ReportDate, "Rapport genere le %4.4d/%2.2d/%2.2d.", today.tm_year + 1900, today.tm_mon + 1, today.tm_mday);
 			BUT_HBC = "Homebrew Channel";
@@ -231,6 +233,7 @@ int initLanguages(struct tm today)
             TXT_Boot2 = " Accesso Boot2,";
             TXT_USB = " USB 2.0,";
 			TXT_VersionP = " ES_Version,";
+			TXT_BeerTicket = " Beer Ticket,";
 			TXT_NoPatch = " Non patchato,";
 			sprintf(TXT_ReportDate, "Rapporto generato il %2.2d.%2.2d.%4.4d.", today.tm_mday, today.tm_mon + 1, today.tm_year + 1900);
 			BUT_HBC = "Canale Homebrew";
@@ -308,6 +311,7 @@ int initLanguages(struct tm today)
 			TXT_Boot2 = " Acceso Boot2,";
 			TXT_USB = " USB 2.0,";
 			TXT_VersionP = " ES_Version,";
+			TXT_BeerTicket = " Beer Ticket,";
 			TXT_NoPatch = " Sin Parches,";
 			sprintf(TXT_ReportDate, "Reporte generado el %2.2d/%2.2d/%4.4d.", today.tm_mday, today.tm_mon + 1, today.tm_year + 1900);
 			BUT_HBC = "Canal Homebrew";
@@ -385,6 +389,7 @@ int initLanguages(struct tm today)
             TXT_Boot2 = " Boot2 Access,";
             TXT_USB = " USB 2.0,";
 			TXT_VersionP = " ES_Version,";
+			TXT_BeerTicket = " Beer Ticket,";
 			TXT_NoPatch = " No Patches,";
 			sprintf(TXT_ReportDate, "Report generated on %2.2d/%2.2d/%4.4d.", today.tm_mon + 1, today.tm_mday, today.tm_year + 1900);
 			BUT_HBC = "Homebrew Channel";
