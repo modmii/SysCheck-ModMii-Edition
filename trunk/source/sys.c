@@ -389,31 +389,22 @@ inline s32 RemoveBogusTMD(void)
 	return ES_DeleteTitle(0x100000000LL);
 }
 
-/* Probably doesn't work */
 inline bool CheckBeerTicket(u32 titleID) {
 	char filepath[ISFS_MAXPATH] ATTRIBUTE_ALIGN(0x20);
 	u8 *buffer = NULL;
 	u32 tik_size = 0;
-	//tik *ticket;
+	s32 ret = 0;
 
 	sprintf(filepath, "/ticket/00000001/%08x.tik", titleID);
 	if (read_isfs(filepath, &buffer, &tik_size)) {
 		gprintf("Failed to read IOS%u ticket\n", titleID);
 		return false;
 	}
-	//ticket = (tik*)(buffer);
-	//gprintf("Key in IOS%08x ticket is %s.\n", titleID, ticket->cipher_title_key);
-	int i;
-	for (i = 0; i < tik_size - sizeof("GottaGetSomeBeer")-1; i++)
-	{
-		if (!strncmp((char*)buffer + i, "GottaGetSomeBeer", sizeof("GottaGetSomeBeer")-1)) {
-			free(buffer);
-			return true;
-		}
-	}
+	
+	if (tik_size != 676) return false;
+	ret = !strcmp((char*)buffer + 0x01BF, "GottaGetSomeBeer");
 	free(buffer);
-	return false;
-	//return !strcmp((char*)ticket->cipher_title_key, "GottaGetSomeBeer");
+	return ret;
 }
 
 inline bool CheckIOSType(void) {

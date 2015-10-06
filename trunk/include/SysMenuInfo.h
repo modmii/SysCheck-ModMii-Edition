@@ -55,6 +55,7 @@ typedef struct {
 	u8 priiloader;
 	bool nandAccess;
 	u32 runningIOS;
+	bool runningIOSType;
 	u32 runningIOSRevision;
 } SysSettings_t;
 
