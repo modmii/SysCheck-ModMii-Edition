@@ -50,6 +50,7 @@ int main(int argc, char **argv)
 	arguments.USB = strlen(argv[0]) && (argv[0][0] == 'U' || argv[0][0] == 'u');
 
 	InitGecko();
+	gprintf("==============================================================================");
 	if(argc>=1){
 		int i;
 		for(i=0; i<argc; i++){
@@ -336,7 +337,7 @@ int main(int argc, char **argv)
 	if (SystemInfo.nandAccess) get_miosinfo(SystemInfo.miosInfo);
 
 	// Check running IOS type so we don't have to reload it later
-	if(SystemInfo.deviceType == CONSOLE_WII_U) ios[SystemInfo.runningIOS].infovIOS = CheckIOSType();
+	SystemInfo.runningIOSType = (SystemInfo.deviceType == CONSOLE_WII_U) && CheckIOSType();
 
 	// For each titles found
 	for (i = SystemInfo.countIOS; i--;)
@@ -707,7 +708,7 @@ int main(int argc, char **argv)
 
 	// Display Title
 	sprintf(ReportBuffer[APP_TITLE], TXT_AppTitle, TXT_AppVersion);
-	sprintf(ReportBuffer[APP_IOS], TXT_AppIOS, ios[SystemInfo.runningIOS].infovIOS ? "v" : "", SystemInfo.runningIOS, SystemInfo.runningIOSRevision);
+	sprintf(ReportBuffer[APP_IOS], TXT_AppIOS, SystemInfo.runningIOSType ? "v" : "", SystemInfo.runningIOS, SystemInfo.runningIOSRevision);
 	SystemInfo.validregion = SystemInfo.systemRegion >= CONF_REGION_JP && SystemInfo.systemRegion <= CONF_REGION_CN;
 
 	// Display the console region
