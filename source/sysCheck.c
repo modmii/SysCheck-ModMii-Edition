@@ -50,7 +50,7 @@ int main(int argc, char **argv)
 	arguments.USB = strlen(argv[0]) && (argv[0][0] == 'U' || argv[0][0] == 'u');
 
 	InitGecko();
-	gprintf("==============================================================================");
+	gprintf("\n==============================================================================\n");
 	if(argc>=1){
 		int i;
 		for(i=0; i<argc; i++){
@@ -467,6 +467,7 @@ int main(int argc, char **argv)
 	sysMenuInfoContent = *(u8 *)((u32)iosTMDBuffer+0x1E7);
 	sprintf(filepath, "/title/00000001/00000002/content/%08x.app", sysMenuInfoContent);
 	gprintf(filepath);
+	gprintf("\n");
 	ret = read_file_from_nand(filepath, &buffer, &filesize);
 
 	sysInfo = (iosinfo_t *)(buffer);
@@ -565,11 +566,15 @@ int main(int argc, char **argv)
 		if (wpressed & WPAD_BUTTON_PLUS) {
 			printLoading(MSG_Update);
 			ret = updateApp();
+			gprintf("updateApp returned %i\n", ret);
 			if (ret == 2) {
 				printSuccess(MSG_NoUpdate);
 				sleep(5);
 				starttime = time(NULL);
-				printSelectIOS(MSG_SelectIOS, MSG_Buffer);
+				if (selectedIOS > -1)
+					printSelectIOS(MSG_SelectIOS, MSG_Buffer);
+				else
+					printSelectIOS(MSG_SelectIOS, MSG_All);
 			} else if (ret >= 0) {
 				printSuccess(MSG_UpdateSuccess);
 				sleep(5);
@@ -579,7 +584,10 @@ int main(int argc, char **argv)
 				printError(MSG_UpdateFail);
 				sleep(5);
 				starttime = time(NULL);
-				printSelectIOS(MSG_SelectIOS, MSG_Buffer);
+				if (selectedIOS > -1)
+					printSelectIOS(MSG_SelectIOS, MSG_Buffer);
+				else
+					printSelectIOS(MSG_SelectIOS, MSG_All);
 			}
 		}
 
