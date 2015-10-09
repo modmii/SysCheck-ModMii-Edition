@@ -75,11 +75,12 @@ s32 tcp_connect (char *host, const u16 port) {
 	struct sockaddr_in sa;
 	s32 s, res;
 	s64 t;
-
+	gprintf("tcp_connect\n");
 	hp = net_gethostbyname (host);
 	if (!hp || !(hp->h_addrtype == PF_INET)) return errno;
 
 	s = tcp_socket ();
+	gprintf("tcp_socket = %i\n", s);
 	if (s < 0)
 		return s;
 
@@ -295,7 +296,7 @@ bool http_request (const char *url, const u32 max_size) {
 		http_port = 80;
 	else
 		http_port = 443;
-
+	gprintf("http_port = %u\n", http_port);
 	http_max_size = max_size;
 
 	http_status = 404;
@@ -303,6 +304,7 @@ bool http_request (const char *url, const u32 max_size) {
 	http_data = NULL;
 
 	int s = tcp_connect (http_host, http_port);
+	gprintf("tcp_connect = %i\n", s);
 	if (s < 0) {
 		result = HTTPR_ERR_CONNECT;
 		return false;
@@ -420,6 +422,7 @@ bool http_post (const char *url, const u32 max_size, const char *postData) {
 	http_data = NULL;
 
 	int s = tcp_connect (http_host, http_port);
+	gprintf("tcp_connect = %i\n", s);
 	if (s < 0) {
 		result = HTTPR_ERR_CONNECT;
 		return false;
@@ -465,6 +468,7 @@ bool http_post (const char *url, const u32 max_size, const char *postData) {
 
 	}
 	if (linecount == 32 || !content_length) http_status = 404;
+	gprintf("http_status = %u\n", http_status);
 	if (http_status != 200) {
 		result = HTTPR_ERR_STATUS;
 		net_close (s);
