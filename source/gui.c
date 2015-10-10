@@ -79,6 +79,7 @@ void deinitGUI(void) {
 	GRRLIB_FreeTexture(tex_window_png);
 	GRRLIB_FreeTexture(tex_ScreenBuf);
 	GRRLIB_Exit();
+	gprintf("Exiting SysCheck HDE\n\n");
 	return;
 }
 

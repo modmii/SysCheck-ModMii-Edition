@@ -42,7 +42,6 @@ s32 downloadSyscheckFile(const char* update_dir, const char* fileName)  {
 	}
 
 	ret = http_get_result(&http_status, &outbuf, &length);
-	//u8 *file = (u8*)calloc(length, sizeof(u8))
 	gprintf("http_get_result returned %i\n", ret);
 
 	sprintf(buf, "%s%s", update_dir, fileName);
@@ -62,8 +61,6 @@ s32 downloadSyscheckFile(const char* update_dir, const char* fileName)  {
 }
 
 s32 updateApp(void) {
-	MountSD();
-	fatInitDefault();
 	int ret = net_init();
 	ssl_init();
 	char update_dir[25];

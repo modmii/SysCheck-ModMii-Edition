@@ -50,7 +50,7 @@ int main(int argc, char **argv)
 	arguments.USB = strlen(argv[0]) && (argv[0][0] == 'U' || argv[0][0] == 'u');
 
 	InitGecko();
-	gprintf("\n==============================================================================\n");
+	gprintf("\n\n==============================================================================\n");
 	if(argc>=1){
 		int i;
 		for(i=0; i<argc; i++){
@@ -1008,7 +1008,6 @@ int main(int argc, char **argv)
 		sleep(2);
 		printEndError(MSG_ReportError);
 	} else {
-		//chdir("/");
 		// Create the report
 		CheckTime();
 		FILE *file = fopen(REPORT, "w");

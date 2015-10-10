@@ -202,7 +202,7 @@ int initLanguages(struct tm today)
 			TXT_SysMenu = "Menu di sistema %1.1f%c (v%d)";
 			TXT_SysMenu2 = "Menu di sistema %s%s (v%d)";
 			TXT_SysMenu3 = "Menu di sistema %1.1f%c (v%d, Info: v%d %s)";
-			TXT_NO_HBC = "Non è installato Canale Homebrew";
+			TXT_NO_HBC = "Non e' installato Canale Homebrew";
 			TXT_HBC = "Canale Homebrew 1.0.%d appoggiato all'IOS%d";
 			TXT_HBC_NEW = "Canale Homebrew 1.1.0 appoggiato all'IOS%d";
 			TXT_HBC_112 = "Canale Homebrew 1.1.%d appoggiato all'IOS%d";
@@ -280,7 +280,7 @@ int initLanguages(struct tm today)
 			TXT_SysMenu = "Menu de Sistema %1.1f%c (v%d)";
 			TXT_SysMenu2 = "Menu de Sistema %s%s (v%d)";
 			TXT_SysMenu3 = "Menu de Sistema %1.1f%c (v%d, Info: v%d %s)";
-			TXT_NO_HBC = "No está instalado el Canal Homebrew";
+			TXT_NO_HBC = "No esta' instalado el Canal Homebrew";
 			TXT_HBC = "Canal Homebrew 1.0.%d corriendo en IOS%d";
 			TXT_HBC_NEW = "Canal Homebrew 1.1.0 corriendo en IOS%d";
 			TXT_HBC_112 = "Canal Homebrew 1.1.%d corriendo en %d";
