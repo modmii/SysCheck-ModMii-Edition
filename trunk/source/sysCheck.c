@@ -31,8 +31,8 @@
 #include "wiibasics.h"
 
 // Filename
-#define REPORT			"/sysCheck.csv"
-#define HASHLOG			"/IOSsyscheck.log"
+#define REPORT			"sd:/sysCheck.csv"
+#define HASHLOG			"sd:/IOSsyscheck.log"
 #define VERSION_1_1_0	65536
 
 
@@ -995,7 +995,6 @@ int main(int argc, char **argv)
 	//	MountUSB();
 	//else
 		MountSD();
-	//fatInitDefault();
 	CheckTime();
 
 	// Initialise the FAT file system
