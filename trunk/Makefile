@@ -40,7 +40,6 @@ LIBS	+= -lwiilight -lwiiuse
 #LIBS	+= -lmodplay -lasnd
 LIBS	+= -lbte -logc -lm 
 LIBS	+= -lCheckRegion
-LIBS	+= -lruntimeiospatch
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing

@@ -14,7 +14,8 @@
 #include <stdarg.h>
 #include <di/di.h>
 #include <CheckRegion.h>
-#include <runtimeiospatch/runtimeiospatch.h>
+//#include <runtimeiospatch/runtimeiospatch.h>
+#include "runtimeiospatch.h"
 
 #include "SysMenuInfo.h"
 #include "fatMounter.h"
@@ -50,7 +51,7 @@ int main(int argc, char **argv)
 	arguments.USB = strlen(argv[0]) && (argv[0][0] == 'U' || argv[0][0] == 'u');
 
 	InitGecko();
-	gprintf("\n\n==============================================================================\n");
+	gprintf(" \n \n==============================================================================\n");
 	if(argc>=1){
 		int i;
 		for(i=0; i<argc; i++){
@@ -74,7 +75,7 @@ int main(int argc, char **argv)
 	SystemInfo.deviceType = IS_WII_U;
 	memset(SystemInfo.miosInfo, 0, sizeof(SystemInfo.miosInfo));
 
-	if (AHB_ACCESS && !arguments.forceNoAHBPROT) IosPatch_RUNTIME(true, false, false, false);
+	if (AHB_ACCESS && !arguments.forceNoAHBPROT) IosPatch_RUNTIME(true, false, false, true);
 	SystemInfo.nandAccess = CheckNANDAccess();
 
 	// Get and display the current date and time
