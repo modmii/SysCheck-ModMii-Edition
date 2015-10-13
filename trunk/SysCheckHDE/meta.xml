@@ -1,15 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 	<app version="1">
 		<name>SysCheck HacksDen Edition</name>
-		<coder>Double_A, R2-D2199, JoostinOnline, Nano</coder>
-		<version>2.3.2 HD Edition</version>
-		<release_date>20150128000000</release_date>
+		<coder>JoostinOnline, Double_A, R2-D2199, Nano</coder>
+		<version>2.4.0 HD Edition</version>
+		<release_date>20151012000000</release_date>
 		<short_description>System Checker HacksDen Edition</short_description>
 		<long_description>Homebrew application which does several checks on installed IOS and custom IOS:
     - Base IOS Detection
     - vIOS Detection
+    - Beer Ticket
     - IOS Stub
-    - Fake signature (aka Trucha Bug)
+    - Fake Signature (aka Trucha Bug)
     - ES_DiVerify (aka ES_Identify)
     - Flash Access
     - NAND Access
@@ -22,6 +23,17 @@ The author can not be held responsible for any damage sysCheck might cause!
 
 ------------------
 Changelog
+Version 2.4.0 HacksDen Edition
+-Added check for Beer ticket
+-Added skipped IOS's to list
+-Removed the need to reload the runtime IOS
+-SysCheck directory is created if it doesn't exist
+-Fixed incorrect runtime IOS type
+-Fixed vWii cIOS's sometimes showing as regular cIOS's
+-Fixed crash when the language is set to Italian, French, or Spanish
+-Fixed update function
+-Updated Spanish translation (thanks NaxoR93)
+
 Version 2.3.2 HacksDen Edition
 * Disabled vIOS check on a real Wii because it was causing problems
 * Fixed the drive date bug (for real this time)
