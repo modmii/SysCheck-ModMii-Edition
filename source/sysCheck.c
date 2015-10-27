@@ -14,9 +14,8 @@
 #include <stdarg.h>
 #include <di/di.h>
 #include <CheckRegion.h>
-//#include <runtimeiospatch/runtimeiospatch.h>
-#include "runtimeiospatch.h"
 
+#include "runtimeiospatch.h"
 #include "SysMenuInfo.h"
 #include "fatMounter.h"
 #include "gecko.h"
@@ -631,8 +630,8 @@ int main(int argc, char **argv)
 		else
 		{
 			// Reload IOS
-			gprintf("// IOS_ReloadIOS(%d)\n", ios[i].titleID);
-			logfile("// IOS_ReloadIOS(%d)\r\n", ios[i].titleID);
+			gprintf("IOS_ReloadIOS(%d)\n", ios[i].titleID);
+			logfile("IOS_ReloadIOS(%d)\r\n", ios[i].titleID);
 
 			if (SystemInfo.deviceType == CONSOLE_WII_U)
 				IosPatch_FULL(false, false, false, false, ios[i].titleID);
