@@ -8,18 +8,17 @@ bool geckoinit = false;
 bool textVideoInit = false;
 
 #ifndef NO_DEBUG
-
-//using the gprintf from crediar because it is smaller than mine
 void gprintf( const char *str, ... )
 {
 	if (!(geckoinit))return;
-	char astr[1024];
+	char astr[4096];
+	int length;
 
 	va_list ap;
 	va_start(ap,str);
 
-	vsnprintf(astr, sizeof(astr), str, ap);
-	usb_sendbuffer_safe(1, astr, strlen(astr));
+	length = vsnprintf(astr, sizeof(astr), str, ap);
+	if (length > 0) usb_sendbuffer_safe(1, astr, length);
 
 	va_end(ap);
 	return;

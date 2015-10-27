@@ -12,12 +12,6 @@
 #include <ogc/conf.h>
 #include <ctype.h>
 
-#include "sys.h"
-#include "SysMenuInfo.h"
-
-#include "ticket_dat.h"
-#include "tmd_dat.h"
-
 #include "fatMounter.h"
 #include "gecko.h"
 #include "gui.h"
@@ -25,9 +19,15 @@
 #include "languages.h"
 #include "mload.h"
 #include "sha1.h"
+#include "sys.h"
+#include "SysMenuInfo.h"
 #include "title.h"
 #include "tmdIdentification.h"
 #include "wiibasics.h"
+
+
+#include "ticket_dat.h"
+#include "tmd_dat.h"
 
 #define DM_INSTALLED 	((*(vu32*)(appfile+i)) == 0x44494F53 && (*(vu32*)(appfile+i+5)) == 0x4D494F53) // true = DM or DML installed
 #define DML_OR_DM		(*(vu32*)(appfile+i+10) == 0x4C697465) // true = DML
@@ -408,7 +408,6 @@ inline bool CheckBeerTicket(u32 titleID) {
 }
 
 inline bool CheckIOSType(void) {
-	//if (AHB_ACCESS == false) return false;
 	u32 start_address = IOS_TOP;
 	const char WL_String[] = {0x57, 0x4C, 0x3A, 0x20, 0x30, 0x32, 0x2F, 0x30, 0x32, 0x2F, 0x31, 0x32}; // "WL: 02/02/12"
 	u32 i;
