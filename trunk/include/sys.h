@@ -43,7 +43,13 @@ enum {
 
 enum {
 	CONSOLE_WII = 0,
-	CONSOLE_WII_U
+	CONSOLE_WII_U,
+	CONSOLE_UNKNOWN
+};
+
+enum {
+	IOS_WII = 0,
+	IOS_WII_U
 };
 
 enum {
@@ -51,7 +57,8 @@ enum {
 	HBC_HAXX,
 	HBC_JODI,
 	HBC_1_0_7,
-	HBC_LULZ
+	HBC_LULZ,
+	HBC_OPEN
 };
 
 enum {
@@ -69,6 +76,12 @@ enum {
 	TID_NAND = 512,
 	TID_WFS
 };
+
+#define HBC_TID_HAXX	0x48415858
+#define HBC_TID_JODI	0x4A4F4449
+#define HBC_TID_1_0_7	0xAF1BF516
+#define HBC_TID_LULZ	0x4C554C5A
+#define HBC_TID_OPEN	0x4F484243
 
 typedef struct {
 	s32   	revision;
@@ -121,14 +134,8 @@ typedef struct _U8Entry
 	};
 } __attribute__( ( packed ) ) U8Entry;
 
-typedef struct {
-	const u32 titleID;
-	const s32 revision;
-} vIOSdb_t;
-
 extern const char *Regions[];
 extern u8 sysMenuInfoContent;
-extern const vIOSdb_t vIOSdb[];
 
 #ifdef __cplusplus
 extern "C"
@@ -143,7 +150,7 @@ u32 GetSysMenuVersion(void);
 float GetSysMenuNintendoVersion(u32 sysVersion);
 u32 GetBoot2Version(void);
 u32 GetDeviceID(void);
-bool CheckIOSType(void);
+bool CheckIOSType(u32 titleID, s32 revision);
 bool CheckFakeSignature(void);
 bool CheckESIdentify(void);
 bool CheckFlashAccess(void);

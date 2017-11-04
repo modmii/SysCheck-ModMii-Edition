@@ -17,7 +17,7 @@ extern "C"
 #define UpdateTime()		current_time = gettime();
 
 typedef struct {
-	bool	forceNoAHBPROT;
+	bool	AHB_At_Start;
 	bool	debug;
 	int		skipIOSlist[512];
 	int		skipIOScnt;

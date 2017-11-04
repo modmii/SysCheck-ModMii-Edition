@@ -36,11 +36,13 @@
 
 typedef struct {
     u32 deviceID;
-	bool deviceType;
+	u8 deviceType;
     u32 boot2version;
     u32 sysMenuVer;
     u32 dvdSupport;
     s32 sysMenuIOS;
+    s32 sysMenuIOSVersion;
+    s32 sysMenuIOSType;
     float sysNinVersion;
     char sysMenuRegion;
 	s32 systemRegion;
