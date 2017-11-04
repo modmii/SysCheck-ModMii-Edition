@@ -14,6 +14,7 @@
 #include <stdarg.h>
 #include <di/di.h>
 #include <CheckRegion.h>
+#include <wupc/wupc.h>
 
 #include "runtimeiospatch.h"
 #include "SysMenuInfo.h"
@@ -43,7 +44,7 @@ static u64 current_time = 0;
 int main(int argc, char **argv)
 {
 	__exception_setreload(2);
-	arguments.forceNoAHBPROT = false;
+	arguments.AHB_At_Start = AHB_ACCESS;
 	memset(arguments.skipIOSlist, 0, sizeof(arguments.skipIOSlist));
 	arguments.skipIOScnt = 0;
 	arguments.debug = false;
@@ -59,9 +60,10 @@ int main(int argc, char **argv)
 				gprintf("--debug=true\n");
 				logfile("--debug=true\r\n");
 			} else if(CHECK_ARG("--forceNoAHBPROT=true")) {
-				arguments.forceNoAHBPROT = true;
+				arguments.AHB_At_Start = false;
 				gprintf("--forceNoAHBPROT=true\n");
 				logfile("--forceNoAHBPROT=true\r\n");
+				IOS_ReloadIOS(IOS_GetVersion());
 			} else if(CHECK_ARG("--skipIOS=")) {
 				arguments.skipIOSlist[arguments.skipIOScnt] = atoi(CHECK_ARG_VAL("--skipIOS="));
 				gprintf("skipIOS[%i] = %i\r\n", arguments.skipIOScnt, arguments.skipIOSlist[arguments.skipIOScnt]);
@@ -71,10 +73,13 @@ int main(int argc, char **argv)
 		}
 	}
 	SysSettings_t SystemInfo;
-	SystemInfo.deviceType = IS_WII_U;
+	if(arguments.AHB_At_Start)
+		SystemInfo.deviceType = IS_WII_U;
+	else
+		SystemInfo.deviceType = CONSOLE_UNKNOWN;
 	memset(SystemInfo.miosInfo, 0, sizeof(SystemInfo.miosInfo));
 
-	if (AHB_ACCESS && !arguments.forceNoAHBPROT) IosPatch_RUNTIME(true, false, false, true);
+	if (AHB_ACCESS) IosPatch_RUNTIME(true, false, false, true);
 	SystemInfo.nandAccess = CheckNANDAccess();
 
 	// Get and display the current date and time
@@ -117,42 +122,50 @@ int main(int argc, char **argv)
 	homebrew.hbf = HBF_NONE;
 	homebrew.hbcIOS = 0;
 	SystemInfo.dvdSupport = 0;
-	s32 ret = Title_GetVersionNObuf(TITLE_ID(0x00010001, 0x4C554C5A));
+	s32 ret = Title_GetVersionNObuf(TITLE_ID(0x00010001, HBC_TID_OPEN));
 	if (ret<0) {
-		ret = Title_GetVersionNObuf(TITLE_ID(0x00010001, 0xAF1BF516));
+	ret = Title_GetVersionNObuf(TITLE_ID(0x00010001, HBC_TID_LULZ));
 		if (ret<0) {
-			ret = Title_GetVersionNObuf(TITLE_ID(0x00010001, 0x4A4F4449));
+			ret = Title_GetVersionNObuf(TITLE_ID(0x00010001, HBC_TID_1_0_7));
 			if (ret<0) {
-				homebrew.hbc = HBC_HAXX;
-				ret = Title_GetVersionNObuf(TITLE_ID(0x00010001, 0x48415858));
+				ret = Title_GetVersionNObuf(TITLE_ID(0x00010001, HBC_TID_JODI));
 				if (ret<0) {
-					homebrew.hbc = HBC_NONE;
-				} else {
 					homebrew.hbc = HBC_HAXX;
+					ret = Title_GetVersionNObuf(TITLE_ID(0x00010001, HBC_TID_HAXX));
+					if (ret<0) {
+						homebrew.hbc = HBC_NONE;
+					} else {
+						homebrew.hbc = HBC_HAXX;
+						homebrew.hbcversion = ret;
+					}
+				} else {
+					homebrew.hbc = HBC_JODI;
 					homebrew.hbcversion = ret;
 				}
 			} else {
-				homebrew.hbc = HBC_JODI;
+				homebrew.hbc = HBC_1_0_7;
 				homebrew.hbcversion = ret;
+				if (homebrew.hbcversion == 0)
+					homebrew.hbcversion = VERSION_1_1_0;
 			}
 		} else {
-			homebrew.hbc = HBC_1_0_7;
-			homebrew.hbcversion = ret;
-			if (homebrew.hbcversion == 0)
-				homebrew.hbcversion = VERSION_1_1_0;
+			homebrew.hbc = HBC_LULZ;
+			homebrew.hbcversion = (ret != 257) + 1;
 		}
 	} else {
-		homebrew.hbc = HBC_LULZ;
-		homebrew.hbcversion = (ret != 257) + 1;
+		homebrew.hbc = HBC_OPEN;
+		homebrew.hbcversion = ret;
 	}
-	if (homebrew.hbc == HBC_LULZ) {
-		homebrew.hbcIOS =  get_title_ios(TITLE_ID(0x00010001, 0x4C554C5A)); // LULZ
+	if (homebrew.hbc == HBC_OPEN) {
+		homebrew.hbcIOS =  get_title_ios(TITLE_ID(0x00010001, HBC_TID_OPEN)); // OPEN
+	} else if (homebrew.hbc == HBC_LULZ) {
+		homebrew.hbcIOS =  get_title_ios(TITLE_ID(0x00010001, HBC_TID_LULZ)); // LULZ
 	} else if (homebrew.hbc == HBC_1_0_7) {
-		homebrew.hbcIOS =  get_title_ios(TITLE_ID(0x00010001, 0xAF1BF516)); // ????
+		homebrew.hbcIOS =  get_title_ios(TITLE_ID(0x00010001, HBC_TID_1_0_7)); // ????
 	} else if (homebrew.hbc == HBC_JODI) {
-		homebrew.hbcIOS =  get_title_ios(TITLE_ID(0x00010001, 0x4A4F4449)); // JODI
+		homebrew.hbcIOS =  get_title_ios(TITLE_ID(0x00010001, HBC_TID_JODI)); // JODI
 	} else if (homebrew.hbc == HBC_HAXX) {
-		homebrew.hbcIOS = get_title_ios(TITLE_ID(0x00010001, 0x48415858)); // HAXX
+		homebrew.hbcIOS = get_title_ios(TITLE_ID(0x00010001, HBC_TID_HAXX)); // HAXX
 	}
 
 	ret = Title_GetVersionNObuf(TITLE_ID(0x00010001, 0x48424630)); //HBF0
@@ -169,7 +182,7 @@ int main(int argc, char **argv)
 		homebrew.hbfversion = ret;
 	}
 
-	if (AHB_ACCESS && !arguments.forceNoAHBPROT) {
+	if (AHB_ACCESS) {
 		DI_Init();
 		DI_DriveID id;
 
@@ -337,7 +350,7 @@ int main(int argc, char **argv)
 	if (SystemInfo.nandAccess) get_miosinfo(SystemInfo.miosInfo);
 
 	// Check running IOS type so we don't have to reload it later
-	SystemInfo.runningIOSType = (SystemInfo.deviceType == CONSOLE_WII_U) && CheckIOSType();
+	SystemInfo.runningIOSType = (SystemInfo.deviceType != CONSOLE_WII) && CheckIOSType(SystemInfo.runningIOS, SystemInfo.runningIOSRevision);
 
 	// For each titles found
 	for (i = SystemInfo.countIOS; i--;)
@@ -501,6 +514,7 @@ int main(int argc, char **argv)
 	}
 	CheckTime();
 	//Select an IOS to test
+	WUPC_Init();
 	WPAD_Init();
 	PAD_Init();
 	int selectedIOS = -1;
@@ -595,6 +609,7 @@ int main(int argc, char **argv)
 			break;
 		}
 	}
+	WUPC_Shutdown();
 	WPAD_Shutdown();
 	if (selectedIOS > -1) {
 		nbTitles = 1;
@@ -641,7 +656,7 @@ int main(int argc, char **argv)
 			// Test IOS type
 			gprintf("// Test IOS type\n");
 			logfile("// Test IOS type\r\n");
-			if(SystemInfo.deviceType == CONSOLE_WII_U) ios[i].infovIOS = CheckIOSType();
+			if(SystemInfo.deviceType != CONSOLE_WII) ios[i].infovIOS = CheckIOSType(ios[i].titleID, ios[i].revision);
 
 			// Test fake signature
 			gprintf("// Test fake signature\n");
@@ -673,6 +688,11 @@ int main(int argc, char **argv)
 			logfile("// Test USB 2.0\r\n");
 			ios[i].infoUSB2 = CheckUSB2(ios[i].titleID);
 
+			// Set sysMenuIOSVersion and sysMenuIOSType if currently running the System Menu IOS
+			if (ios[i].titleID == SystemInfo.sysMenuIOS) {
+				SystemInfo.sysMenuIOSVersion = ios[i].revision;
+				SystemInfo.sysMenuIOSType = ios[i].infovIOS;
+			}
 
 			// Check Priiloader
 			if (!SystemInfo.nandAccess && SystemInfo.priiloader == -2 && ios[i].infoNANDAccess) {
@@ -896,9 +916,15 @@ int main(int argc, char **argv)
 	if (homebrew.hbf > HBF_NONE)
 		sprintf(ReportBuffer[HBF], TXT_HBF, homebrew.hbfversion);
 
+	// If console type is unknown (because no AHB access), try to determine it by the IOS80 version.  Less reliable
+	if ((SystemInfo.deviceType == CONSOLE_UNKNOWN) && (SystemInfo.sysMenuIOSType == IOS_WII_U) && (SystemInfo.sysMenuIOS == 80) && (SystemInfo.sysMenuIOSVersion == 7200))
+		SystemInfo.deviceType = CONSOLE_WII_U;
+	
+	const char *device_types[] = {"Wii", "vWii", TXT_Unknown};
+	
 	sprintf(ReportBuffer[HOLLYWOOD], TXT_Hollywood, HOLLYWOOD_VERSION);
 	sprintf(ReportBuffer[CONSOLE_ID], TXT_ConsoleID, SystemInfo.deviceID);
-	sprintf(ReportBuffer[CONSOLE_TYPE], TXT_ConsoleType, SystemInfo.deviceType ? "vWii" : "Wii");
+	sprintf(ReportBuffer[CONSOLE_TYPE], TXT_ConsoleType, device_types[SystemInfo.deviceType]);
 	sprintf(ReportBuffer[COUNTRY], TXT_ShopCountry, (strlen(SystemInfo.country)) ? SystemInfo.country : TXT_Unknown, SystemInfo.shopcode);
 	sprintf(ReportBuffer[BOOT2_VERSION], TXT_vBoot2, SystemInfo.boot2version);
 	sprintf(ReportBuffer[NR_OF_TITLES], TXT_NrOfTitles, SystemInfo.countTitles);
@@ -1053,6 +1079,7 @@ int main(int argc, char **argv)
 
 	int LineNr = 0;
 
+	WUPC_Init();
 	WPAD_Init();
 	bool reportIsDisplayed = false;
 	while (1) {

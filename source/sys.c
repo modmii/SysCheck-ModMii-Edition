@@ -33,8 +33,46 @@
 #define DML_OR_DM		(*(vu32*)(appfile+i+10) == 0x4C697465) // true = DML
 #define CMP_TIME(X) 	(difftime(unixTime, (X)) >= 0)
 
+typedef struct {
+	const u32 titleID;
+	const s32 revision;
+} vIOSdb_t;
+
 u8 sysMenuInfoContent = 0;
 const char *Regions[] = {"NTSC-J", "NTSC-U", "PAL", "", "KOR", "NTSC-J"}; //Last is actually China
+
+// Distinct vIOS versions
+static const vIOSdb_t vIOSdb[] = {
+	{9, 1290},
+	{12, 782},
+	{13, 1288},
+	{14, 1288},
+	{15, 1288},
+	{17, 1288},
+	{21, 1295},
+	{22, 1550},
+	{28, 2063},
+	{31, 3864},
+	{33, 3864},
+	{34, 3864},
+	{35, 3864},
+	{36, 3864},
+	{37, 5919},
+	{38, 4380},
+	{41, 3863},
+	{43, 3863},
+	{45, 3863},
+	{46, 3863},
+	{48, 4380},
+	{53, 5919},
+	{55, 5919},
+	{56, 5918},
+	{57, 6175},
+	{58, 6432},
+	//{59, 9249}, // All versions of vIOS59 share version numbers its Wii counterpart
+	{62, 6942}, // v6430 is a version of both the real and virtual IOS62
+	{80, 7200}
+};
 
 int get_title_ios(u64 title) {
 	s32 ret, fd;
@@ -407,14 +445,24 @@ inline bool CheckBeerTicket(u32 titleID) {
 	return ret;
 }
 
-inline bool CheckIOSType(void) {
+inline bool CheckIOSType(u32 titleID, s32 revision) {
 	u32 start_address = IOS_TOP;
 	const char WL_String[] = {0x57, 0x4C, 0x3A, 0x20, 0x30, 0x32, 0x2F, 0x30, 0x32, 0x2F, 0x31, 0x32}; // "WL: 02/02/12"
 	u32 i;
-	for(i = start_address; i < 0x94000000 - sizeof(WL_String); i++) {
-		if (memcmp((char*)i, WL_String, sizeof(WL_String)) == 0) return true;
+	// This method does not work on vIOS59 (any version) or vIOS62v6942
+	for(i = MAX_ELEMENTS(vIOSdb); i--;) {
+		if(titleID == vIOSdb[i].titleID) {
+			if (revision == vIOSdb[i].revision) 
+				return IOS_WII_U;
+			else
+				break;
+		}
 	}
-	return false;
+	// Should work on all vIOS, but requires AHB access
+	for(i = start_address; i < 0x94000000 - sizeof(WL_String); i++) {
+		if (memcmp((char*)i, WL_String, sizeof(WL_String)) == 0) return IOS_WII_U;
+	}
+	return IOS_WII;
 }
 
 // Check fake signatures (aka Trucha Bug)
@@ -805,36 +853,3 @@ s32 get_miosinfo(char *str)
 	}
 	return 0;
 }
-
-// Minimum vIOS versions
-const vIOSdb_t vIOSdb[] = {
-	{9, 1290},
-	{12, 782},
-	{13, 1288},
-	{14, 1288},
-	{15, 1288},
-	{17, 1288},
-	{21, 1295},
-	{22, 1550},
-	{28, 2063},
-	{31, 3864},
-	{33, 3864},
-	{34, 3864},
-	{35, 3864},
-	{36, 3864},
-	{37, 5919},
-	{38, 4380},
-	{41, 3863},
-	{43, 3863},
-	{45, 3863},
-	{46, 3863},
-	{48, 4380},
-	{53, 5919},
-	{55, 5919},
-	{56, 5918},
-	{57, 6175},
-	{58, 6432},
-	{59, 7201},
-	{62, 6430},
-	{80, 6430}
-};
