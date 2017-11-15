@@ -35,43 +35,43 @@
 
 typedef struct {
 	const u32 titleID;
-	const s32 revision;
+	const u32 hashes[5];
 } vIOSdb_t;
 
 u8 sysMenuInfoContent = 0;
 const char *Regions[] = {"NTSC-J", "NTSC-U", "PAL", "", "KOR", "NTSC-J"}; //Last is actually China
 
 // Distinct vIOS versions
-static const vIOSdb_t vIOSdb[] = {
-	{9, 1290},
-	{12, 782},
-	{13, 1288},
-	{14, 1288},
-	{15, 1288},
-	{17, 1288},
-	{21, 1295},
-	{22, 1550},
-	{28, 2063},
-	{31, 3864},
-	{33, 3864},
-	{34, 3864},
-	{35, 3864},
-	{36, 3864},
-	{37, 5919},
-	{38, 4380},
-	{41, 3863},
-	{43, 3863},
-	{45, 3863},
-	{46, 3863},
-	{48, 4380},
-	{53, 5919},
-	{55, 5919},
-	{56, 5918},
-	{57, 6175},
-	{58, 6432},
-	//{59, 9249}, // All versions of vIOS59 share version numbers its Wii counterpart
-	{62, 6942}, // v6430 is a version of both the real and virtual IOS62
-	{80, 7200}
+const vIOSdb_t vIOSdb[] = {
+	{9,  {0x5febd050, 0xe51b4cd7, 0xf3accee4, 0xb77a6674, 0x5a944e92}},	// v1290
+	{12, {0x1bf4f9fc, 0x04a7c04d, 0x14371ebf, 0xa22f8906, 0xcd687b37}},	// v782
+	{13, {0xb9f05ccb, 0x5b0f6f50, 0xf1f67815, 0x54505f42, 0xfe7346ae}},	// v1288
+	{14, {0x578a2b74, 0x4de6d6b3, 0xb7d1847c, 0xf1e96b8c, 0x9a439929}},	// v1288
+	{15, {0xbfe87fc4, 0x556b6920, 0xfb1ab7be, 0x9920a1b9, 0x7d3f3368}},	// v1288
+	{17, {0x516a92f8, 0x425a502e, 0x4516cd0c, 0xe1a4b188, 0xca911640}},	// v1288
+	{21, {0x5f74e599, 0xf6ff78b3, 0x03db1d9e, 0x41de0e44, 0x700a0bbe}},	// v1295
+	{22, {0xb637fd6e, 0x6389d456, 0x3eea7fb8, 0x3a00e89e, 0xbf91b5c2}},	// v1550
+	{28, {0x1844bba1, 0x701eecfa, 0x59f649b2, 0x922f178f, 0x8f3776c2}},	// v2063
+	{31, {0x3f08b3bb, 0xd40eca36, 0xdd7ca54f, 0x18fa4cb3, 0xf3af6b3d}},	// v3864
+	{33, {0xb2b36ad9, 0x70b96c52, 0x1150a307, 0xd70b864e, 0x871108ee}},	// v3864
+	{34, {0xcf9ec31e, 0x5f1dc978, 0x022263ef, 0x731c19f3, 0xff441707}},	// v3864
+	{35, {0xf6019cd4, 0x4f435eca, 0x0a7bc86e, 0xaea6d727, 0x421dc71f}},	// v3864
+	{36, {0xfcc68cf6, 0x96463d48, 0x4b62a3d6, 0x8210bac0, 0x5627b6dd}},	// v3864
+	{37, {0x6681b0ce, 0xd63a6971, 0x7fda96e4, 0xacd08365, 0xf76a206f}},	// v5919
+	{38, {0x486e21de, 0x4016a4d7, 0x9d7e2bb5, 0xa3b8ac91, 0x73915a00}},	// v4380
+	{41, {0x5d524f58, 0x21df26e7, 0x557b6fe7, 0x602568d9, 0xb1798e46}},	// v3863
+	{43, {0x54f59a45, 0x91f87a50, 0x8051db3f, 0x1ecf517c, 0x859c38a2}},	// v3863
+	{45, {0x3a608c3e, 0xc35ae2b1, 0x70f57be4, 0x0cf64a2b, 0xd1cf986d}},	// v3863
+	{46, {0xcab6c43f, 0x4d4cdf49, 0x1786ee08, 0x2663b16a, 0xd93f8e0a}},	// v3863
+	{48, {0xc3a1ffbc, 0x6f2b2649, 0x0a767330, 0x959ff1df, 0xba8d01b2}},	// v4380
+	{53, {0x89bf1a35, 0x2bd8e143, 0xa6e1fd47, 0x596902f3, 0xae24864d}},	// v5919
+	{55, {0x7b8e33ae, 0xade979ca, 0xbfb2bbd6, 0x20ca08a7, 0xeac82eff}},	// v5919
+	{56, {0x1ad56238, 0x10fd144b, 0x94fd24a9, 0x655b1665, 0xa2d1cb5b}},	// v5918
+	{57, {0x9bcd04d5, 0x4db165be, 0xf07a0935, 0x9a5eea68, 0xc56fe221}},	// v6175
+	{58, {0xedce2922, 0x86d540cf, 0x1eb00fdc, 0x09687aae, 0xcaba4f60}},	// v6432
+	{59, {0x20f8f664, 0x8a1c5642, 0x3a3177fa, 0xa85631a4, 0x095bae0f}},	// v9249
+	{62, {0xc630ecc3, 0x245e8cd1, 0xe2cd25a9, 0x2f5528b4, 0x3a9c0f01}},	// v6942
+	{80, {0x176c6167, 0x32213287, 0x8795750a, 0x84ad4e1b, 0x70867b3c}}	// v7200
 };
 
 int get_title_ios(u64 title) {
@@ -449,15 +449,6 @@ inline bool CheckIOSType(u32 titleID, s32 revision) {
 	u32 start_address = IOS_TOP;
 	const char WL_String[] = {0x57, 0x4C, 0x3A, 0x20, 0x30, 0x32, 0x2F, 0x30, 0x32, 0x2F, 0x31, 0x32}; // "WL: 02/02/12"
 	u32 i;
-	// This method does not work on vIOS59 (any version) or vIOS62v6942
-	for(i = MAX_ELEMENTS(vIOSdb); i--;) {
-		if(titleID == vIOSdb[i].titleID) {
-			if (revision == vIOSdb[i].revision) 
-				return IOS_WII_U;
-			else
-				break;
-		}
-	}
 	// Should work on all vIOS, but requires AHB access
 	for(i = start_address; i < 0x94000000 - sizeof(WL_String); i++) {
 		if (memcmp((char*)i, WL_String, sizeof(WL_String)) == 0) return IOS_WII_U;
