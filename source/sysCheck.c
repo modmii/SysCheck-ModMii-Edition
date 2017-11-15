@@ -14,7 +14,6 @@
 #include <stdarg.h>
 #include <di/di.h>
 #include <CheckRegion.h>
-#include <wupc/wupc.h>
 
 #include "runtimeiospatch.h"
 #include "SysMenuInfo.h"
@@ -514,7 +513,6 @@ int main(int argc, char **argv)
 	}
 	CheckTime();
 	//Select an IOS to test
-	WUPC_Init();
 	WPAD_Init();
 	PAD_Init();
 	int selectedIOS = -1;
@@ -609,7 +607,6 @@ int main(int argc, char **argv)
 			break;
 		}
 	}
-	WUPC_Shutdown();
 	WPAD_Shutdown();
 	if (selectedIOS > -1) {
 		nbTitles = 1;
@@ -1079,7 +1076,6 @@ int main(int argc, char **argv)
 
 	int LineNr = 0;
 
-	WUPC_Init();
 	WPAD_Init();
 	bool reportIsDisplayed = false;
 	while (1) {
