@@ -4,6 +4,88 @@
 #include "fatMounter.h"
 #include "languages.h"
 
+const char* TXT_AppVersion;
+const char* MSG_GetConsoleRegion;
+const char* MSG_GetSysMenuVer;
+const char* MSG_GetHBCVer;
+const char* MSG_GetRunningIOS;
+const char* MSG_GetConsoleID;
+const char* MSG_GetBoot2;
+const char* MSG_Update;
+const char* MSG_NoUpdate;
+const char* MSG_UpdateSuccess;
+const char* MSG_UpdateFail;
+const char* TXT_Region;
+const char* TXT_Unknown;
+const char* MSG_GetNrOfTitles;
+const char* ERR_GetNrOfTitles;
+const char* MSG_GetTitleList;
+const char* ERR_GetTitleList;
+const char* ERR_GetIosTMDSize;
+const char* ERR_GetIosTMD;
+const char* MSG_MountSD;
+const char* MSG_UnmountSD;
+const char* MSG_MountUSB;
+const char* MSG_UnmountUSB;
+const char* MSG_InitFAT;
+const char* ERR_InitFAT;
+const char* MSG_SortTitles;
+const char* MSG_GetCertificates;
+const char* ERR_GetCertificates;
+const char* TXT_SysMenu;
+const char* TXT_SysMenu2;
+const char* TXT_SysMenu3;
+const char* TXT_HBF;
+const char* TXT_NO_HBC;
+const char* TXT_HBC;
+const char* TXT_HBC_NEW;
+const char* TXT_HBC_112;
+const char* TXT_HBC_STUB;
+const char* TXT_Hollywood;
+const char* TXT_ConsoleID;
+const char* TXT_ConsoleType;
+const char* TXT_ShopCountry;
+const char* TXT_vBoot2;
+const char* TXT_NrOfTitles;
+const char* TXT_NrOfIOS;
+const char* TXT_AppTitle;
+const char* TXT_AppIOS;
+const char* ERR_AllocateMemory;
+const char* ERR_OpenFile;
+const char* MSG_SelectIOS;
+const char* MSG_All;
+const char* MSG_TestingIOS;
+const char* MSG_ReloadIOS;
+const char* MSG_GenerateReport;
+const char* MSG_ReportSuccess;
+const char* MSG_ReportError;
+const char* TXT_Stub;
+const char* TXT_Trucha;
+const char* TXT_ES;
+const char* TXT_Flash;
+const char* TXT_NAND;
+const char* TXT_Boot2;
+const char* TXT_USB;
+const char* TXT_BeerTicket;
+const char* TXT_NoPatch;
+const char* TXT_Priiloader;
+const char* TXT_PreFiix;
+const char* BUT_HBC;
+const char* BUT_Shutoff;
+const char* BUT_SysMenu;
+const char* BUT_Update;
+const char* TXT_VersionP;
+const char* TXT_DVD;
+const char* TXT_NoDVD;
+const char* BUT_ConfirmUpload;
+const char* TXT_Upload;
+const char* BUT_OK;
+const char* TXT_OriginalRegion;
+const char* TXT_IOSSkipped;
+char TXT_ReportDate[100];
+char MSG_Buffer[1024];
+char MSG_Buffer2[1024];
+
 // 		CONF_LANG_GERMAN
 // 		CONF_LANG_FRENCH
 // 		CONF_LANG_ITALIAN
@@ -16,7 +98,7 @@
 
 int initLanguages(struct tm today)
 {
-	TXT_AppVersion = "v2.4.0 HacksDen Edition";
+	TXT_AppVersion = "v2.5.0";
 	switch (CONF_GetLanguage())
 	{
 		case CONF_LANG_GERMAN:
@@ -36,6 +118,8 @@ int initLanguages(struct tm today)
 			ERR_GetIosTMD = "Fehler beim Auslesen der TMD fuer IOS%d.";
 			MSG_MountSD = "SD-Karte wird eingebunden...";
 			MSG_UnmountSD = "Zugriff auf die SD-Karte wird beendet...";
+			MSG_MountUSB = "USB wird eingebunden...";
+			MSG_UnmountUSB = "Zugriff auf die USB wird beendet...";
 			MSG_InitFAT = "Zugriff auf die SD-Karte wird initialisiert...";
 			ERR_InitFAT = "Initialisieren des FAT-Systems fehlgeschlagen.";
 			MSG_SortTitles = "Titel werden sortiert...";
@@ -58,7 +142,7 @@ int initLanguages(struct tm today)
 			TXT_vBoot2 = "Boot2 v%u";
 			TXT_NrOfTitles = "Es wurden %d Titel gefunden.";
 			TXT_NrOfIOS = "Es wurden %d IOS gefunden, von denen %d funktionslos (Stub) sind.";
-			TXT_AppTitle = "SysCheck HDE %s von JoostinOnline, Double_A, R2-D2199, und Nano";
+			TXT_AppTitle = "SysCheck ME %s von blackb0x, JoostinOnline, Double_A, R2-D2199 und Nano";
 			TXT_AppIOS = "...laeuft auf dem %sIOS%d (rev %d).";
 			ERR_AllocateMemory = "Speicher fuer %d Titel konnte nicht zugewiesen werden.";
 			ERR_OpenFile = "Zugriff auf die Speicherdatei des Berichts fehlgeschlagen!";
@@ -116,6 +200,8 @@ int initLanguages(struct tm today)
 			ERR_GetIosTMD = "Erreur lors de l'appel a ES_GetStoredTMD pour l'IOS%d.";
 			MSG_MountSD = "Montage de la carte SD...";
 			MSG_UnmountSD = "Demontage de la carte SD...";
+			MSG_MountUSB = "Montage de la USB...";
+			MSG_UnmountUSB = "Demontage de la USB...";
 			MSG_InitFAT = "Initialisation du systeme de fichier FAT...";
 			ERR_InitFAT = "Impossible d'initialiser le systeme de fichier FAT.";
 			MSG_SortTitles = "Tri des titres...";
@@ -136,7 +222,7 @@ int initLanguages(struct tm today)
 			TXT_vBoot2 = "Boot2 v%u";
 			TXT_NrOfTitles = "%d titres trouves.";
 			TXT_NrOfIOS = "%d IOS trouves sur cette console. %d sont des stubs.";
-			TXT_AppTitle = "SysCheck HDE %s par JoostinOnline, Double_A, R2-D2199, et Nano";
+			TXT_AppTitle = "SysCheck ME %s par blackb0x, JoostinOnline, Double_A, R2-D2199 et Nano";
 			TXT_AppIOS = "...tourne sous l'%sIOS%d (rev %d).";
 			ERR_AllocateMemory = "Imposible d'allouer la memoire pour %d titres.";
 			ERR_OpenFile = "Impossible d'ouvrir le fichier.";
@@ -194,6 +280,8 @@ int initLanguages(struct tm today)
 			ERR_GetIosTMD = "Impossibile verificare TMD memorizzato per IOS%d.";
 			MSG_MountSD = "Controllo della memoria SD...";
 			MSG_UnmountSD = "Impossibile verificare la memoria SD...";
+			MSG_MountUSB = "Controllo della memoria USB...";
+			MSG_UnmountUSB = "Impossibile verificare la memoria USB...";
 			MSG_InitFAT = "Controllo file system FAT...";
 			ERR_InitFAT = "Impossibile verificare file system FAT.";
 			MSG_SortTitles = "Ordinamento giochi...";
@@ -214,7 +302,7 @@ int initLanguages(struct tm today)
 			TXT_vBoot2 = "Boot2 v%u";
 			TXT_NrOfTitles = "Trovati %d giochi.";
 			TXT_NrOfIOS = "Trovati %d IOS in questa console. %d di questi sono stubs.";
-			TXT_AppTitle = "SysCheck HDE %s by JoostinOnline, Double_A, R2-D2199, and Nano";
+			TXT_AppTitle = "SysCheck ME %s by blackb0x, JoostinOnline, Double_A, R2-D2199 and Nano";
 			TXT_AppIOS = "...appoggiato all'%sIOS%d (v. %d).";
 			ERR_AllocateMemory = "Impossibile allocare la memoria per %d giochi.";
 			ERR_OpenFile = "Impossibile aprire il file!";
@@ -272,6 +360,8 @@ case CONF_LANG_SPANISH:
 			ERR_GetIosTMD = "Error al obtener el ES_GetStoredTMD del IOS%d.";
 			MSG_MountSD = "Montando Tarjeta SD...";
 			MSG_UnmountSD = "Desmontando Tarjeta SD...";
+			MSG_MountUSB = "Montando USB...";
+			MSG_UnmountUSB = "Desmontando USB...";
 			MSG_InitFAT = "Inicializando sistema de archivos FAT...";
 			ERR_InitFAT = "Error al inicializar sistema de archivos FAT.";
 			MSG_SortTitles = "Ordenando titulos...";
@@ -292,7 +382,7 @@ case CONF_LANG_SPANISH:
 			TXT_vBoot2 = "Boot2 v%u";
 			TXT_NrOfTitles = "%d titulos encontrados.";
 			TXT_NrOfIOS = "Se encontraron %d IOS en esta consola. %d de ellos son stubs.";
-			TXT_AppTitle = "SysCheck HDE %s por JoostinOnline, Double_A, R2-D2199, y Nano";
+			TXT_AppTitle = "SysCheck ME %s por blackb0x, JoostinOnline, Double_A, R2-D2199 y Nano";
 			TXT_AppIOS = "...ejecutado en %sIOS%d (rev %d).";
 			ERR_AllocateMemory = "Error al asignar memoria para %d titulos.";
 			ERR_OpenFile = "Error al abrir el archivo!";
@@ -350,6 +440,8 @@ case CONF_LANG_SPANISH:
 			ERR_GetIosTMD = "Failed to get the stored TMD for IOS%d.";
 			MSG_MountSD = "Mounting the SD Card...";
 			MSG_UnmountSD = "Unmounting the SD Card...";
+			MSG_MountUSB = "Mounting the USB...";
+			MSG_UnmountUSB = "Unmounting the USB...";
 			MSG_InitFAT = "Initialising the FAT file system...";
 			ERR_InitFAT = "Unable to initialise the FAT file system.";
 			MSG_SortTitles = "Sorting titles...";
@@ -370,7 +462,7 @@ case CONF_LANG_SPANISH:
 			TXT_vBoot2 = "Boot2 v%u";
 			TXT_NrOfTitles = "Found %d titles.";
 			TXT_NrOfIOS = "Found %d IOS on this console. %d of them are stubs.";
-			TXT_AppTitle = "SysCheck HDE %s by JoostinOnline, Double_A, R2-D2199, and Nano";
+			TXT_AppTitle = "SysCheck ME %s by blackb0x, JoostinOnline, Double_A, R2-D2199 and Nano";
 			TXT_AppIOS = "...runs on %sIOS%d (rev %d).";
 			ERR_AllocateMemory = "Unable to allocate the memory for %d titles.";
 			ERR_OpenFile = "Unable to open the file!";

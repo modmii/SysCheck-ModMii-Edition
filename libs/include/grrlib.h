@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------------------
-Copyright (c) 2012 The GRRLIB Team
+Copyright (c) 2009-2021 The GRRLIB Team
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -21,7 +21,7 @@ THE SOFTWARE.
 ------------------------------------------------------------------------------*/
 
 /**
- * @file GRRLIB.h
+ * @file grrlib.h
  * GRRLIB user include file.
  */
 /**
@@ -37,7 +37,7 @@ THE SOFTWARE.
 /**
  * Version information for GRRLIB.
  */
-#define GRRLIB_VER_STRING "4.3.2"
+#define GRRLIB_VER_STRING "4.4.1"
 
 //==============================================================================
 // Includes
@@ -51,11 +51,6 @@ THE SOFTWARE.
 #ifdef __cplusplus
    extern "C" {
 #endif /* __cplusplus */
-
-//==============================================================================
-// Extra standard declarations
-//==============================================================================
-typedef  unsigned int  uint;/**< The uint keyword signifies an integral type. */
 
 //==============================================================================
 // Primitive colour macros
@@ -110,19 +105,19 @@ typedef  struct GRRLIB_drawSettings {
  * Structure to hold the texture information.
  */
 typedef  struct GRRLIB_texImg {
-    uint   w;           /**< The width of the texture in pixels.  */
-    uint   h;           /**< The height of the texture in pixels. */
+    u32    w;           /**< The width of the texture in pixels.  */
+    u32    h;           /**< The height of the texture in pixels. */
     int    handlex;     /**< Texture handle x. */
     int    handley;     /**< Texture handle y. */
     int    offsetx;     /**< Texture offset x. */
     int    offsety;     /**< Texture offset y. */
 
     bool   tiledtex;    /**< Texture is tiled if set to true.   */
-    uint   tilew;       /**< The width of one tile in pixels.   */
-    uint   tileh;       /**< The height of one tile in pixels.  */
-    uint   nbtilew;     /**< Number of tiles for the x axis.    */
-    uint   nbtileh;     /**< Number of tiles for the y axis.    */
-    uint   tilestart;   /**< Offset to tile starting position.  */
+    u32    tilew;       /**< The width of one tile in pixels.   */
+    u32    tileh;       /**< The height of one tile in pixels.  */
+    u32    nbtilew;     /**< Number of tiles for the x axis.    */
+    u32    nbtileh;     /**< Number of tiles for the y axis.    */
+    u32    tilestart;   /**< Offset to tile starting position.  */
     f32    ofnormaltexx;/**< Offset of normalized texture on x. */
     f32    ofnormaltexy;/**< Offset of normalized texture on y. */
 
@@ -178,23 +173,19 @@ typedef  struct GRRLIB_Font {
 # define GRR_INITS(...)
 #endif
 
-GRR_EXTERN  GXRModeObj  *rmode;
+GRR_EXTERN  GXRModeObj  *rmode; /**< Video mode. */
 GRR_EXTERN  void        *xfb[2]  GRR_INITS(NULL, NULL);
 GRR_EXTERN  u32         fb       GRR_INIT(0);
 //==============================================================================
 // procedure and function prototypes
-// Inline function handling - http://www.greenend.org.uk/rjk/2003/03/inline.html
+// Inline function handling
 //==============================================================================
 #include "grrlib/GRRLIB__lib.h"
 
 #if defined __GRRLIB_CORE__
 #  define INLINE
 #else
-# if __GNUC__ && !__GNUC_STDC_INLINE__
 #  define INLINE static inline
-# else
-#  define INLINE inline
-# endif
 #endif
 #include "grrlib/GRRLIB__inline.h"
 
@@ -207,51 +198,3 @@ GRR_EXTERN  u32         fb       GRR_INIT(0);
 
 #endif // __GRRLIB_H__
 /** @} */ // end of group
-/**
- * @mainpage GRRLIB Documentation
- * @image html grrlib_logo.png
- * Welcome to the GRRLIB documentation.
- * A complete list of functions is available from this \ref AllFunc "page".
- *
- * @section Introduction
- * GRRLIB is a C/C++ 2D/3D graphics library for Wii application developers.
- * It is essentially a wrapper which presents a friendly interface to the Nintendo GX core.
- *
- * @section Links
- * Forum: http://grrlib.santo.fr/forum\n
- * Code: http://code.google.com/p/grrlib\n
- * IRC: <a href="irc://irc.efnet.net/grrlib">#GRRLIB</a> on EFnet
- *
- * @section Credits
- * Project Leader : NoNameNo\n
- * Documentation  : Crayon, BlueChip\n
- * Lead Coder     : NoNameNo\n
- * Support Coders : Crayon, Xane, DragonMinded, BlueChip\n
- * Advisors       : RedShade, Jespa\n
- *
- * @section Licence
- * Copyright (c) 2012 The GRRLIB Team
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- *
- * @example template/source/main.c
- * This example shows the minimum code required to use GRRLIB.
- * It could be used as a template to start a new project.
- * More elaborate examples can be found inside the \e examples folder.
- */

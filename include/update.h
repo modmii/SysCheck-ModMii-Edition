@@ -3,7 +3,7 @@
 
 /* Constants */
 //#define REVISION	0 // For testing updateApp function
-#define REVISION	51
+#define REVISION	52
 
 s32 updateApp(void);
 

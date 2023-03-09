@@ -1,7 +1,7 @@
 #ifndef __SYS_H__
 #define __SYS_H__
 
-#include <ogc\lwp_watchdog.h>
+#include <ogc/lwp_watchdog.h>
 #include "tools.h"
 
 #define AHB_ACCESS			(*(vu32*)0xcd800064 == 0xFFFFFFFF)
@@ -107,7 +107,7 @@ typedef struct {
 typedef struct {
 	bool 	hasInfo;
 	u32   	realRevision;
-	char	info[0x10];
+	char	info[0x20];
 } sysMenu_t;
 
 typedef struct _U8Header

@@ -55,6 +55,10 @@ void transmitSyscheck(char ReportBuffer[200][100], int *lines) {
 	printLoadingBar(TXT_Upload, 0);
 	gprintf("TempReport built\n");
 
+	char consoleid[40] = {0};
+	sprintf(consoleid, "%.*s****", strlen(ReportBuffer[CONSOLE_ID]) - 4, ReportBuffer[CONSOLE_ID]);
+	sprintf(ReportBuffer[CONSOLE_ID], "%s", consoleid);
+
 	int i = 0;
 	int strl = 0;
 	for (i = 0; i <= *lines; i++) {
@@ -72,7 +76,21 @@ void transmitSyscheck(char ReportBuffer[200][100], int *lines) {
 	}
 	printLoadingBar(TXT_Upload, 40);
 
-	net_init();
+	int ret = net_init();
+	if (ret < 0)
+	{
+		net_deinit();
+		char temp[100] = {0};
+		snprintf(temp, sizeof(temp), "%d", ret);
+		printUploadError(temp);
+		while (1)
+		{
+			if (DetectInput(DI_BUTTONS_HELD) & WPAD_BUTTON_A)
+				break;
+		}
+		return;
+	}
+		
 	printLoadingBar(TXT_Upload, 60);
 	gprintf("OK\n");
 	char *encodedReport = url_encode(tempReport);
@@ -84,7 +102,7 @@ void transmitSyscheck(char ReportBuffer[200][100], int *lines) {
 	gprintf("bufTransmit: %s ENDE len:%u\n", bufTransmit, strlen(bufTransmit));
 	gprintf("OK3\n");
 	char host[48];
-	sprintf(host, "http://syscheck.softwii.de/syscheck_receiver.php");
+	sprintf(host, "http://syscheck.rc24.xyz/syscheck_receiver.php");
 	http_post(host, 1024, bufTransmit);
 	printLoadingBar(TXT_Upload, 80);
 	gprintf("OK4\n\n");
@@ -109,7 +127,7 @@ void transmitSyscheck(char ReportBuffer[200][100], int *lines) {
 
 	if (!strncmp(ReportBuffer[*lines], "ERROR: ", 7)) {
 		char temp[100] = {0};
-		strncpy(temp, ReportBuffer[*lines]+7, sizeof(temp));
+		snprintf(temp, sizeof(temp), "%s", ReportBuffer[*lines]+7);
 		printUploadError(temp);
 		memset(ReportBuffer[*lines], 0, 100);
 		(*lines)--;

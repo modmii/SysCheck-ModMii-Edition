@@ -79,7 +79,7 @@ void deinitGUI(void) {
 	GRRLIB_FreeTexture(tex_window_png);
 	GRRLIB_FreeTexture(tex_ScreenBuf);
 	GRRLIB_Exit();
-	gprintf("Exiting SysCheck HDE\n\n");
+	gprintf("Exiting SysCheck ME\n\n");
 	return;
 }
 
@@ -132,9 +132,18 @@ int printSelectIOS(const char* msg, const char* ios) {
 	GRRLIB_PrintfTTF((640-strlen(ios)*9)/2, 300, myFont, ios, 20, HEX_WHITE);
 	GRRLIB_DrawImg(222, 286, tex_WiiDpadLeft_png, 0, 1, 1, HEX_WHITE);
 	GRRLIB_DrawImg(370, 286, tex_WiiDpadRight_png, 0, 1, 1, HEX_WHITE);
+
+	GRRLIB_DrawImg(144, 388, tex_WiiButtonMinus_png, 0, 1, 1, HEX_WHITE);
+	GRRLIB_PrintfTTF(160-(strlen(BUT_Shutoff)*7.8)/2, 425, myFont, BUT_Shutoff, 14, HEX_WHITE);
 	
-	GRRLIB_DrawImg(310, 388, tex_WiiButtonPlus_png, 0, 1, 1, HEX_WHITE);
-	GRRLIB_PrintfTTF(335-(strlen(BUT_Update)*7.8)/2, 425, myFont, BUT_Update, 14, HEX_WHITE);
+	GRRLIB_DrawImg(302, 386, tex_WiiButtonHome_png, 0, 1, 1, HEX_WHITE);
+	GRRLIB_PrintfTTF(320-(strlen(BUT_HBC)*7.8)/2, 425, myFont, BUT_HBC, 14, HEX_WHITE);
+	
+	GRRLIB_DrawImg(464, 388, tex_WiiButtonPlus_png, 0, 1, 1, HEX_WHITE);
+	GRRLIB_PrintfTTF(480-(strlen(BUT_SysMenu)*7.8)/2, 425, myFont, BUT_SysMenu, 14, HEX_WHITE);
+	
+//	GRRLIB_DrawImg(310, 388, tex_WiiButtonPlus_png, 0, 1, 1, HEX_WHITE);
+//	GRRLIB_PrintfTTF(335-(strlen(BUT_Update)*7.8)/2, 425, myFont, BUT_Update, 14, HEX_WHITE);
 	CopyBuf();
 	for (i = 0; i < 3; i++) { //Workaround for GRRLIB_Render() bug
 		DrawBuf();

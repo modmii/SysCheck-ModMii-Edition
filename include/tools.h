@@ -30,6 +30,7 @@ void logfile(const char *format, ...);
 void *allocate_memory(u32 size);
 int NandStartup(void);
 void NandShutdown(void);
+void Wpad_Disconnect(void);
 u32 DetectInput(u8 DownOrHeld);
 void sort(u64 *titles, u32 cnt);
 void formatDate(u32 date, char ReportBuffer[200][100]);

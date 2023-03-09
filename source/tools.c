@@ -37,7 +37,7 @@ void logfile(const char *format, ...)
 	if (!arguments.debug) return;
 	MountSD();
 	FILE *f;
-	f= fopen("SD:/sysCheckDebug.log", "a");
+	f= fopen("sd:/SysCheckDebug.log", "a");
 	if(f == NULL) return;
 	va_list args;
 	va_start(args, format);
@@ -85,6 +85,18 @@ void NandShutdown(void)
 	ISFS_Deinitialize();
 
 	NandInitialized = false;
+}
+
+void Wpad_Disconnect(void)
+{
+	for (u32 i = 0; i < 5; i++)
+	{
+		if (WPAD_Probe(i, 0) < 0)
+			continue;
+		WPAD_Disconnect(i);
+	}
+
+	WPAD_Shutdown();
 }
 
 u32 DetectInput(u8 DownOrHeld) {
@@ -150,10 +162,10 @@ u32 DetectInput(u8 DownOrHeld) {
 }
 
 void formatDate(u32 date, char ReportBuffer[200][100]) {
-	char temp[8] = {0};
-	char day[2] = {0};
-	char month[2] = {0};
-	char year[5] = {0};
+	char temp[9] = {0};
+	char day[3] = {0};
+	char month[3] = {0};
+	char year[6] = {0};
 
 	sprintf(temp, "%08x", date);
 	snprintf(year, sizeof(year), "%c%c%c%c", temp[0], temp[1], temp[2], temp[3]);

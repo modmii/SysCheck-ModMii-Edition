@@ -1,0 +1,11 @@
+﻿# Ignore all of this stuff...
+*.bat
+*.dol
+*.elf
+*.exe
+*.zip
+*.7z
+.vs/
+.vscode/
+build/
+/wiiload

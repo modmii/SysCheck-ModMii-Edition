@@ -25,21 +25,15 @@ INCLUDES	:=  include
 # options for code generation
 #---------------------------------------------------------------------------------
 
-CFLAGS	= -g -O2 -Wall $(MACHDEP) $(INCLUDE)
-CXXFLAGS	=	$(CFLAGS)
-
-LDFLAGS	=	-g $(MACHDEP) -Wl,-Map,$(notdir $@).map
+CFLAGS		= -g -O2 -Wall $(MACHDEP) $(INCLUDE) -D_GNU_SOURCE
+CXXFLAGS	= $(CFLAGS)
+LDFLAGS		= -g $(MACHDEP) -Wl,-Map,$(notdir $@).map
 
 #---------------------------------------------------------------------------------
 # any extra libraries we wish to link with the project
 #---------------------------------------------------------------------------------
-LIBS	:= -lgrrlib
-LIBS	+= -lfreetype
-LIBS	+= -lpngu -lpng -ljpeg -lz -lfat -ldi
-LIBS	+= -lwiilight -lwiiuse
-#LIBS	+= -lmodplay -lasnd
-LIBS	+= -lbte -logc -lm 
-LIBS	+= -lCheckRegion
+LIBS := -lgrrlib -lfreetype -lbz2 -lpngu -lpng -ljpeg -lz -lfat -ldi -lwiiuse \
+		-lbte -logc -lm -lCheckRegion
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing
@@ -102,12 +96,8 @@ export OUTPUT	:=	$(CURDIR)/$(TARGET)
 .PHONY: $(BUILD) clean
 
 #---------------------------------------------------------------------------------
-#lets see what OS we are on and then create svnref file
-UNAME := $(shell uname)
-#and now make the build list
 $(BUILD):
 	@[ -d $@ ] || mkdir -p $@
-	@grep _V_STR $(LIBOGC_INC)/ogc/libversion.h | cut -f2 -d'"'
 	@make --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
 
 #---------------------------------------------------------------------------------
@@ -118,7 +108,6 @@ clean:
 #---------------------------------------------------------------------------------
 run:
 	wiiload $(TARGET).dol
-
 
 #---------------------------------------------------------------------------------
 else

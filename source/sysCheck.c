@@ -31,8 +31,8 @@
 #include "wiibasics.h"
 
 // Filename
-#define REPORT			"sd:/sysCheck.csv"
-#define HASHLOG			"sd:/IOSsyscheck.log"
+#define REPORT			":/SysCheck.csv"
+#define HASHLOG			":/IOSsyscheck.log"
 #define VERSION_1_1_0	65536
 
 
@@ -71,7 +71,7 @@ int main(int argc, char **argv)
 			}
 		}
 	}
-	SysSettings_t SystemInfo;
+	SysSettings_t SystemInfo = {0};
 	if(arguments.AHB_At_Start)
 		SystemInfo.deviceType = IS_WII_U;
 	else
@@ -123,7 +123,7 @@ int main(int argc, char **argv)
 	SystemInfo.dvdSupport = 0;
 	s32 ret = Title_GetVersionNObuf(TITLE_ID(0x00010001, HBC_TID_OPEN));
 	if (ret<0) {
-	ret = Title_GetVersionNObuf(TITLE_ID(0x00010001, HBC_TID_LULZ));
+		ret = Title_GetVersionNObuf(TITLE_ID(0x00010001, HBC_TID_LULZ));
 		if (ret<0) {
 			ret = Title_GetVersionNObuf(TITLE_ID(0x00010001, HBC_TID_1_0_7));
 			if (ret<0) {
@@ -153,7 +153,7 @@ int main(int argc, char **argv)
 		}
 	} else {
 		homebrew.hbc = HBC_OPEN;
-		homebrew.hbcversion = ret;
+		homebrew.hbcversion = (ret == 258) ? 3 : ret; // OHBC or a fork
 	}
 	if (homebrew.hbc == HBC_OPEN) {
 		homebrew.hbcIOS =  get_title_ios(TITLE_ID(0x00010001, HBC_TID_OPEN)); // OPEN
@@ -436,11 +436,11 @@ int main(int argc, char **argv)
 				}
 			}
 		}
-		free(iosTMDBuffer);
 
 		if (ios[i].titleID == TID_BC || ios[i].titleID == TID_MIOS) SystemInfo.countBCMIOS++;
 
 		if (ios[i].isStub && !(iosTMD->title_version == 31338) && !(iosTMD->title_version == 65281) && !(iosTMD->title_version == 65535)) SystemInfo.countStubs++;
+		free(iosTMDBuffer);
 	}
 
 	// Check if this title is an IOS stub
@@ -574,7 +574,7 @@ int main(int argc, char **argv)
 				printSelectIOS(MSG_SelectIOS, MSG_All);
 			}
 		}
-
+/*
 		if (wpressed & WPAD_BUTTON_PLUS) {
 			printLoading(MSG_Update);
 			ret = updateApp();
@@ -602,12 +602,37 @@ int main(int argc, char **argv)
 					printSelectIOS(MSG_SelectIOS, MSG_All);
 			}
 		}
+*/
+		// Return to the loader
+		if (wpressed & WPAD_BUTTON_HOME) {
+			UnmountSD();
+			UnmountUSB();
+			deinitGUI();
+			exit(0);
+		}
+
+		// Return to System Menu
+		if (wpressed & WPAD_BUTTON_PLUS) {
+			UnmountSD();
+			UnmountUSB();
+			deinitGUI();
+			SYS_ResetSystem(SYS_RETURNTOMENU, 0, 0);
+		}
+
+		// Shutdown Wii
+		if (wpressed & WPAD_BUTTON_MINUS) {
+			UnmountSD();
+			UnmountUSB();
+			deinitGUI();
+			SYS_ResetSystem(SYS_POWEROFF, 0, 0);
+		}
 
 		if (wpressed & WPAD_BUTTON_A) {
 			break;
 		}
 	}
-	WPAD_Shutdown();
+	sleep(1); // Without this some controllers don't reconnect correctly (modern libogc issue?)
+	Wpad_Disconnect();
 	if (selectedIOS > -1) {
 		nbTitles = 1;
 		completeReport = false;
@@ -645,6 +670,8 @@ int main(int argc, char **argv)
 			gprintf("IOS_ReloadIOS(%d)\n", ios[i].titleID);
 			logfile("IOS_ReloadIOS(%d)\r\n", ios[i].titleID);
 
+			if (arguments.USB)
+				USB_Deinitialize();
 			if (SystemInfo.deviceType == CONSOLE_WII_U)
 				IosPatch_FULL(false, false, false, false, ios[i].titleID);
 			else
@@ -903,6 +930,8 @@ int main(int argc, char **argv)
 		sprintf(ReportBuffer[HBC], TXT_NO_HBC);
 	else if (homebrew.hbcIOS == 0)
 		sprintf(ReportBuffer[HBC], TXT_HBC_STUB);
+	else if (homebrew.hbc == HBC_OPEN)
+		sprintf(ReportBuffer[HBC], TXT_HBC_112, homebrew.hbcversion, homebrew.hbcIOS);
 	else if (homebrew.hbc == HBC_LULZ)
 		sprintf(ReportBuffer[HBC], TXT_HBC_112, homebrew.hbcversion, homebrew.hbcIOS);
 	else if (homebrew.hbcversion == VERSION_1_1_0)
@@ -1013,17 +1042,27 @@ int main(int argc, char **argv)
 
 	// Mount the SD Card
 	UpdateTime();
-	printLoading(MSG_MountSD);
-	//if(arguments.USB)
-	//	MountUSB();
-	//else
+	if (arguments.USB)
+	{
+		printLoading(MSG_MountUSB);
+		USB_Deinitialize();
+		if (SystemInfo.runningIOS != IOS_GetVersion())
+		{
+			IosPatch_AHBPROT(false);
+			IOS_ReloadIOS(SystemInfo.runningIOS);
+		}
+		usleep(100000);
+		MountUSB();
+	} else {
+		printLoading(MSG_MountSD);
 		MountSD();
+	}
 	CheckTime();
 
 	// Initialise the FAT file system
 	UpdateTime();
 	printLoading(MSG_InitFAT);
-	if (!fatInitDefault())
+	if (!arguments.USB && !fatInitDefault())
 	{
 		sprintf(MSG_Buffer, ERR_InitFAT);
 		printError(MSG_Buffer);
@@ -1032,8 +1071,9 @@ int main(int argc, char **argv)
 	} else {
 		// Create the report
 		CheckTime();
-		FILE *file = fopen(REPORT, "w");
-
+		char dest[100];
+		sprintf(dest, "%s%s", arguments.USB ? "usb" : "sd", REPORT);
+		FILE *file = fopen(dest, "w");
 		if(!file)
 		{
 			printError(ERR_OpenFile);
@@ -1053,8 +1093,8 @@ int main(int argc, char **argv)
 		}
 
 		// Create hash log
-		file = fopen(HASHLOG, "w");
-
+		sprintf(dest, "%s%s", arguments.USB ? "usb" : "sd", HASHLOG);
+		file = fopen(dest, "w");
 		if(!file)
 		{
 			printError(ERR_OpenFile);
@@ -1083,27 +1123,24 @@ int main(int argc, char **argv)
 
 		// Return to the loader
 		if (wpressed & WPAD_BUTTON_HOME) {
-			// Unmount the SD Card
 			UnmountSD();
-			//UnmountUSB();
+			UnmountUSB();
 			deinitGUI();
 			exit(0);
 		}
 
 		// Return to System Menu
 		if (wpressed & WPAD_BUTTON_PLUS) {
-			// Unmount the SD Card
 			UnmountSD();
-			//UnmountUSB();
+			UnmountUSB();
 			deinitGUI();
 			SYS_ResetSystem(SYS_RETURNTOMENU, 0, 0);
 		}
 
 		// Shutdown Wii
 		if (wpressed & WPAD_BUTTON_MINUS) {
-			// Unmount the SD Card
 			UnmountSD();
-			//UnmountUSB();
+			UnmountUSB();
 			deinitGUI();
 			SYS_ResetSystem(SYS_POWEROFF, 0, 0);
 		}

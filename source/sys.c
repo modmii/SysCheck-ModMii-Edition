@@ -237,7 +237,7 @@ s32 brute_tmd(tmd *p_tmd)
 	u16 fill;
 	for(fill=0; fill<65535; fill++)
 	{
-		p_tmd->fill3 = fill;
+		p_tmd->fill2 = fill;
 		sha1 hash;
 		SHA1((u8 *)p_tmd, TMD_SIZE(p_tmd), hash);;
 		if (hash[0]==0)

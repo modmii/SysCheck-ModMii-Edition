@@ -149,10 +149,11 @@ sec_t GetFATPartition(const DISC_INTERFACE* disc)
 int MountSD(void)
 {
 	// Close all open files write back the cache and then shutdown them
-	fatUnmount("SD:/");
+	fatUnmount("sd");
 	
 	// Mount first FAT partition
-	if (fatMount("SD", &__io_wiisd, GetFATPartition(&__io_wiisd), CACHE, SECTORS)) {
+	if (fatMount("sd", &__io_wiisd, GetFATPartition(&__io_wiisd), CACHE, SECTORS))
+	{
 		sd_mounted = true;
 		return 1;
 	}
@@ -163,28 +164,24 @@ void UnmountSD(void)
 {
 	if (!sd_mounted) return;
 	// Close all open files write back the cache and then shutdown them
-	fatUnmount("SD:/");
+	fatUnmount("sd");
+	sd_mounted = false;
 }
 
-int MountUSB(void)
+int MountUSB()
 {
-	s32  ret;
-
-	/* Initialize interface */
-	ret = __io_usbstorage.startup();
-	if (!ret)
-		return -1;
-
-	/* Mount device */
-		ret = fatMountSimple("usb", &__io_usbstorage);
-	if (!ret)
-		return -2;
-
-	/* Set root directory */
-	chdir("usb:/");
-	usb_mounted = true;
-
-	return 0;
+	fatUnmount("usb");
+	__io_usbstorage.startup();
+	if ((usb_mounted = __io_usbstorage.isInserted()))
+	{
+		int retry = 10;
+		while ((retry) && ((usb_mounted = fatMountSimple("usb", &__io_usbstorage)) == false))
+		{
+			sleep(1);
+			retry--;
+		}
+	}
+	return usb_mounted;
 }
 
 void UnmountUSB(void)
@@ -196,7 +193,6 @@ void UnmountUSB(void)
 
 	/* Shutdown interface */
 	__io_usbstorage.shutdown();
-
-
+	usb_mounted = false;
 }
 

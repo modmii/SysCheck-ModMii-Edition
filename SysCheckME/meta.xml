@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<app version="1">
+	<name>SysCheck ModMii Edition</name>
+	<coder>blackb0x, JoostinOnline, Double_A, R2-D2199, Nano</coder>
+	<version>2.5.0</version>
+	<release_date>20230309000000</release_date>
+	<short_description>System Checker ModMii Edition</short_description>
+	<long_description>Homebrew application which does several checks on installed IOS and custom IOS:
+    - Base IOS Detection
+    - vIOS Detection
+    - Beer Ticket
+    - IOS Stub
+    - Fake Signature (aka Trucha Bug)
+    - ES_DiVerify (aka ES_Identify)
+    - Flash Access
+    - NAND Access
+    - Boot2 Access
+    - USB 2.0
+
+SysCheck generates a report on the root of your storage device (e.g. usb:/SysCheck.csv).
+
+The author can not be held responsible for any damage SysCheck might cause!</long_description>
+	<arguments>
+		<arg>--debug=false</arg>
+		<arg>--forceNoAHBPROT=false</arg>
+		<arg>--skipIOS=0</arg>
+	</arguments>
+	<no_ios_reload/>
+</app>

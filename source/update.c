@@ -23,8 +23,8 @@ s32 downloadSyscheckFile(const char* update_dir, const char* fileName)  {
 	u32 http_status;
 	u8* outbuf;
 	u32 length;
-	
-	snprintf(buf, sizeof(buf), "http://svn.code.sf.net/p/syscheck-hde/code/trunk/SysCheckHDE/%s", fileName);
+
+	snprintf(buf, sizeof(buf), "https://raw.githubusercontent.com/modmii/SysCheck-ModMii-Edition/master/SysCheckME/%s", fileName);
 
 	ret = http_request(buf, 1 << 31);
 	if (!ret)
@@ -65,9 +65,9 @@ s32 updateApp(void) {
 	ssl_init();
 	char update_dir[25];
 	char *version;
-	sprintf(update_dir, "%s:/apps/SysCheckHDE/", arguments.USB ? "usb" : "sd");
-	mkdir("/apps",S_IWRITE|S_IREAD); // attempt to make dir
-	mkdir("/apps/SysCheckHDE",S_IWRITE|S_IREAD); // attempt to make dir
+	sprintf(update_dir, "%s:/apps/SysCheckME/", arguments.USB ? "usb" : "sd");
+	mkdir("/apps", S_IWRITE|S_IREAD); // attempt to make dir
+	mkdir("/apps/SysCheckME", S_IWRITE|S_IREAD); // attempt to make dir
 	chdir(update_dir);
 	
 	if (ret < 0) {
@@ -78,7 +78,7 @@ s32 updateApp(void) {
 	u8* outbuf;
 	u32 length;
 
-	ret = http_request("http://svn.code.sf.net/p/syscheck-hde/code/trunk/Version.txt", 1 << 31);
+	ret = http_request("https://raw.githubusercontent.com/modmii/SysCheck-ModMii-Edition/master/Version.txt", 1 << 31);
 	if (!ret)
 	{
 		gprintf("Error making http request\n");

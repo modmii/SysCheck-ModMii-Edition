@@ -30,12 +30,12 @@ distribution.
 #include <stdlib.h>
 #include <gccore.h>
 
-inline u32 be32(const u8 *p)
+u32 be32(const u8 *p)
 {
 	return (p[0] << 24) | (p[1] << 16) | (p[2] << 8) | p[3];
 }
 
-inline u64 be64(const u8 *p)
+u64 be64(const u8 *p)
 {
 	return ((u64)be32(p) << 32) | be32(p + 4);
 }
